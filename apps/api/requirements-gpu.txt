@@ -1,0 +1,6 @@
+# Optional GPU extras for the challenger MLP (app/analytics/torch_baseline.py, scripts/train_torch.py).
+# Keep torch OUT of requirements.txt: the API imports torch lazily and runs without it.
+# Install (CUDA 12.1 wheel, verified on Tesla V100-PCIE-32GB):
+#   pip install torch==2.5.1 --index-url https://download.pytorch.org/whl/cu121
+# Fallback (default PyPI wheel): pip install torch==2.5.1
+torch==2.5.1

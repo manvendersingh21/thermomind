@@ -9,7 +9,7 @@ from fastapi.concurrency import run_in_threadpool
 from pydantic import BaseModel
 
 from app import config, services
-from app.schemas import ModelEvaluation
+from app.schemas import ModelComparison, ModelEvaluation
 
 router = APIRouter(prefix="/models", tags=["models"])
 log = logging.getLogger("thermomind.api.models")
@@ -25,6 +25,17 @@ def model_evaluation() -> ModelEvaluation:
     if model is None:
         raise HTTPException(status_code=404, detail="baseline model not trained yet (run `make train` or POST /api/models/train)")
     return model.evaluation
+
+
+@router.get("/comparison", response_model=ModelComparison)
+def model_comparison() -> ModelComparison:
+    """Production HGBR baseline vs any GPU-trained challenger on the same chronological split."""
+    from app.analytics.comparison import load_model_comparison
+
+    try:
+        return load_model_comparison(Path(config.MODEL_DIR))
+    except FileNotFoundError:
+        raise HTTPException(status_code=404, detail="baseline model not trained yet (run `make train`)")
 
 
 @router.post("/train", response_model=ModelEvaluation)

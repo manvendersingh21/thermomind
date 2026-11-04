@@ -13,6 +13,7 @@ lists the optional dependency.
 from __future__ import annotations
 
 import os
+import sys
 import time
 from datetime import datetime, timezone
 from pathlib import Path
@@ -33,8 +34,8 @@ JSON_NAME = f"{MODEL_VERSION}.json"
 
 DEFAULT_EPOCHS = 300
 DEFAULT_PATIENCE = 40
-DEFAULT_BATCH_SIZE = 512
-DEFAULT_LR = 2e-3
+DEFAULT_BATCH_SIZE = 2048
+DEFAULT_LR = 5e-4
 DEFAULT_WEIGHT_DECAY = 1e-4
 
 _CHALLENGER_NOTES = [
@@ -45,6 +46,10 @@ _CHALLENGER_NOTES = [
     "Early stopping monitors 2014 validation MAE (the holdout year 2015 is never used for fitting or stopping).",
     "Features are standardised with training-set mean/std only; the target is standardised with training-set "
     "statistics for optimisation and predictions are mapped back to MWh.",
+    "Hyper-parameters (lr, weight decay, dropout, batch size) were chosen from an 8-configuration sweep using 2014 "
+    "validation MAE only; all configurations reached their best validation MAE within the first 2-5 epochs and then "
+    "degraded while training loss kept falling (year-to-year drift between 2011-2013 and 2014), so the selected "
+    "network is lightly trained by design.",
 ]
 
 # ---------------------------------------------------------------------------------------------------------------------
@@ -293,14 +298,14 @@ def train_torch_baseline(
         val_mae = float(np.mean(np.abs(y_va - _predict_array(net, Xva_std, dev, y_mean, y_std))))
         if verbose:
             print(f"[torch] epoch {epoch:4d} train_loss={loss.item():.5f} val_mae={val_mae:.4f} "
-                  f"lr={sched.get_last_lr()[0]:.2e}", flush=True)
+                  f"lr={sched.get_last_lr()[0]:.2e}", file=sys.stderr, flush=True)
         if val_mae < best_mae - 1e-6:
             best_mae = val_mae
             best_epoch = epoch
             best_state = {k: v.detach().clone() for k, v in net.state_dict().items()}
         elif epoch - best_epoch >= patience:
             if verbose:
-                print(f"[torch] early stop at epoch {epoch} (best epoch {best_epoch}, val_mae={best_mae:.4f})")
+                print(f"[torch] early stop at epoch {epoch} (best epoch {best_epoch}, val_mae={best_mae:.4f})", file=sys.stderr)
             break
     if dev.type == "cuda":
         torch.cuda.synchronize(dev)
