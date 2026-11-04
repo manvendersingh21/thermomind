@@ -53,3 +53,7 @@ No avoided downtime, no accuracy figure, no adoption, no sales, no letters of in
 ## Incumbent reference (for context, not comparison claims)
 
 - Siemens Energy combined-cycle plant portfolio (gas and steam turbines for EPC projects): https://www.siemensenergy.com/global/en/home/products-services/product/combined-cycle-power-plants.html — an example of the OEM scope ThermoMind would sit beside, not replace. OEM monitoring and performance services ship with the equipment; our wedge is a vendor-neutral, auditable investigation layer over exported data.
+
+## Feature map (built today)
+
+Mapped to [PRODUCT_RATIONALE.md](PRODUCT_RATIONALE.md): evidence-first investigation, GPU second-opinion baseline, precedent recall, instrument health scorecard, emissions watch, maintenance planner (user assumptions), "Ask the plant" cross-impact what-if, work-request routing (simulated notifications), shift handover draft, CMMS draft export, synthetic scenario training, pilot metrics. All read-only and draft-only; none is validated on a second plant.
