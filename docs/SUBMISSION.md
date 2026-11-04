@@ -17,7 +17,7 @@
 | Meta model used | `muse-spark-1.3` via `https://api.meta.ai/v1` (OpenAI-compatible chat completions with function tools) |
 | Meta usage summary | Model runs a bounded multi-turn tool loop over six server-side tools and drafts a validated investigation report; `meta_used=true` only for real API calls; offline preview is labelled "not a Meta inference" |
 | Data | UCI Gas Turbine CO and NOx Emission Data Set (ID 551, DOI 10.24432/C5WC95, CC BY 4.0; Kaya, Tüfekci & Gürgen 2019) |
-| Licence | MIT (repository); CC BY 4.0 (data). The Overview and case pages embed the 'Combined Cycle Power Plant' interactive animation by educational-animation.org (MIT licence, https://www.educational-animation.org/en/combined-cycle-power-plant/). It is a generic educational plant, not the UCI facility. |
+| Licence | MIT (repository); CC BY 4.0 (data). The Overview and case pages embed the 'Combined Cycle Power Plant' interactive animation by educational-animation.org (https://www.educational-animation.org/en/combined-cycle-power-plant/; educational-animation.org — animation code MIT; text and graphics CC BY 4.0). It is a generic educational plant, not the UCI facility. |
 | Built during the event | Yes. The repository's git history begins 2026-11-04 18:15 UTC; the project was restarted from an empty directory that day after earlier work became inaccessible. All code in this repository was written during the hackathon window. (docs/HACKATHON_WORK.md) |
 
 ## Checklist

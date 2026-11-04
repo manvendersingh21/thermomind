@@ -100,8 +100,10 @@ def test_readiness_numbers_and_provenance(bundle):
     assert n["tit_margin_to_p99"].value == pytest.approx(
         round(float(train["TIT"].quantile(0.99)) - yf["TIT"].max(), 1), abs=0.11)
     # provenance labels
-    for k in ("output_proxy_mean", "tit_window_max", "tit_p99_train", "afdp_window_median", "at_window_mean"):
+    for k in ("output_proxy_mean", "tit_window_max", "afdp_window_median", "at_window_mean"):
         assert n[k].provenance == "real_observation", k
+    for k in ("tit_p99_train", "tit_margin_to_p99", "afdp_percentile_vs_train"):
+        assert n[k].provenance == "derived_from_history", k
     for k in ("headroom_to_nameplate", "apparent_power_mva", "kinetic_energy_mws", "q_rated_mvar",
               "q_headroom_proxy_mvar"):
         assert n[k].provenance == "assumption", k
@@ -151,7 +153,7 @@ def test_fake_meta_happy_path(bundle):
     d = dm.run_drill(bundle, DrillRequest(dataset_id=bundle.dataset_id, year=2014, start=0, end=120, use_meta=True),
                      client=client)
     assert d.mode == "meta_live" and d.meta_used and d.meta_model == "fake-muse"
-    assert len(client.calls) == 1 and client.calls[0]["max_tokens"] == 3500
+    assert len(client.calls) == 1 and client.calls[0]["max_tokens"] == dm.META_MAX_TOKENS == 9000
     assert client.calls[0]["messages"][0]["content"].startswith("You are ThermoMind's grid-event operator-support agent")
     assert d.brief.disclaimer == BRIEF_DISCLAIMER
 
@@ -310,3 +312,139 @@ def test_endpoint_errors(api):
     assert c.post("/api/grid/contingency", json=base).status_code == 422  # neither shortfall nor constraint
     assert c.post("/api/grid/contingency", json={**base, "constraint": "meteor"}).status_code == 422
     assert c.get("/api/grid/drills/drill_missing").status_code == 404
+
+
+# ---------------------------------------------------------------------------
+# Security review fixes: grid/electrical control patterns (F2), evaluative option wording (F3), input bounds (F5)
+# ---------------------------------------------------------------------------
+
+# Review repro: a model brief that passes the allowed-verb rule on the first word but chains grid control actions.
+REPRO_BRIEF = {
+    "headline": "Synthetic frequency-dip drill: TEY step -12% on 2014 samples #100-#119",
+    "what_the_data_shows": ["Step-window mean TEY 120.1 MWh vs original 136.5 MWh (-12.0%)."],
+    "operator_verifications": [
+        "Verify the frequency deviation; transfer load to the second unit.",
+        "Check TIT then rack out the generator breaker.",
+        "Confirm dispatch agreement and run the unit at 120 MW.",
+        "Monitor voltage and raise excitation if it sags.",
+        "Communicate to the TSO: request TSO re-dispatch for 60 MW.",
+    ],
+    "plant_capability": ["Inertia capability (assumption): about 1000 MW·s."],
+    "notify": ["TSO / dispatch"],
+    "risks": ["The overlay is synthetic."],
+    "disclaimer": "No setpoint or control action is issued by this software.",
+}
+
+GRID_CONTROL_TEXTS = [
+    "Transfer load to Unit 2.", "Shed 20 MW of load.", "Unload the unit.", "Back down the unit to minimum load.",
+    "Take the unit offline.", "Bring the unit online.", "Rack out the breaker.", "Rack in the generator breaker.",
+    "Run the unit at 120 MW.", "Raise excitation.", "Lower the excitation.", "Adjust the AVR voltage reference setpoint.",
+    "Block the governor.", "Governor block.", "Isolate Line A.", "Disconnect the GSU.",
+    "Isolate the step-up transformer.", "Disconnect the feeder.", "Ramp down to 100 MW.", "Ramp up to 150 MW.",
+    "Request TSO re-dispatch for 60 MW.", "Request re-dispatch.", "Set reactive power to 40 Mvar.",
+    "Increase MVAr output to 50 Mvar.", "Operators should request TSO re-dispatch for 60 MW.",
+]
+
+ALLOWED_TEXTS = [
+    "Evaluate requesting TSO re-dispatch for ~60 MW (TSO decision)",
+    "Options to evaluate (human review)",
+    "Higher ambient temperature would reduce output.",
+    "Consider escalating to dispatch/TSO (human decision).",
+    "Evaluate a lower operating point for this unit (operator/dispatch decision)",
+    "Confirm with dispatch/TSO whether any instruction applies to this unit.",
+    "Escalate to the electrical engineer if voltage or reactive-power behaviour is reported by the TSO.",
+    "No switching, load transfer or dispatch change is performed by this software.",
+    "Evaluate whether to request TSO re-dispatch.",
+    "Reactive capability proxy (assumption): about 132 Mvar circle headroom at the window-mean output.",
+]
+
+
+@pytest.mark.parametrize("text", GRID_CONTROL_TEXTS)
+def test_grid_control_phrases_are_rejected(text):
+    assert dm.scan_text(text) != [], text
+
+
+@pytest.mark.parametrize("text", ALLOWED_TEXTS)
+def test_descriptive_and_evaluative_phrases_are_allowed(text):
+    assert dm.scan_text(text) == [], text
+
+
+def test_review_repro_brief_is_rejected():
+    brief, errs = dm.validate_brief(json.dumps(REPRO_BRIEF))
+    assert brief is None
+    joined = "\n".join(errs)
+    # ';' / 'then' chained clauses must each start with an allowed verb
+    assert "operator_verifications[0]" in joined and "operator_verifications[1]" in joined
+    assert "unsafe_instruction" in joined
+    for i in range(5):
+        assert f"operator_verifications[{i}]" in joined, (i, joined)
+
+
+def test_verification_split_keeps_allowed_chains():
+    ok = good_brief(operator_verifications=["Verify the event classification; confirm with dispatch/TSO.",
+                                            "Check unit output then communicate the step to the shift supervisor."])
+    brief, errs = dm.validate_brief(ok)
+    assert brief is not None, errs
+
+
+def test_contingency_option_wording_is_evaluative(bundle):
+    req = ContingencyRequest(dataset_id="x", year=2014, start=0, end=300, constraint="line_limit",
+                             assumptions=ContingencyAssumptions(severity_pct=60))
+    res = rd.compute_contingency(bundle, req)
+    titles = {o.option_id: o.title for o in res.options}
+    assert titles["tso_redispatch"].startswith("Evaluate requesting TSO re-dispatch for ~")
+    assert titles["tso_redispatch"].endswith("(TSO decision)")
+    assert titles["unit_partial_derate"] == "Evaluate a lower operating point for this unit (operator/dispatch decision)"
+    res2 = rd.compute_contingency(bundle, ContingencyRequest(
+        dataset_id="x", year=2014, start=0, end=300, shortfall_mw=5000,
+        assumptions=ContingencyAssumptions(tso_redispatch_assumed_mw=0, ss_a_spare_mw=0, ss_b_spare_mw=0)))
+    assert "consider escalating to dispatch/TSO (human decision)" in res2.headline, res2.headline
+    for o in res.options:
+        for t in (o.title, o.description, o.computation, *o.prerequisites):
+            assert dm.scan_text(t) == [], t
+
+
+def test_readiness_derived_provenance(bundle):
+    n = rd.compute_readiness(bundle, 2014, 0, 300).numbers
+    for k in ("tit_margin_to_p99", "afdp_percentile_vs_train", "tit_p99_train"):
+        assert n[k].provenance == "derived_from_history", k
+
+
+def _finite_422(c):
+    from fastapi.exceptions import RequestValidationError
+
+    from app.main import request_validation_error_handler
+
+    c.app.add_exception_handler(RequestValidationError, request_validation_error_handler)
+    c.app.middleware_stack = None  # rebuild so the handler applies to an already-started test app
+
+
+@pytest.mark.parametrize("patch", [
+    {"nameplate_mw": "Infinity"}, {"nameplate_mw": "NaN"}, {"nameplate_mw": 1e308}, {"seed": 2**31},
+    {"seed": -1}, {"year": 1999}, {"year": 2101}, {"start": 100_001}, {"end": 10**20}, {"h_constant_s": float("inf")},
+])
+def test_drill_rejects_non_finite_and_huge(api, patch):
+    c, ds, _ = api
+    _finite_422(c)
+    body = json.dumps({"dataset_id": ds, "year": 2014, "start": 0, "end": 120, **patch})  # allows Infinity/NaN
+    r = c.post("/api/grid/drill", content=body, headers={"content-type": "application/json"})
+    assert r.status_code == 422, (patch, r.text)
+
+
+@pytest.mark.parametrize("patch", [
+    {"shortfall_mw": "NaN"}, {"shortfall_mw": float("inf")}, {"shortfall_mw": 1e308},
+    {"assumptions": {"min_stable_mw": "Infinity"}}, {"assumptions": {"min_stable_mw": 1e308}},
+    {"assumptions": {"transformer_mva": "NaN"}}, {"year": 10**20},
+])
+def test_contingency_rejects_non_finite_and_huge(api, patch):
+    c, ds, _ = api
+    _finite_422(c)
+    body = json.dumps({"dataset_id": ds, "constraint": "transformer_thermal", **patch})  # allows Infinity/NaN
+    r = c.post("/api/grid/contingency", content=body, headers={"content-type": "application/json"})
+    assert r.status_code == 422, (patch, r.text)
+
+
+def test_readiness_query_bounds(api):
+    c, ds, _ = api
+    for extra in ({"year": 1999}, {"start": -1}, {"end": 10**9}, {"nameplate_mw": "inf"}, {"nameplate_mw": "nan"}):
+        assert c.get("/api/grid/readiness", params={"dataset_id": ds, "year": 2014, **extra}).status_code == 422, extra

@@ -1,7 +1,7 @@
 # Thermal monitoring of the electrical balance of plant
 
 Heat detection for the **generator → generator breaker → step-up transformer → HV switchgear → busbar → grid**.
-The goal is to spot overheating before it causes a failure, estimate transformer insulation ageing, and give **read-only
+The goal is to screen simulated hot-spot trends for early review, estimate transformer insulation ageing, and give **read-only
 advisories** when thermal limits get close. That includes a what-if for data-center demand growth.
 
 > **Simulated thermal feed derived from real load and ambient data. No thermal sensors are connected. Advisory only.

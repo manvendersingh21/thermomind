@@ -1,7 +1,13 @@
 /** Mirrors apps/api/app/features/grid/schemas.py (grid-resilience feature). */
 import type { SampleRange, Transformation } from "../../api/types";
 
-export type GridProvenance = "real_observation" | "model_derived" | "assumption" | "synthetic_overlay" | "simulated";
+export type GridProvenance =
+  | "real_observation"
+  | "model_derived"
+  | "derived_from_history"
+  | "assumption"
+  | "synthetic_overlay"
+  | "simulated";
 export type CardStatus = "ok" | "watch" | "limited" | "info";
 export type GridEvent = "frequency_dip" | "overvoltage" | "load_step";
 export type ContingencyConstraint = "transformer_thermal" | "line_limit" | "unit_derate";

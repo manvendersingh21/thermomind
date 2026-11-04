@@ -8,7 +8,7 @@ from typing import Any, Optional
 
 import pandas as pd
 from fastapi import APIRouter, Depends, HTTPException, Query
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 from app.connectors.base import ControlSystem
 from app.connectors.simulated_cmms import SimulatedCmms
@@ -53,9 +53,11 @@ def get_notifier() -> SimulatedNotifier:
 
 # --- request models -----------------------------------------------------------------------
 class HistorianStart(BaseModel):
-    year: int = 2014
-    advance_rate: float = Field(1.0, description="rows per real second; 0 = manual ticks only")
-    start_index: int = 0
+    model_config = ConfigDict(allow_inf_nan=False)
+
+    year: int = Field(2014, ge=2000, le=2100)
+    advance_rate: float = Field(1.0, ge=0, le=1000, description="rows per real second; 0 = manual ticks only")
+    start_index: int = Field(0, ge=0, le=100_000)
 
 
 class DraftRequest(BaseModel):
@@ -175,4 +177,9 @@ def notifications_outbox(limit: int = Query(100, ge=1, le=500),
 
 @router.post("/notifications/send")
 def notifications_send(req: NotifyRequest, n: SimulatedNotifier = Depends(get_notifier)) -> dict[str, Any]:
+    from app.plant.personas import PERSONAS
+
+    if req.persona not in PERSONAS:
+        raise HTTPException(status_code=422, detail=f"unknown persona '{req.persona}' (expected one of "
+                                                    f"{', '.join(PERSONAS)})")
     return n.notify(req.persona, req.message)

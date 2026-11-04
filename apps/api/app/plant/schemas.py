@@ -7,7 +7,7 @@ from __future__ import annotations
 
 from typing import Any, Literal, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 from app.schemas import AgentEvent
 
@@ -122,11 +122,13 @@ class Subsystem(BaseModel):
 
 # ----------------------------------------------------------------------------- what-if
 class WhatIfRequest(BaseModel):
-    case_id: Optional[str] = None
+    model_config = ConfigDict(allow_inf_nan=False)
+
+    case_id: Optional[str] = Field(None, max_length=128)
     question: str = ""
-    measurement: str
-    delta: float
-    persona: Optional[str] = None
+    measurement: str = Field(..., max_length=32)
+    delta: float = Field(..., ge=-1e6, le=1e6)
+    persona: Optional[str] = Field(None, max_length=64)
 
 
 class ChangeSpec(BaseModel):

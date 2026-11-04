@@ -164,7 +164,9 @@ def test_window_endpoint_shape_and_subset(client):
         ("window", {"year": 2014, "start": 10}, 422),
         ("window", {"year": 2014, "start": 1000, "end": 1100}, 422),  # beyond the data
         ("window", {"year": 2014, "start": 10, "end": 12}, 422),  # < 3 rows
-        ("overview", {"year": 1999}, 404),
+        ("overview", {"year": 2099}, 404),
+        ("overview", {"year": 1999}, 422),  # outside the 2000-2100 bound
+        ("window", {"year": 2014, "start": 0, "end": 401}, 422),  # end beyond the year length (400 rows)
         ("overview", {"year": 2014, "dataset_id": "nope"}, 404),
     ],
 )

@@ -39,6 +39,8 @@ export function PlantAnimation({ clickHint, compact = false, className = "" }: P
           src="https://www.educational-animation.org/web-animations/gas-fired-power-plant/en/gas-fired-power-plant.html"
           title="Interactive animation: Combined Cycle Power Plant"
           style={{ position: "absolute", inset: 0, width: "100%", height: "100%", border: 0 }}
+          sandbox="allow-scripts allow-same-origin"
+          referrerPolicy="no-referrer"
           allowFullScreen
           loading="lazy"
         />
@@ -53,7 +55,7 @@ export function PlantAnimation({ clickHint, compact = false, className = "" }: P
           Combined Cycle Power Plant animation by educational-animation.org
           <ExternalLink size={14} />
         </a>
-        <span> · MIT licence</span>
+        <span> · educational-animation.org — animation code MIT; text and graphics CC BY 4.0</span>
         <div className="text-sm text-ink-400">Generic educational combined-cycle plant — not the UCI facility</div>
       </div>
     </div>

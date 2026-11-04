@@ -168,7 +168,7 @@ export default function InstrumentsPage() {
       {d ? (
         <>
           <div className="mb-5 grid grid-cols-4 gap-4">
-            <KpiCard label="Sensors to trust" value={d.summary.trust.length} unit={`/ ${d.sensors.length}`} caption={d.summary.trust.join(", ") || "none"} tone="model" />
+            <KpiCard label="No screening flags" value={d.summary.trust.length} unit={`/ ${d.sensors.length}`} caption={d.summary.trust.join(", ") || "none"} tone="model" />
             <KpiCard label="Use with cross-check" value={d.summary.use_with_cross_check.length} caption={d.summary.use_with_cross_check.join(", ") || "none"} tone="amber" />
             <KpiCard label="Verify first" value={d.summary.verify_first.length} caption={d.summary.verify_first.join(", ") || "none"} />
             <KpiCard label="Mean score" value={fmtNum(d.summary.mean_score, 1)} unit="/ 100" caption={`${rangeLabel(d.window)} · ${fmtInt(d.window.end - d.window.start)} rows`} />

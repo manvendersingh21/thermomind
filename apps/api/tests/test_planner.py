@@ -258,3 +258,29 @@ def test_unknown_dataset_and_missing_model_404(planner_client, monkeypatch):
         assert "baseline model not trained" in r.json()["detail"]
     opts = planner_client.get("/api/planner/options").json()
     assert opts["model_available"] is False
+
+
+@pytest.mark.parametrize(
+    "path,body",
+    [
+        ("compressor-wash", {"year": 2014, "energy_price_per_mwh": "NaN"}),
+        ("compressor-wash", {"year": 2014, "energy_price_per_mwh": float("inf")}),
+        ("compressor-wash", {"year": 2014, "energy_price_per_mwh": 1e308}),
+        ("compressor-wash", {"year": 2014, "wash_direct_cost": "Infinity"}),
+        ("compressor-wash", {"year": 10**20}),
+        ("filter-changeout", {"year": 2014, "afdp_limit_mbar": "NaN"}),
+        ("filter-changeout", {"year": 2014, "filter_change_cost": 1e308}),
+        ("filter-changeout", {"year": 2101}),
+    ],
+)
+def test_non_finite_and_huge_inputs_422(planner_client, path, body):
+    import json
+
+    from fastapi.exceptions import RequestValidationError
+
+    from app.main import request_validation_error_handler
+
+    planner_client.app.add_exception_handler(RequestValidationError, request_validation_error_handler)
+    planner_client.app.middleware_stack = None  # rebuild so the handler applies to the started test app
+    r = planner_client.post(f"/api/planner/{path}", content=json.dumps(body), headers={"content-type": "application/json"})
+    assert r.status_code == 422, r.text

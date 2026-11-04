@@ -70,7 +70,8 @@ export function WorkRequestBanner({ caseId }: { caseId: string }) {
         {DELIVERY_NOTE}{" "}
         <Link to="/inbox" className="pl-link">
           Open inbox
-        </Link>
+        </Link>{" "}
+        <span className="pl-chip pl-chip-grey" title="Demo workflow stored in ThermoMind only; nothing is sent to a CMMS">SIMULATED WORKFLOW · NOT A CMMS</span>
       </div>
     </section>
   );

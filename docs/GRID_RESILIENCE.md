@@ -45,7 +45,7 @@ would have changed this event.
 ### 1. Grid support readiness — `GET /api/grid/readiness`
 
 Query: `dataset_id, year, start, end, nameplate_mw (160), h_constant_s (5), power_factor (0.85)`.
-Every number carries `provenance` (`real_observation` / `model_derived` / `assumption`) and a `computation`
+Every number carries `provenance` (`real_observation` / `model_derived` / `derived_from_history` / `assumption`) and a `computation`
 string with the actual values.
 
 | Indicator | Provenance | Computation |
@@ -53,13 +53,13 @@ string with the actual values.
 | Output proxy | real | mean TEY in the window, **MWh per hourly sample** (as published; never converted to MW) |
 | Headroom to nameplate | assumption | nameplate (user input) − mean TEY |
 | Kinetic energy | assumption | E = H × S, S = nameplate / pf (MVA). Default H = 5 s; typical range 2.5–6 s [S4] |
-| Reactive capability proxy | assumption | Q at rated P = P·tan(acos pf); circle headroom √(S² − P²) at current output (ignores field-heating / under-excitation limits; OEM curve governs) |
-| TIT margin | real | training-years (2011–2013) p99 of TIT − window max. **Historical envelope, not an OEM limit.** |
-| AFDP level | real | window median and its percentile rank within training years; intake restriction reduces available output |
+| Reactive capability proxy | assumption | Q at rated P = P·tan(acos pf); circle headroom √(S² − P²) at the window-mean output (ignores field-heating / under-excitation limits; OEM curve governs) |
+| TIT margin | derived from history | training-years (2011–2013) p99 of TIT − window max. **Historical envelope, not an OEM limit.** |
+| AFDP level | real (median) + derived from history (percentile) | window median and its percentile rank within training years; intake restriction reduces available output |
 | Ambient AT | real + model-derived | window mean AT; OLS slope of TEY vs AT over training years (correlational, confounded by dispatch) and implied effect vs training-median AT |
 
 Observed on the real dataset (2014 samples #1200–#1319, defaults): mean TEY 134.7 MWh, TIT window max 1100.0 °C vs
-training p99 1100.3 °C (margin 0.3 °C → "limited"), AFDP median 3.63 mbar (percentile rank 31 %), training slope
+training p99 1100.3 °C (margin 0.3 °C → shown neutrally as "at historical ceiling (normal for base load)", status `info`), AFDP median 3.63 mbar (percentile rank 31 %), training slope
 TEY~AT −0.42 MWh/°C (r −0.19), E ≈ 941 MW·s. The TIT result illustrates the "historical envelope" caveat: TIT in
 this dataset clusters near ~1100 °C at high load, which may reflect a temperature-controlled operating ceiling.
 
@@ -76,7 +76,7 @@ nameplate_mw?, h_constant_s?, power_factor?}` (window ≥ 48 rows).
   framing; the data overlay is the same plant-side load-step proxy in every case, and the brief says so.
 * Evidence: TEY step (pre-step mean, step mean original vs overlay), co-movement per channel with the training
   slope and r, data quality (missing, overlay samples outside training range), capability numbers (assumptions).
-* Brief: with `use_meta=true`, **one** Muse Spark call (`muse-spark-1.3`, `max_tokens` 3500, JSON mode) with the
+* Brief: with `use_meta=true`, **one** Muse Spark call (`muse-spark-1.3`, `max_tokens` 9000, JSON mode) with the
   operator-support system prompt; validated with pydantic, the shared `UNSAFE_PATTERNS` and `DATE_PATTERNS` from
   `app/agent/report_validator.py`, an allowed-verb rule for `operator_verifications`
   (verify/check/confirm/monitor/communicate/escalate/prepare) and a "cite a number" rule; at most **one** rewrite;

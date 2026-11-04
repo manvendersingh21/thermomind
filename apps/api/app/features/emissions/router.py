@@ -47,10 +47,10 @@ def _run(dataset_id: str, year: int, start: int | None, end: int | None, co_t: f
 
 @router.get("/overview", response_model=EmissionsResponse)
 def overview(
-    year: int = Query(..., description="source year"),
+    year: int = Query(..., ge=2000, le=2100, description="source year"),
     dataset_id: str = Query(DEFAULT_DATASET),
-    co_threshold: float | None = Query(None, description="screening threshold for CO, mg/m³ (default: p95 of the year)"),
-    nox_threshold: float | None = Query(None, description="screening threshold for NOX, mg/m³ (default: p95 of the year)"),
+    co_threshold: float | None = Query(None, le=1e5, description="screening threshold for CO, mg/m³ (default: p95 of the year)"),
+    nox_threshold: float | None = Query(None, le=1e5, description="screening threshold for NOX, mg/m³ (default: p95 of the year)"),
 ) -> EmissionsResponse:
     """Whole-year emissions screening: KPIs, binned regime profile, excursions, downsampled series."""
     return _run(dataset_id, year, None, None, co_threshold, nox_threshold)
@@ -58,12 +58,12 @@ def overview(
 
 @router.get("/window", response_model=EmissionsResponse)
 def window(
-    year: int = Query(...),
-    start: int = Query(..., ge=0, description="first row_index (inclusive)"),
-    end: int = Query(..., ge=1, description="last row_index (exclusive)"),
+    year: int = Query(..., ge=2000, le=2100),
+    start: int = Query(..., ge=0, le=100_000, description="first row_index (inclusive)"),
+    end: int = Query(..., ge=1, le=100_000, description="last row_index (exclusive)"),
     dataset_id: str = Query(DEFAULT_DATASET),
-    co_threshold: float | None = Query(None),
-    nox_threshold: float | None = Query(None),
+    co_threshold: float | None = Query(None, le=1e5),
+    nox_threshold: float | None = Query(None, le=1e5),
 ) -> EmissionsResponse:
     """Same payload for a row_index window; default thresholds stay the whole-year p95."""
     if end <= start:

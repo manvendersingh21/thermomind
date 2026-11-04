@@ -192,7 +192,7 @@ def compute_readiness(bundle, year: int, start: Optional[int], end: Optional[int
 
     # --- output proxy + headroom -------------------------------------------------------------------------
     numbers["output_proxy_mean"] = _num(
-        "output_proxy_mean", "Current output proxy (window mean TEY)", tey_mean, "MWh per hourly sample",
+        "output_proxy_mean", "Output proxy (window mean TEY)", tey_mean, "MWh per hourly sample",
         "real_observation", f"mean(TEY) over {rng_label} = {tey_mean:.2f} MWh",
         "TEY is energy per ordered hourly sample (MWh, as published), used as an output proxy; not converted to MW.")
     numbers["output_proxy_last"] = _num(
@@ -231,7 +231,7 @@ def compute_readiness(bundle, year: int, start: Optional[int], end: Optional[int
         "q_rated_mvar", "Reactive capability at rated P (pf assumption)", q_rated, "Mvar", A,
         f"Q = P x tan(acos(pf)) = {nameplate_mw:g} x tan(acos({power_factor:g})) = {q_rated:.1f} Mvar", digits=1)
     numbers["q_headroom_proxy_mvar"] = _num(
-        "q_headroom_proxy_mvar", "Reactive headroom proxy at current output", q_now, "Mvar", A,
+        "q_headroom_proxy_mvar", "Reactive headroom proxy at window-mean output", q_now, "Mvar", A,
         f"sqrt(S^2 - P^2) = sqrt({s_mva:.1f}^2 - {tey_mean:.1f}^2) = {q_now:.1f} Mvar (P = mean TEY used as MW proxy)",
         "Stator-current circle only; real limits (field heating, under-excitation, voltage, OEM curve) are tighter.",
         digits=1)
@@ -243,18 +243,20 @@ def compute_readiness(bundle, year: int, start: Optional[int], end: Optional[int
     numbers["tit_window_max"] = _num("tit_window_max", "TIT window max", tit_max_w, "°C", "real_observation",
                                      f"max(TIT) over {rng_label} = {tit_max_w:.1f} °C", digits=1)
     numbers["tit_p99_train"] = _num(
-        "tit_p99_train", f"TIT historical p99 ({yrs})", ts.tit_p99, "°C", "real_observation",
+        "tit_p99_train", f"TIT historical p99 ({yrs})", ts.tit_p99, "°C", "derived_from_history",
         f"p99(TIT) over training years {yrs} (n={ts.rows}) = {ts.tit_p99:.1f} °C" if ts.tit_p99 is not None else "n/a",
         "Historical envelope, not an OEM limit.", digits=1)
     numbers["tit_margin_to_p99"] = _num(
-        "tit_margin_to_p99", "TIT margin to historical p99", tit_margin, "°C", "real_observation",
+        "tit_margin_to_p99", "TIT margin to historical p99", tit_margin, "°C", "derived_from_history",
         (f"p99 {ts.tit_p99:.1f} - window max {tit_max_w:.1f} = {tit_margin:.1f} °C" if tit_margin is not None else "n/a"),
         "How much hotter than this window the unit has historically run (p99). Historical envelope, not an OEM limit.",
         digits=1)
     if tit_margin is None:
         tit_status: CardStatus = "info"
     elif tit_margin < 2.0:
-        tit_status = "limited"
+        # window max within 2 °C of the historical p99: TIT clusters at its ceiling at base load, which is normal
+        # (temperature-controlled operation), so this is shown neutrally rather than as a limitation
+        tit_status = "info"
     elif tit_margin < 10.0:
         tit_status = "watch"
     else:
@@ -268,7 +270,7 @@ def compute_readiness(bundle, year: int, start: Optional[int], end: Optional[int
                                          "real_observation", f"median(AFDP) over {rng_label} = {afdp_med:.3f} mbar",
                                          digits=3)
     numbers["afdp_percentile_vs_train"] = _num(
-        "afdp_percentile_vs_train", f"AFDP percentile vs {yrs}", pct_rank, "%", "real_observation",
+        "afdp_percentile_vs_train", f"AFDP percentile vs {yrs}", pct_rank, "%", "derived_from_history",
         (f"share of training AFDP samples <= {afdp_med:.3f} mbar = {pct_rank:.1f}% (train p50 {ts.afdp_p50:.3f}, "
          f"p95 {ts.afdp_p95:.3f})" if pct_rank is not None else "n/a"),
         "Higher intake differential pressure (filter loading) generally reduces available output.", digits=1)
@@ -317,13 +319,14 @@ def compute_readiness(bundle, year: int, start: Optional[int], end: Optional[int
             note=f"H typical range {H_TYPICAL_RANGE_S[0]:g}-{H_TYPICAL_RANGE_S[1]:g} s. Source: {H_REFERENCE}"),
         StatusCard(
             key="reactive", title="Reactive capability proxy (assumption)", status="info",
-            headline=f"~{q_now:.0f} Mvar circle headroom at current output; {q_rated:.0f} Mvar at rated P, pf {power_factor:g}",
+            headline=f"~{q_now:.0f} Mvar circle headroom at window-mean output; {q_rated:.0f} Mvar at rated P, pf {power_factor:g}",
             numbers=[numbers["q_rated_mvar"], numbers["q_headroom_proxy_mvar"]],
             computation=numbers["q_headroom_proxy_mvar"].computation,
             note="Voltage support capability must be confirmed against the OEM capability curve and grid-code requirements."),
         StatusCard(
             key="thermal_tit", title="Thermal margin: TIT vs historical envelope", status=tit_status,
-            headline=(f"{tit_margin:.1f} °C below the historical p99 ({ts.tit_p99:.1f} °C)" if tit_margin is not None
+            headline=((("At historical ceiling (normal for base load): " if tit_margin < 2.0 else "")
+                       + f"{tit_margin:.1f} °C below the historical p99 ({ts.tit_p99:.1f} °C)") if tit_margin is not None
                       else "No training-year TIT available"),
             numbers=[numbers["tit_window_max"], numbers["tit_p99_train"], numbers["tit_margin_to_p99"]],
             computation=numbers["tit_margin_to_p99"].computation,
@@ -441,7 +444,7 @@ def enumerate_options(shortfall: float, output: float, constraint: Optional[str]
         comp1 = (f"covered = min(shortfall {shortfall:.1f}, output {output:.1f} - min stable {min_stable:.1f}) = "
                  f"{cov1:.1f} MW -> evaluate operating at X = {x:.1f} MW; {tit_txt}")
     raw.append(dict(
-        option_id="unit_partial_derate", title=f"Evaluate a partial derate of this unit to ~{x:.0f} MW",
+        option_id="unit_partial_derate", title="Evaluate a lower operating point for this unit (operator/dispatch decision)",
         description="Lower operating point for this unit to relieve the constrained element, if dispatch and the "
                     "grid code allow it.",
         covered=cov1, dep="plant_internal", computation=comp1,
@@ -465,13 +468,13 @@ def enumerate_options(shortfall: float, output: float, constraint: Optional[str]
     tso_cap = shortfall if a.tso_redispatch_assumed_mw is None else a.tso_redispatch_assumed_mw
     cov3 = max(0.0, min(shortfall, tso_cap))
     raw.append(dict(
-        option_id="tso_redispatch", title=f"Request TSO re-dispatch for ~{cov3:.0f} MW",
+        option_id="tso_redispatch", title=f"Evaluate requesting TSO re-dispatch for ~{cov3:.0f} MW (TSO decision)",
         description="External: the TSO decides whether and how other resources cover the requirement.",
         covered=cov3, dep="tso_external",
         computation=(f"covered = min(shortfall {shortfall:.1f}, assumed TSO cover "
                      f"{'= full request' if a.tso_redispatch_assumed_mw is None else f'{tso_cap:.1f}'} (ASSUMPTION)) "
                      f"= {cov3:.1f} MW; actual amount is at the TSO's discretion"),
-        prerequisites=["request made through the agreed TSO communication channel",
+        prerequisites=["any request made through the agreed TSO communication channel by authorised staff",
                        "TSO acceptance; outcome is outside plant control",
                        "grid-code notification timelines observed"]))
 
@@ -554,10 +557,10 @@ def compute_contingency(bundle, req: ContingencyRequest, computed_at_utc: str = 
         elif best.covered_mw > 0:
             status = "partially_covered"
             headline = (f"{shortfall:.1f} MW: no single option covers it; best leaves {best.residual_shortfall_mw:.1f} MW "
-                        f"— escalate to dispatch/TSO.")
+                        f"— consider escalating to dispatch/TSO (human decision).")
         else:
             status, headline = "not_covered", (f"{shortfall:.1f} MW: no option covers any of it under these "
-                                               f"assumptions — escalate to dispatch/TSO.")
+                                               f"assumptions — consider escalating to dispatch/TSO (human decision).")
     labels = {k: ASSUMPTION_LABEL for k in ContingencyAssumptions.model_fields}
     return ContingencyResult(
         dataset_id=bundle.dataset_id, year=req.year, window=SampleRange(source_year=req.year, start=s, end=e),

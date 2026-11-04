@@ -3,7 +3,7 @@ from __future__ import annotations
 
 from typing import Any, Literal, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 HANDOVER_STATUS = "DRAFT — requires shift supervisor sign-off"
 CMMS_STATUS = "DRAFT — not submitted"
@@ -15,6 +15,8 @@ OFFLINE_LABEL = "offline draft, no Meta call"
 
 # ----------------------------------------------------------------------------- handover
 class HandoverRequest(BaseModel):
+    model_config = ConfigDict(allow_inf_nan=False)
+
     hours: Literal[8, 12, 24] = 8
     persona: Optional[str] = Field(default=None, max_length=64, pattern=r"^[A-Za-z0-9_\-\. ]{1,64}$")
 

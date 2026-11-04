@@ -38,7 +38,7 @@ class ThermalAssumptions(BaseModel):
     docs/THERMAL_MONITORING.md. Ratings are expressed as hourly energy at nameplate (MWh per hourly sample)
     so that the load ratio K = TEY / rating stays in the published unit (TEY is never converted to MW)."""
 
-    model_config = ConfigDict(extra="forbid")
+    model_config = ConfigDict(extra="forbid", allow_inf_nan=False)
 
     # ratings (load ratio K = TEY / rating)
     generator_rated_mwh: float = Field(180.0, gt=10, le=5000, description="GEN + generator breaker rating, MWh per hourly sample")
@@ -91,12 +91,12 @@ class ThermalAssumptions(BaseModel):
 
 
 class ThermalEvaluateRequest(BaseModel):
-    model_config = ConfigDict(extra="forbid")
+    model_config = ConfigDict(extra="forbid", allow_inf_nan=False)
 
-    dataset_id: str = "ds_uci_551"
-    year: int = 2014
-    start: int = Field(1200, ge=0, description="first row_index (inclusive)")
-    end: int = Field(1320, ge=1, description="last row_index (exclusive)")
+    dataset_id: str = Field("ds_uci_551", max_length=128)
+    year: int = Field(2014, ge=2000, le=2100)
+    start: int = Field(1200, ge=0, le=100_000, description="first row_index (inclusive)")
+    end: int = Field(1320, ge=1, le=100_000, description="last row_index (exclusive)")
     assumptions: ThermalAssumptions = Field(default_factory=ThermalAssumptions)
     scenario: ThermalScenario = "none"
     scenario_seed: int = Field(42, ge=0, le=2**31 - 1)

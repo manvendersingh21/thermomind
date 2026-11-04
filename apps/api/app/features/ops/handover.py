@@ -24,9 +24,10 @@ from app.schemas import Investigation
 
 log = logging.getLogger("thermomind.ops.handover")
 
-# Spec: 3000. muse-spark-1.3 reasoning tokens count against max_tokens, so a long case list can truncate;
-# override with OPS_HANDOVER_MAX_TOKENS (truncation is caught by the validator -> rewrite -> fallback).
+# Default 10000 (the original spec said 3000): muse-spark-1.3 reasoning tokens count against max_tokens, so a long
+# case list can truncate; override with OPS_HANDOVER_MAX_TOKENS (truncation is caught by the validator -> rewrite -> fallback).
 MAX_TOKENS = int(os.getenv("OPS_HANDOVER_MAX_TOKENS", "10000"))
+MAX_STORED_NOTES = 500  # handover_notes retention (newest rows kept)
 CASE_ID_RE = re.compile(r"\bcase_[A-Za-z0-9]+\b")
 
 SYSTEM_PROMPT = (
@@ -110,6 +111,9 @@ class HandoverStore:
                 "INSERT INTO handover_notes (note_id, created_at, hours, mode, note_hash, json) VALUES (?,?,?,?,?,?)",
                 (note.note_id, note.created_at_utc, note.hours, note.mode, note.note_hash, note.model_dump_json()),
             )
+            conn.execute(  # retention: keep only the newest MAX_STORED_NOTES rows
+                "DELETE FROM handover_notes WHERE rowid NOT IN "
+                "(SELECT rowid FROM handover_notes ORDER BY created_at DESC, rowid DESC LIMIT ?)", (MAX_STORED_NOTES,))
         return note
 
     def get(self, note_id: str) -> HandoverNote:

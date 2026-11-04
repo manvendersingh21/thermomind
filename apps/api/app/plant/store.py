@@ -12,6 +12,8 @@ from typing import Optional
 from app import config
 from app.plant.schemas import Notification, WhatIfSession, WorkRequest
 
+MAX_SESSIONS = 500  # whatif_sessions retention (newest rows kept)
+
 _SCHEMA = [
     """CREATE TABLE IF NOT EXISTS plant_work_requests (
         id TEXT PRIMARY KEY, case_id TEXT NOT NULL, persona TEXT NOT NULL, status TEXT NOT NULL,
@@ -107,6 +109,9 @@ def save_session(s: WhatIfSession) -> WhatIfSession:
             "INSERT INTO whatif_sessions (session_id, created_at, persona, status, json) VALUES (?,?,?,?,?) "
             "ON CONFLICT(session_id) DO UPDATE SET status=excluded.status, json=excluded.json",
             (s.session_id, s.created_at_utc, s.persona, s.status, s.model_dump_json()))
+        conn.execute(  # retention: keep only the newest MAX_SESSIONS rows
+            "DELETE FROM whatif_sessions WHERE rowid NOT IN "
+            "(SELECT rowid FROM whatif_sessions ORDER BY created_at DESC, rowid DESC LIMIT ?)", (MAX_SESSIONS,))
     return s
 
 

@@ -54,7 +54,9 @@ ASSETS: list[AssetInfo] = [
     AssetInfo(asset_id="GCB", name="Generator breaker", kind="generator circuit-breaker main contacts", order=2,
               group="connection", temperature_label="contact temperature",
               model="θ = (AT + indoor offset) + Δθ_rated·K², K = TEY / generator_rated_mwh",
-              standard_ref="typical type-test limits (IEC 62271-1 / IEEE C37.20.2: silver-plated contacts 65 K rise, 105 °C) — confirm with equipment data",
+              standard_ref=("generator circuit-breaker standard IEEE C37.013 / IEC/IEEE 62271-37-013; typical type-test "
+                            "temperature-rise limits (silver-plated contacts 65 K rise, 105 °C, per IEC 62271-1) — "
+                            "confirm with equipment data"),
               rating_param="generator_rated_mwh", rise_param="contact_rated_rise_k",
               alarm_param="contact_alarm_c", limit_param="contact_limit_c"),
     AssetInfo(asset_id="GSU", name="Step-up transformer", kind="oil-immersed generator step-up transformer", order=3,
@@ -268,7 +270,7 @@ def _advisories(status: list[AssetStatus], flags: list[ThermalFlag], a: ThermalA
             else:
                 head = f"{label} is {-s.margin_to_alarm_k:.1f} K above the {s.alarm_c:.0f} °C alarm assumption"
             out.append(Advisory(asset_id=s.asset_id, kind="margin", severity=sev, synthetic=s.synthetic, text=_ro(
-                f"Advisory: {s.name} {head} at current load ratio K = {s.load_ratio_k:.2f}; options for the operator/dispatch "
+                f"Advisory: {s.name} {head} at the last-sample-of-window load ratio K = {s.load_ratio_k:.2f}; options for the operator/dispatch "
                 f"to EVALUATE per site procedure: schedule inspection (IR survey) of {s.name}, review load allocation, "
                 f"consider derate planning")))
         elif "exceeded_alarm_in_window" in kinds:

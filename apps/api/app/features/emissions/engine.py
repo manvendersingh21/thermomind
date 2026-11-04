@@ -279,6 +279,9 @@ def analyze(
     e = int(ri[-1]) + 1 if end is None else int(end)
     if s < 0 or e <= s:
         raise ValueError(f"invalid window: start={s}, end={e} (need 0 <= start < end)")
+    year_len = int(ri[-1]) + 1
+    if e > year_len:
+        raise ValueError(f"invalid window: end={e} exceeds the year length ({year_len} rows; need end <= {year_len})")
     lo_pos = int(np.searchsorted(ri, s, side="left"))
     hi_pos = int(np.searchsorted(ri, e, side="left"))
     if hi_pos - lo_pos < MIN_RUN:

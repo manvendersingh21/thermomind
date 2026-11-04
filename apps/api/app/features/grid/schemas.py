@@ -3,6 +3,8 @@
 Grid-local provenance vocabulary (superset of app.schemas.ProvenanceKind):
   real_observation  - computed directly from UCI measurements in the selected window / training years
   model_derived     - statistical fit on real data (e.g. TEY~AT slope); correlational, not an OEM curve
+  derived_from_history - a statistic derived from historical real data (percentile, margin to a historical p99);
+                      not a raw measurement and not an OEM limit
   assumption        - a user-editable input or a quantity computed only from user inputs (nameplate, H, pf, ...)
   synthetic_overlay - produced by the synthetic S05 grid-event overlay (drills only)
   simulated         - the simulated local network topology used by contingency options (not a real network)
@@ -11,11 +13,12 @@ from __future__ import annotations
 
 from typing import Any, Literal, Optional
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from app.schemas import SampleRange, Transformation
 
-GridProvenance = Literal["real_observation", "model_derived", "assumption", "synthetic_overlay", "simulated"]
+GridProvenance = Literal["real_observation", "model_derived", "derived_from_history", "assumption", "synthetic_overlay",
+                         "simulated"]
 CardStatus = Literal["ok", "watch", "limited", "info"]
 GridEvent = Literal["frequency_dip", "overvoltage", "load_step"]
 ContingencyConstraint = Literal["transformer_thermal", "line_limit", "unit_derate"]
@@ -26,8 +29,8 @@ READINESS_DISCLAIMER = (
 )
 DRILL_BANNER = "Synthetic drill. Advisory only. This software issues no control actions."
 BRIEF_DISCLAIMER = (
-    "DRAFT operator support brief for a SYNTHETIC drill. Advisory only: ThermoMind issues no setpoint and no "
-    "control action. All operational decisions remain with authorised control-room personnel under the "
+    "DRAFT operator support brief for a SYNTHETIC drill. Advisory only: ThermoMind changes no operating parameter "
+    "and issues no control action. All operational decisions remain with authorised control-room personnel under the "
     "applicable grid code, TSO instructions and site procedures."
 )
 CONTINGENCY_DISCLAIMER = (
@@ -106,13 +109,15 @@ class GridReadiness(BaseModel):
 
 
 class DrillRequest(BaseModel):
-    dataset_id: str
-    year: int = 2014
-    start: int = 1200
-    end: int = 1320
+    model_config = ConfigDict(allow_inf_nan=False)
+
+    dataset_id: str = Field(..., max_length=128)
+    year: int = Field(2014, ge=2000, le=2100)
+    start: int = Field(1200, ge=0, le=100_000)
+    end: int = Field(1320, ge=0, le=100_000)
     event: GridEvent = "load_step"
     use_meta: bool = False
-    seed: int = 42
+    seed: int = Field(42, ge=0, le=2**31 - 1)
     nameplate_mw: float = Field(160.0, gt=0, le=2000)
     h_constant_s: float = Field(5.0, gt=0, le=20)
     power_factor: float = Field(0.85, gt=0.5, le=1.0)
@@ -211,9 +216,11 @@ class GridDrill(BaseModel):
 
 
 class ContingencyAssumptions(BaseModel):
+    model_config = ConfigDict(allow_inf_nan=False)
+
     nameplate_mw: float = Field(160.0, gt=0, le=2000)
     power_factor: float = Field(0.85, gt=0.5, le=1.0)
-    min_stable_mw: Optional[float] = Field(None, ge=0, description="default 50% of nameplate (ASSUMPTION)")
+    min_stable_mw: Optional[float] = Field(None, ge=0, le=5000, description="default 50% of nameplate (ASSUMPTION)")
     transformer_mva: float = Field(200.0, gt=0, le=5000)
     line_a_rating_mw: float = Field(120.0, ge=0, le=5000)
     line_b_rating_mw: float = Field(80.0, ge=0, le=5000)
@@ -227,10 +234,12 @@ class ContingencyAssumptions(BaseModel):
 
 
 class ContingencyRequest(BaseModel):
-    dataset_id: str
-    year: int = 2014
-    start: int = 1200
-    end: int = 1320
+    model_config = ConfigDict(allow_inf_nan=False)
+
+    dataset_id: str = Field(..., max_length=128)
+    year: int = Field(2014, ge=2000, le=2100)
+    start: int = Field(1200, ge=0, le=100_000)
+    end: int = Field(1320, ge=0, le=100_000)
     shortfall_mw: Optional[float] = Field(None, ge=0, le=5000)
     constraint: Optional[ContingencyConstraint] = None
     assumptions: ContingencyAssumptions = Field(default_factory=ContingencyAssumptions)

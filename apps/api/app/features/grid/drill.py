@@ -46,7 +46,9 @@ STEP_ROWS = 20
 MIN_DRILL_ROWS = 48
 COUPLED = ("TIT", "GTEP", "CDP")
 META_MAX_TOKENS = 9000
+MAX_STORED_DRILLS = 500
 ALLOWED_VERBS = ("verify", "check", "confirm", "monitor", "communicate", "escalate", "prepare")
+_VERIFICATION_SPLIT = re.compile(r";|,?\s+then\s+", re.IGNORECASE)
 
 EVENT_NOTES = {
     "frequency_dip": ("Synthetic system frequency-dip drill. The public dataset has no frequency channel; the data "
@@ -216,7 +218,7 @@ def offline_brief(ev: DrillEvidence) -> GridBrief:
         plant_capability=[
             (f"Inertia capability (assumption): stored kinetic energy {ke.value:.0f} MW·s ({ke.computation})."
              if ke and ke.value is not None else "Inertia capability: not computed."),
-            (f"Reactive capability proxy (assumption): about {q.value:.0f} Mvar circle headroom at current output; "
+            (f"Reactive capability proxy (assumption): about {q.value:.0f} Mvar circle headroom at the window-mean output; "
              f"must be confirmed against the OEM capability curve." if q and q.value is not None
              else "Reactive capability proxy: not computed."),
             "These are capabilities for situational awareness, not instructions.",
@@ -256,9 +258,15 @@ def validate_brief(raw: Any) -> tuple[Optional[GridBrief], list[str]]:
         return None, [f"schema: {'.'.join(str(p) for p in e.get('loc', ()))}: {e.get('msg')}" for e in exc.errors()]
     errors: list[str] = []
     for i, item in enumerate(brief.operator_verifications):
-        first = re.sub(r"[^a-z]", "", (item.split() or [""])[0].lower())
-        if first not in ALLOWED_VERBS:
-            errors.append(f"operator_verifications[{i}] must start with one of {list(ALLOWED_VERBS)}; got '{first}'")
+        # each clause chained with ';' or 'then' must itself start with an allowed verb
+        for part in _VERIFICATION_SPLIT.split(item):
+            if not part.strip():
+                continue
+            first = re.sub(r"[^a-z]", "", (part.split() or [""])[0].lower())
+            if first not in ALLOWED_VERBS:
+                errors.append(f"operator_verifications[{i}] must start with one of {list(ALLOWED_VERBS)} (also after "
+                              f"';' or 'then'); got '{first}'")
+                break
     if not any(re.search(r"\d", s) for s in brief.what_the_data_shows):
         errors.append("what_the_data_shows must cite at least one of the numbers given")
     if model_disclaimer and not re.search(r"\bno\b|\bnot\b", model_disclaimer, re.IGNORECASE):
@@ -369,6 +377,9 @@ class DrillStore:
         with self._connect() as conn:
             conn.execute("INSERT OR REPLACE INTO grid_drills (drill_id, created_at, event, mode, json) VALUES (?,?,?,?,?)",
                          (drill.drill_id, drill.created_at_utc, drill.request.event, drill.mode, drill.model_dump_json()))
+            conn.execute(  # retention: keep only the newest MAX_STORED_DRILLS rows
+                "DELETE FROM grid_drills WHERE rowid NOT IN "
+                "(SELECT rowid FROM grid_drills ORDER BY created_at DESC, rowid DESC LIMIT ?)", (MAX_STORED_DRILLS,))
         return drill
 
     def get(self, drill_id: str) -> GridDrill:
@@ -376,13 +387,22 @@ class DrillStore:
             row = conn.execute("SELECT json FROM grid_drills WHERE drill_id = ?", (drill_id,)).fetchone()
         if row is None:
             raise KeyError(f"drill '{drill_id}' not found")
-        return GridDrill.model_validate_json(row[0])
+        try:
+            return GridDrill.model_validate_json(row[0])
+        except ValidationError:  # legacy row from before the request bounds were tightened
+            raise KeyError(f"drill '{drill_id}' is not readable with the current schema") from None
 
     def list(self, limit: int = 50) -> list[GridDrill]:
         with self._connect() as conn:
             rows = conn.execute("SELECT json FROM grid_drills ORDER BY created_at DESC, rowid DESC LIMIT ?",
                                 (int(limit),)).fetchall()
-        return [GridDrill.model_validate_json(r[0]) for r in rows]
+        out: list[GridDrill] = []
+        for r in rows:
+            try:
+                out.append(GridDrill.model_validate_json(r[0]))
+            except ValidationError:  # legacy row from before the request bounds were tightened: skip it
+                log.warning("skipping unreadable stored grid drill")
+        return out
 
 
 # ---------------------------------------------------------------------------

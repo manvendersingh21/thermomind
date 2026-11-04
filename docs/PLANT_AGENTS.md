@@ -45,6 +45,8 @@ Each work request records:
 
 Status transitions: `open → acknowledged | done | dismissed` and `acknowledged → done | dismissed`. `done` and `dismissed` are final. Any other transition returns 409, and every change is appended to `history`.
 
+Demo limitation: work-request status changes have no authority check — any caller can set any persona via `?persona=` / `X-Persona` (there is no authentication in this prototype).
+
 The label is shown everywhere: **"Simulated in-app notification — no email/SMS/paging integration."**
 
 ## 3. "Ask the plant" what-if console (multi-agent, Muse Spark)
@@ -69,6 +71,7 @@ A technician working in one area asks something like "what if AFDP rises by 1 mb
    - If an agent still fails, a deterministic stand-in replaces its card and is labelled as one.
    - If the aggregator fails, the session status becomes `needs_review` and the errors are listed in `validation_errors`.
 5. **Persistence.** Sessions are saved in sqlite table `whatif_sessions`, with a per-agent event timeline (tool calls, latency, tokens).
+   - At most 2 what-if sessions run at once (one shared pool of 10 agent threads); a further `POST` gets HTTP 429 `what-if capacity busy; retry shortly`.
    - `POST` returns `status: "running"` immediately. The UI polls `GET /api/plant/whatif/{id}`, which shows the live per-agent events.
    - `?wait=true` blocks until the run finishes.
 6. **Offline.** With no key configured, the result is deterministic sensitivity only. It is labelled `mode: "offline"` and `mode_label: "offline (no Meta call)"`.

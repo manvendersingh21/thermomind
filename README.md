@@ -161,7 +161,7 @@ API tests run on `data/fixtures` only (no network, no key). CI: [.github/workflo
 
 ## License
 
-MIT, copyright 2026 ThermoMind contributors (see [LICENSE](LICENSE)). The UCI data set is CC BY 4.0 and attributed above. The Overview and case pages embed the 'Combined Cycle Power Plant' interactive animation by educational-animation.org (MIT licence, https://www.educational-animation.org/en/combined-cycle-power-plant/). It is a generic educational plant, not the UCI facility.
+MIT, copyright 2026 ThermoMind contributors (see [LICENSE](LICENSE)). The UCI data set is CC BY 4.0 and attributed above. The Overview and case pages embed the 'Combined Cycle Power Plant' interactive animation by educational-animation.org (https://www.educational-animation.org/en/combined-cycle-power-plant/; educational-animation.org — animation code MIT; text and graphics CC BY 4.0). It is a generic educational plant, not the UCI facility.
 
 ## Hackathon attribution
 

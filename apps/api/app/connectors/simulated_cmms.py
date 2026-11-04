@@ -3,18 +3,20 @@ from __future__ import annotations
 
 import secrets
 import threading
+from collections import deque
 from datetime import datetime, timezone
 from typing import Any
 
 from app.connectors.base import CmmsSink
 
 DRAFT_STATUS = "DRAFT_NOT_SUBMITTED"
+MAX_DRAFTS = 500  # in-memory retention: oldest drafts are dropped
 
 
 class SimulatedCmms(CmmsSink):
     def __init__(self) -> None:
         self._lock = threading.Lock()
-        self._drafts: list[dict[str, Any]] = []
+        self._drafts: deque[dict[str, Any]] = deque(maxlen=MAX_DRAFTS)
 
     def draft_work_order(self, payload: dict[str, Any]) -> dict[str, Any]:
         draft = {

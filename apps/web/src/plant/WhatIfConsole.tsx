@@ -149,7 +149,7 @@ function HowItWorksCard({ items }: { items: HowItWorks[] }) {
 function EffectsElsewhereCard({ items }: { items: EffectElsewhere[] }) {
   return (
     <div className="pl-card pl-card-yellow">
-      <h3 className="pl-h3 pl-h3-first">What your test could affect elsewhere</h3>
+      <h3 className="pl-h3 pl-h3-first">What a change of this size could affect (model-based)</h3>
       <p className="pl-small pl-muted">Modelled from this plant's historical data and generic background; not physics, not causation.</p>
       <ul className="pl-plain pl-stack">
         {items.map((e, i) => (
@@ -185,7 +185,7 @@ function EffectsElsewhereCard({ items }: { items: EffectElsewhere[] }) {
 function NextStepsCard({ items }: { items: NextStep[] }) {
   return (
     <div className="pl-card pl-card-green">
-      <h3 className="pl-h3 pl-h3-first">Recommended fix / next steps</h3>
+      <h3 className="pl-h3 pl-h3-first">Options to evaluate (human review)</h3>
       <div className="pl-alert pl-alert-warn pl-alert-flat" role="note">
         {NEXT_STEPS_NOTE}
       </div>

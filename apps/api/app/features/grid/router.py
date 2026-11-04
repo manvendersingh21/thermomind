@@ -45,9 +45,9 @@ def _bundle(dataset_id: str):
 @router.get("/readiness", response_model=GridReadiness)
 def grid_readiness(
     dataset_id: str = Query(services.UCI_DATASET_ID),
-    year: int = Query(...),
-    start: Optional[int] = Query(None, description="window start row_index (inclusive); default 0"),
-    end: Optional[int] = Query(None, description="window end row_index (exclusive); default end of year"),
+    year: int = Query(..., ge=2000, le=2100),
+    start: Optional[int] = Query(None, ge=0, le=100_000, description="window start row_index (inclusive); default 0"),
+    end: Optional[int] = Query(None, ge=0, le=100_000, description="window end row_index (exclusive); default end of year"),
     nameplate_mw: float = Query(rd.DEFAULT_NAMEPLATE_MW, gt=0, le=2000, description="ASSUMPTION"),
     h_constant_s: float = Query(rd.DEFAULT_H_S, gt=0, le=20, description="ASSUMPTION (inertia constant H, s)"),
     power_factor: float = Query(rd.DEFAULT_PF, gt=0.5, le=1.0, description="ASSUMPTION"),

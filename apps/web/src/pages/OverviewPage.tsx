@@ -226,7 +226,7 @@ export function OverviewPage() {
               Plant walkthrough — interactive combined-cycle animation
             </div>
             <div className="mt-0.5 text-sm text-ink-300">
-              Generic educational combined-cycle plant (educational-animation.org, MIT licence) — not the UCI facility. Click to {walkthroughOpen ? "collapse" : "expand"}.
+              Generic educational combined-cycle plant (educational-animation.org — animation code MIT; text and graphics CC BY 4.0) — not the UCI facility. Click to {walkthroughOpen ? "collapse" : "expand"}.
             </div>
           </div>
           <span className="text-sm font-semibold text-blue-700">{walkthroughOpen ? "Hide" : "Show"}</span>

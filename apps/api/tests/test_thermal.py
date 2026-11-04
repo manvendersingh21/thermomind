@@ -263,3 +263,33 @@ def test_real_2014_default_window_no_flags_at_default_assumptions():
     t01 = engine.evaluate(frame, dataset_id="ds_uci_551", year=2014, start=1200, end=1320, scenario="T01_HOT_CONNECTION")
     assert {f.asset_id for f in t01.flags if f.flag in PATTERN_FLAGS} == {"HVSG"}
     assert math.isfinite(t01.ageing.loss_of_life_pct)
+
+
+@pytest.mark.parametrize("payload", [
+    {"dataset_id": "ds_test", "assumptions": {"loss_ratio_r": "NaN"}},
+    {"dataset_id": "ds_test", "assumptions": {"tau_top_oil_h": "Infinity"}},
+    {"dataset_id": "ds_test", "assumptions": {"hv_rated_mwh": 1e308}},
+    {"dataset_id": "ds_test", "demand_multiplier": "NaN"},
+    {"dataset_id": "ds_test", "demand_multiplier": float("inf")},
+    {"dataset_id": "ds_test", "year": 1999},
+    {"dataset_id": "ds_test", "year": 10**20},
+    {"dataset_id": "ds_test", "start": 0, "end": 100_001},
+    {"dataset_id": "ds_test", "scenario_seed": 2**31},
+])
+def test_evaluate_rejects_non_finite_and_huge(client, payload):
+    import json
+
+    from fastapi.exceptions import RequestValidationError
+
+    from app.main import request_validation_error_handler
+
+    client.app.add_exception_handler(RequestValidationError, request_validation_error_handler)
+    r = client.post("/api/thermal/evaluate", content=json.dumps(payload), headers={"content-type": "application/json"})
+    assert r.status_code == 422, r.text
+
+
+def test_gcb_cites_generator_breaker_standard():
+    gcb = next(a for a in engine.ASSETS if a.asset_id == "GCB") if hasattr(engine, "ASSETS") else None
+    if gcb is None:
+        pytest.skip("asset list not exposed as engine.ASSETS")
+    assert "IEEE C37.013" in gcb.standard_ref and "62271-37-013" in gcb.standard_ref

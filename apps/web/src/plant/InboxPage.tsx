@@ -159,6 +159,7 @@ function WorkRequestCard({
             <button className="pl-btn pl-btn-ghost" disabled={busy} onClick={() => act("dismissed")}>
               Dismiss
             </button>
+            <span className="pl-chip pl-chip-grey" title="Demo workflow stored in ThermoMind only; nothing is sent to a CMMS">SIMULATED WORKFLOW · NOT A CMMS</span>
           </div>
         </div>
       ) : (

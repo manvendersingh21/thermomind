@@ -329,3 +329,71 @@ def test_orchestrator_dispatches_recall_similar_cases(client, case):
     bad = FakeMetaClient([tool_call_msg([("recall_similar_cases", {"k": 99}), *required]), text_msg(good_report())])
     out2 = run_investigation(make_fake_analysis(synthetic=True), "synthetic_overlay", bad)
     assert any(e.tool_name == "recall_similar_cases" and not e.ok for e in out2.events)
+
+
+# ----------------------------------------------------------------------------- security review fixes (F4, F5, F6, F17)
+@pytest.mark.parametrize("body", [
+    {"measurement": "AT", "delta": "NaN"}, {"measurement": "AT", "delta": "Infinity"},
+    {"measurement": "AT", "delta": float("inf")}, {"measurement": "AT", "delta": 1e308},
+    {"measurement": "AT", "delta": -1e308},
+])
+def test_whatif_rejects_non_finite_and_huge(client, offline_api, body):
+    r = client.post("/api/plant/whatif?wait=true", content=json.dumps(body), headers={"content-type": "application/json"})
+    assert r.status_code == 422, r.text
+
+
+@pytest.mark.parametrize("delta", ["nan", "inf", "-inf", "Infinity", "1e308", "-1e308"])
+def test_sensitivity_rejects_non_finite_and_huge(client, delta):
+    assert client.get(f"/api/plant/sensitivity?measurement=AT&delta={delta}").status_code == 422
+
+
+def test_sensitivity_is_labelled_model_derived(client, case):
+    r = client.get(f"/api/plant/sensitivity?measurement=AT&delta=2&case_id={case.case_id}")
+    assert r.status_code == 200, r.text
+    assert r.json()["label"] == "MODEL-DERIVED"
+
+
+def test_whatif_capacity_busy_returns_429(client, case, offline_api):
+    taken = 0
+    try:
+        while whatif._SESSION_SLOTS.acquire(blocking=False):
+            taken += 1
+        r = client.post("/api/plant/whatif?wait=true", json={"case_id": case.case_id, "measurement": "TIT", "delta": 5})
+        assert r.status_code == 429
+        assert r.json() == {"detail": "what-if capacity busy; retry shortly"}
+    finally:
+        for _ in range(taken):
+            whatif._SESSION_SLOTS.release()
+    r = client.post("/api/plant/whatif?wait=true", json={"case_id": case.case_id, "measurement": "TIT", "delta": 5})
+    assert r.status_code == 200, r.text  # slots released after the session
+    assert whatif.MAX_CONCURRENT_SESSIONS == 2 and whatif._AGENT_POOL._max_workers == 10
+
+
+def test_plant_router_maps_errors_standalone(client, case):
+    """The plant router maps KeyError -> 404 and ValueError -> 422 itself (no app-level handlers needed)."""
+    from fastapi import FastAPI
+    from fastapi.testclient import TestClient
+
+    import app.api.plant as plant_api
+
+    app = FastAPI()
+    app.include_router(plant_api.router, prefix="/api")
+    with TestClient(app, raise_server_exceptions=False) as c:
+        assert c.get("/api/plant/inbox?persona=nobody").status_code == 404
+        assert c.post("/api/plant/notifications/nope/read").status_code == 404
+        assert c.get("/api/plant/whatif/nope").status_code == 404
+        assert c.get("/api/plant/sensitivity?measurement=XX&delta=1").status_code == 422
+        assert c.get("/api/plant/sensitivity?measurement=AFDP&delta=99").status_code == 422
+
+
+def test_whatif_session_retention(client, monkeypatch):
+    monkeypatch.setattr(store, "MAX_SESSIONS", 3)
+    base = store.list_sessions(1)
+    if not base:
+        pytest.skip("no stored session to clone")
+    template = base[0]
+    for i in range(5):
+        store.save_session(template.model_copy(update={"session_id": f"wi_ret_{i}",
+                                                       "created_at_utc": f"2999-01-01T00:00:0{i}.000Z"}))
+    ids = [s.session_id for s in store.list_sessions(100)]
+    assert len(ids) == 3 and ids == ["wi_ret_4", "wi_ret_3", "wi_ret_2"]

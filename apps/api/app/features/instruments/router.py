@@ -16,9 +16,9 @@ MIN_WINDOW_ROWS = 24
 @router.get("/scorecard", response_model=Scorecard)
 def scorecard(
     dataset_id: str = Query(services.UCI_DATASET_ID),
-    year: int = Query(...),
-    start: int | None = Query(None, description="window start row_index (inclusive); default 0"),
-    end: int | None = Query(None, description="window end row_index (exclusive); default end of year"),
+    year: int = Query(..., ge=2000, le=2100),
+    start: int | None = Query(None, ge=0, le=100_000, description="window start row_index (inclusive); default 0"),
+    end: int | None = Query(None, ge=0, le=100_000, description="window end row_index (exclusive); default end of year"),
 ) -> Scorecard:
     try:
         bundle = services.get_repo().get(dataset_id)

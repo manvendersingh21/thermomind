@@ -470,7 +470,7 @@ export default function ThermalPage() {
           {/* KPIs */}
           <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
             <KpiCard
-              label="Transformer hot-spot (simulated)"
+              label="Transformer hot-spot (simulated, last sample of window)"
               value={fmtNum(gsu?.current_c, 1)}
               unit="°C"
               icon={<Thermometer size={16} />}
@@ -487,7 +487,7 @@ export default function ThermalPage() {
               label="Ageing factor F_EQA (window)"
               value={fmtNum(data.ageing.equivalent_faa, 4)}
               tone="model"
-              caption={`now ${fmtNum(data.ageing.current_faa, 4)} · 1.0 = normal ageing at 110 °C`}
+              caption={`last sample of window ${fmtNum(data.ageing.current_faa, 4)} · 1.0 = normal ageing at 110 °C`}
             />
             <KpiCard
               label="Loss of life (window)"
@@ -633,7 +633,7 @@ export default function ThermalPage() {
                   <tr className="text-left text-ink-400">
                     <th className="py-1.5 pr-3 font-semibold">Asset</th>
                     <th className="py-1.5 pr-3 font-semibold">State</th>
-                    <th className="py-1.5 pr-3 text-right font-semibold">Now</th>
+                    <th className="py-1.5 pr-3 text-right font-semibold">Last sample of window</th>
                     <th className="py-1.5 pr-3 text-right font-semibold">K</th>
                     <th className="py-1.5 pr-3 text-right font-semibold">To alarm</th>
                     <th className="py-1.5 pr-3 text-right font-semibold">To limit</th>

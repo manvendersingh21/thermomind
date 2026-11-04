@@ -27,6 +27,7 @@ const BANNER = "Synthetic drill. Advisory only. This software issues no control 
 function ProvBadge({ p }: { p: GridProvenance }) {
   if (p === "real_observation") return <SourceBadge variant="real" size="sm" label="REAL" />;
   if (p === "model_derived") return <SourceBadge variant="model" size="sm" />;
+  if (p === "derived_from_history") return <SourceBadge variant="model" size="sm" label="DERIVED FROM HISTORY" />;
   if (p === "synthetic_overlay") return <SourceBadge variant="synthetic" size="sm" />;
   if (p === "simulated") return <SourceBadge variant="offline" size="sm" label="SIMULATED" />;
   return <AssumptionBadge />;
@@ -77,12 +78,29 @@ function NumberRow({ n }: { n: GridNumber }) {
   );
 }
 
+/** TIT within 2 °C of the historical p99 is normal at base load (temperature-controlled ceiling): show it neutrally. */
+function titAtCeiling(c: StatusCard): boolean {
+  if (c.key !== "thermal_tit") return false;
+  const v = (k: string) => c.numbers.find((n) => n.key === k)?.value ?? null;
+  const margin = v("tit_margin_to_p99");
+  const max = v("tit_window_max");
+  const p99 = v("tit_p99_train");
+  return margin !== null && max !== null && p99 !== null && margin < 2 && max >= p99 - 2;
+}
+
 function ReadinessCard({ c }: { c: StatusCard }) {
+  const ceiling = titAtCeiling(c);
   return (
-    <div className={`panel border-t-2 px-5 py-4 ${STATUS_STYLE[c.status].cls}`}>
+    <div className={`panel border-t-2 px-5 py-4 ${ceiling ? "border-t-ink-500" : STATUS_STYLE[c.status].cls}`}>
       <div className="flex items-center justify-between gap-2">
         <div className="label">{c.title}</div>
-        <StatusPillSmall s={c.status} />
+        {ceiling ? (
+          <span className="rounded-md border border-ink-600 bg-ink-800 px-2 py-0.5 text-xs font-bold tracking-wide text-ink-200">
+            at historical ceiling (normal for base load)
+          </span>
+        ) : (
+          <StatusPillSmall s={c.status} />
+        )}
       </div>
       <div className="mt-2 text-base font-semibold text-ink-50">{c.headline}</div>
       <div className="mt-2">
@@ -476,7 +494,7 @@ export default function GridPage() {
         subtitle="What this unit's own historical data says about output headroom and thermal margins, plus labelled assumptions for inertia and reactive capability. Advisory only — not a grid-control system."
         right={
           <>
-            <SourceBadge variant="real" />
+            <SourceBadge variant="real" label="ASSUMPTIONS + REAL DATA" />
             <SourceBadge variant="review" label="ADVISORY ONLY" />
           </>
         }
@@ -582,10 +600,10 @@ export default function GridPage() {
           <div className="flex flex-wrap items-end gap-4">
             <label className="flex flex-col gap-1">
               <span className="text-sm text-ink-300">Event (synthetic)</span>
-              <select className="input w-48" value={event} onChange={(e) => setEvent(e.target.value as GridEvent)}>
+              <select className="input w-80" value={event} onChange={(e) => setEvent(e.target.value as GridEvent)}>
                 <option value="load_step">Load step</option>
-                <option value="frequency_dip">Frequency dip</option>
-                <option value="overvoltage">Overvoltage</option>
+                <option value="frequency_dip">Frequency dip (framing only — same synthetic load step)</option>
+                <option value="overvoltage">Overvoltage (framing only — same synthetic load step)</option>
               </select>
             </label>
             <label className="flex h-10 items-center gap-2 text-base text-ink-200">

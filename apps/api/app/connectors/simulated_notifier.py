@@ -4,6 +4,7 @@ from __future__ import annotations
 import logging
 import secrets
 import threading
+from collections import deque
 from datetime import datetime, timezone
 from typing import Any
 
@@ -11,11 +12,13 @@ from app.connectors.base import Notifier
 
 log = logging.getLogger("thermomind.connectors.notifier")
 
+MAX_ITEMS = 500  # in-memory retention: oldest items are dropped
+
 
 class SimulatedNotifier(Notifier):
     def __init__(self) -> None:
         self._lock = threading.Lock()
-        self._items: list[dict[str, Any]] = []
+        self._items: deque[dict[str, Any]] = deque(maxlen=MAX_ITEMS)
 
     def notify(self, persona: str, message: str) -> dict[str, Any]:
         item = {

@@ -4,8 +4,12 @@ from __future__ import annotations
 
 from typing import Optional
 
-from fastapi import APIRouter, Header, Query
+from typing import Any, Callable
+
+from fastapi import APIRouter, Header, HTTPException, Query, Request, Response
 from fastapi.concurrency import run_in_threadpool
+from fastapi.routing import APIRoute
+from pydantic import ValidationError as PydanticValidationError
 
 from app import config, services
 from app.plant import store, whatif, work_requests
@@ -16,7 +20,35 @@ from app.plant.schemas import (InboxResponse, Notification, PersonasResponse, Pr
 from app.plant.sensitivity import measurement_info, resolve_base, simulate_change
 from app.plant.subsystems import list_subsystems
 
-router = APIRouter(prefix="/plant", tags=["plant"])
+
+
+class _PlantRoute(APIRoute):
+    """Maps domain errors inside this router (safe even without main.py's global handlers):
+    KeyError -> 404, ValueError/IndexError -> 422, what-if capacity saturated -> 429.
+    Internal pydantic ValidationError (stored data) is re-raised for the app-level 500 handler."""
+
+    def get_route_handler(self) -> Callable[[Request], Any]:
+        handler = super().get_route_handler()
+
+        async def _safe(request: Request) -> Response:
+            try:
+                return await handler(request)
+            except whatif.WhatIfBusy as exc:
+                raise HTTPException(status_code=429, detail=str(exc) or whatif.BUSY_DETAIL) from None
+            except PydanticValidationError:
+                raise
+            except KeyError as exc:
+                detail = exc.args[0] if exc.args and isinstance(exc.args[0], str) else "not found"
+                raise HTTPException(status_code=404, detail=str(detail)[:500]) from None
+            except (ValueError, IndexError) as exc:
+                status = getattr(exc, "status_code", None)  # e.g. work_requests.TransitionError -> 409
+                raise HTTPException(status_code=status if isinstance(status, int) else 422,
+                                    detail=str(exc)[:500] or "invalid input") from None
+
+        return _safe
+
+
+router = APIRouter(prefix="/plant", tags=["plant"], route_class=_PlantRoute)
 
 
 def _persona(query: Optional[str], header: Optional[str]) -> str:
@@ -87,8 +119,10 @@ def set_status(wr_id: str, body: StatusUpdateRequest, persona: Optional[str] = N
 
 
 @router.get("/sensitivity")
-def sensitivity(measurement: str, delta: float, case_id: Optional[str] = None) -> dict:
-    return simulate_change(measurement, delta, resolve_base(case_id))
+def sensitivity(measurement: str = Query(..., max_length=32),
+                delta: float = Query(..., ge=-1e6, le=1e6, allow_inf_nan=False),
+                case_id: Optional[str] = Query(None, max_length=128)) -> dict:
+    return {**simulate_change(measurement, delta, resolve_base(case_id)), "label": "MODEL-DERIVED"}
 
 
 @router.post("/whatif", response_model=WhatIfSession)

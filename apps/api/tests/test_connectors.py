@@ -197,7 +197,7 @@ def test_cmms_and_notification_endpoints(client):
     assert d["status"] == "DRAFT_NOT_SUBMITTED" and d["simulated"] is True
     listed = client.get("/api/connectors/cmms/drafts").json()
     assert listed["submit_supported"] is False and listed["drafts"][0]["id"] == d["id"]
-    n = client.post("/api/connectors/notifications/send", json={"persona": "operator", "message": "hi"}).json()
+    n = client.post("/api/connectors/notifications/send", json={"persona": "control_room_operator", "message": "hi"}).json()
     assert n["delivery"] == "in_app_simulated"
     out = client.get("/api/connectors/notifications/outbox").json()
     assert out["simulated"] is True and any(i["id"] == n["id"] for i in out["notifications"])

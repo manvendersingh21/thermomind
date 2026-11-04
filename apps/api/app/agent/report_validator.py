@@ -31,6 +31,7 @@ _OP_VERBS = (r"(stop|start|restart|isolate|reset|close|open|trip|shut\s+off|swit
 _OP_TARGETS = (r"(turbines?|units?|gts?|fuel|igvs?|relays?|breakers?|valves?|pumps?|compressors?|"
                r"generators?|dampers?|machines?|plant)")
 _EQUIPMENT = r"(unit|turbine|machine|gt|plant|generator|compressor)"
+_GRID_EQUIP = r"(?:units?|turbines?|machines?|gts?|generators?|plant|gsus?|transformers?|lines?|feeders?|breakers?)"
 
 UNSAFE_PATTERNS: list[tuple[str, re.Pattern]] = [
     (label, re.compile(pat, re.IGNORECASE)) for label, pat in [
@@ -54,6 +55,43 @@ UNSAFE_PATTERNS: list[tuple[str, re.Pattern]] = [
          rf"jumper(ing)?){_FILL}\s+(interlocks?|protections?|alarms?|safet(y|ies)|permissives?)\b"),
         ("adjust fuel", r"\b(adjust|increase|decrease|reduce|raise|lower|cut)\w*\s+(the\s+)?fuel\b"),
         ("command", r"\b(issue|send|execute|dispatch)\b[^.]{0,30}\bcommand(s)?\b|\bcommand(s|ed|ing)?\b[^.]{0,40}\b(valve|breaker|setpoint|turbine|fuel|plc|dcs|scada|governor)\b"),
+        # --- grid / electrical control actions (shared by the drill, contingency, what-if and handover scanners) ---
+        ("transfer/shed load",
+         rf"{_NOT_DESCRIPTIVE}\b(transfer(?:ring)?|shed(?:ding)?|unload(?:ing)?|off-?load(?:ing)?){_FILL}\s+"
+         r"(loads?|generation|output|demand|units?|generators?|machines?|~?\d+(?:\.\d+)?\s*mw)\b"),
+        ("change unit status",
+         rf"{_NOT_DESCRIPTIVE}\bback(?:ing)?\s+(?:down|off){_FILL}\s+{_GRID_EQUIP}\b"
+         rf"|{_NOT_DESCRIPTIVE}\bback(?:ing)?{_FILL}\s+{_GRID_EQUIP}\s+(?:down|off)\b"
+         rf"|{_NOT_DESCRIPTIVE}\b(?:take|taking|bring|bringing|put|putting|place|placing)(?:\s+(?:the|a|an|this|that))?"
+         rf"(?:\s+[\w-]+)?\s+{_GRID_EQUIP}\s+(?:off-?line|on-?line|out\s+of\s+service|into\s+service|in\s+service)\b"
+         rf"|{_NOT_DESCRIPTIVE}\b(?:take|taking|bring|bringing)\s+(?:off-?line|on-?line)\s+(?:the\s+)?(?:[\w-]+\s+)?{_GRID_EQUIP}\b"),
+        ("rack breaker",
+         r"\brack(?:ing)?\s+(?:out|in)\b[^.;]{0,30}\bbreakers?\b"
+         r"|\brack(?:ing)?\s+(?:the\s+|a\s+)?(?:[\w-]+\s+){0,2}breakers?\s+(?:out|in)\b"),
+        ("run unit at MW",
+         rf"{_NOT_DESCRIPTIVE}\b(?:run|running|operate|operating|hold|holding|keep|keeping|load|loading)"
+         rf"(?:\s+(?:the|a|this|that))?(?:\s+[\w-]+)?\s+{_GRID_EQUIP}\s+(?:at|to)\s+~?\d+(?:\.\d+)?\s*(?:mw|%|percent)"),
+        ("change excitation / voltage",
+         rf"{_NOT_DESCRIPTIVE}\b(?:rais(?:e|ing)|lower(?:ing)?|increas(?:e|ing)|decreas(?:e|ing)|reduc(?:e|ing)|boost(?:ing)?|adjust(?:ing)?|chang(?:e|ing)|trim(?:ming)?){_FILL}\s+"
+         r"(?:field\s+)?(?:excitation|field\s+current|terminal\s+voltage|generator\s+voltage|bus\s+voltage|voltage\s+reference)\b"),
+        ("AVR / voltage reference setpoint",
+         rf"{_NOT_DESCRIPTIVE}\b(?:set(?:ting)?|chang(?:e|ing)|adjust(?:ing)?|rais(?:e|ing)|lower(?:ing)?|increas(?:e|ing)|decreas(?:e|ing)|mov(?:e|ing)|step(?:ping)?){_FILL}\s+"
+         r"(?:avr|v-?ref|voltage\s+reference|voltage\s+set-?point|excitation\s+set-?point|voltage\s+regulator)\b"),
+        ("governor action",
+         rf"{_NOT_DESCRIPTIVE}\b(?:block(?:ing)?|unblock(?:ing)?|adjust(?:ing)?|chang(?:e|ing)|re-?tun(?:e|ing)|tun(?:e|ing)|disabl(?:e|ing)|enabl(?:e|ing)|lock(?:ing)?){_FILL}\s+governors?\b"
+         r"|\b(?:put|place|switch)\w*\s+(?:the\s+)?governors?\s+(?:in|into|on|to)\s+(?:block|manual|isochronous|droop)\b"
+         r"|(?:^|[.;:!?]\s+)governor\s+(?:block|adjust\w*)\b"),
+        ("isolate/disconnect network element",
+         rf"{_NOT_DESCRIPTIVE}\b(?:isolat(?:e|ing)|disconnect(?:ing)?|de-?energi[sz](?:e|ing)|switch(?:ing)?\s+out|trip(?:ping)?|open(?:ing)?){_FILL}\s+"
+         r"(?:lines?|gsus?|transformers?|feeders?|bus-?bars?|buses|circuits?|interconnectors?)\b"),
+        ("ramp to MW",
+         rf"{_NOT_DESCRIPTIVE}\bramp(?:ing)?(?:\s+(?:up|down))?(?:\s+(?!to\b)[\w-]+){{0,3}}?\s+to\s+~?\d+(?:\.\d+)?\s*(?:mw|%|percent)?"),
+        ("request re-dispatch (imperative)",
+         r"(?:^|[.;:!?]\s+|\n\s*|[-*\u2022]\s+|\b(?:should|must|shall|please|then|and|operators?|we)\s+)"
+         r"request\s+(?:that\s+)?(?:an?\s+|the\s+)?(?:(?:tso|grid|urgent|immediate|emergency)\s+)*re-?dispatch\b"),
+        ("set reactive power / MVAr",
+         rf"{_NOT_DESCRIPTIVE}\b(?:set(?:ting)?|adjust(?:ing)?|chang(?:e|ing)|rais(?:e|ing)|lower(?:ing)?|increas(?:e|ing)|decreas(?:e|ing)|"
+         rf"reduc(?:e|ing)|absorb(?:ing)?|inject(?:ing)?|export(?:ing)?|import(?:ing)?|boost(?:ing)?){_FILL}\s+(?:~?\d+(?:\.\d+)?\s*)?(?:m?vars?|reactive(?:\s+power|\s+output)?|q\s+output)\b"),
     ]
 ]
 

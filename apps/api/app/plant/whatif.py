@@ -44,6 +44,18 @@ MAX_TOOL_ROUNDS = 2
 OFFLINE_LABEL = "offline (no Meta call)"
 LIVE_LABEL = "meta_live (Muse Spark subsystem agents + aggregator over deterministic tools)"
 MAX_TOOL_CHARS = 12000
+MAX_CONCURRENT_SESSIONS = 2
+POOL_WORKERS = 10  # shared by all sessions: MAX_CONCURRENT_SESSIONS x 5 subsystem agents
+
+# One shared, bounded pool for every subsystem agent (no per-session pools, so timed-out agents can never pile up
+# unbounded threads) plus a non-blocking session gate: a request beyond MAX_CONCURRENT_SESSIONS gets HTTP 429.
+_AGENT_POOL = ThreadPoolExecutor(max_workers=POOL_WORKERS, thread_name_prefix="whatif-agent")
+_SESSION_SLOTS = threading.BoundedSemaphore(MAX_CONCURRENT_SESSIONS)
+BUSY_DETAIL = "what-if capacity busy; retry shortly"
+
+
+class WhatIfBusy(RuntimeError):
+    """All what-if session slots are in use (API -> 429)."""
 
 
 def _now() -> str:
@@ -576,11 +588,11 @@ def execute(session: WhatIfSession, sens: dict, base: BaseWindow, client: Any) -
                 for s in SUBSYSTEM_REGISTRY}
         with _LIVE_LOCK:
             session.agents = list(runs.values())
-        pool = ThreadPoolExecutor(max_workers=len(runs), thread_name_prefix="whatif")
-        futures = [pool.submit(run_subsystem_agent, client, s, req, base, sens["unit"], tools, runs[s["key"]])
+        futures = [_AGENT_POOL.submit(run_subsystem_agent, client, s, req, base, sens["unit"], tools, runs[s["key"]])
                    for s in SUBSYSTEM_REGISTRY]
         _, pending = wait(futures, timeout=AGENT_BUDGET_S)
-        pool.shutdown(wait=False, cancel_futures=True)
+        for f in pending:  # not-yet-started agents are dropped; running ones finish inside the bounded pool
+            f.cancel()
         with _LIVE_LOCK:
             for key, run in runs.items():
                 if run.assessment is None and not run.error and pending:
@@ -627,9 +639,21 @@ def execute(session: WhatIfSession, sens: dict, base: BaseWindow, client: Any) -
 def run_whatif(req: WhatIfRequest, client: Any, persona: Optional[str] = None,
                background: bool = False, on_done: Optional[Callable[[WhatIfSession], None]] = None) -> WhatIfSession:
     session, sens, base = prepare(req, persona, client)
+    if not _SESSION_SLOTS.acquire(blocking=False):
+        raise WhatIfBusy(BUSY_DETAIL)
+
+    def _run() -> WhatIfSession:
+        try:
+            return execute(session, sens, base, client)
+        finally:
+            _SESSION_SLOTS.release()
+
     if not background:
-        return execute(session, sens, base, client)
+        return _run()
     snapshot = session.model_copy(deep=True)
-    threading.Thread(target=execute, args=(session, sens, base, client), daemon=True,
-                     name=f"whatif-{session.session_id}").start()
+    try:
+        threading.Thread(target=_run, daemon=True, name=f"whatif-{session.session_id}").start()
+    except BaseException:
+        _SESSION_SLOTS.release()
+        raise
     return snapshot

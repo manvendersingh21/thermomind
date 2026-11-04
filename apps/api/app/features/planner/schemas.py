@@ -7,7 +7,7 @@ from __future__ import annotations
 
 from typing import Literal, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 DEFAULT_DATASET_ID = "ds_uci_551"
 
@@ -29,8 +29,10 @@ DISCLAIMER = (
 
 
 class _EconomicsBase(BaseModel):
+    model_config = ConfigDict(allow_inf_nan=False)
+
     dataset_id: str = Field(default=DEFAULT_DATASET_ID, min_length=1, max_length=128)
-    year: int = Field(..., ge=1900, le=2100)
+    year: int = Field(..., ge=2000, le=2100)
     energy_price_per_mwh: float = Field(default=60.0, ge=0, le=100_000, description="ASSUMPTION, currency per MWh")
     rolling_window_samples: int = Field(default=168, ge=24, le=2000, description="rolling median window (hourly samples)")
 

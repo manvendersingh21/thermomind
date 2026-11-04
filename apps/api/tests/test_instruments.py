@@ -178,5 +178,6 @@ def test_endpoint_bad_window_422(real_app, params):
 
 @needs_real
 def test_endpoint_404s(real_app):
-    assert real_app.get("/api/instruments/scorecard", params={"year": 1999}).status_code == 404
+    assert real_app.get("/api/instruments/scorecard", params={"year": 2099}).status_code == 404
+    assert real_app.get("/api/instruments/scorecard", params={"year": 1999}).status_code == 422  # outside 2000-2100
     assert real_app.get("/api/instruments/scorecard", params={"dataset_id": "nope", "year": 2014}).status_code == 404
