@@ -104,11 +104,11 @@ export function PlantSchematic({ values = {}, highlight = [], lookHere = [], bar
         <line x1="10" y1="158" x2="56" y2="158" />
         <line x1="10" y1="176" x2="56" y2="176" />
       </g>
-      <text x="12" y="208" fill={C.text} fontSize="13" fontWeight="600">
+      <text x="12" y="64" fill={C.text} fontSize="13" fontWeight="600">
         AMBIENT
       </text>
       {AMBIENT.map((k, i) => (
-        <g key={k} transform={`translate(12 ${218 + i * 20})`}>
+        <g key={k} transform={`translate(12 ${80 + i * 18})`}>
           <text fill={isHot(k) ? C.hotText : C.measured} fontSize="12" fontFamily="JetBrains Mono, monospace" fontWeight="700">
             {k}
           </text>
