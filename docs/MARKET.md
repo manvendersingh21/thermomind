@@ -46,6 +46,18 @@ Pilot pricing per plant (or per turbine) per year, starting with a fixed-scope p
 - **Model dependency.** Report quality depends on the hosted model; version pinning and regression suites are required.
 - **Liability.** The tool must stay advisory; any drift toward alarms or recommendations changes the regulatory and insurance picture.
 
+## What the CEO buys
+
+Hypotheses, not results; each is a pilot metric.
+
+- **Forced-outage risk, reduced by earlier decisions.** Deviations, instrument doubts and wash or filter timing reach a named owner with evidence attached. Metric: planned versus forced maintenance share.
+- **Decision speed with an audit trail.** Every figure carries its computation; every AI draft is validated and signed by a person. Metric: engineer time per case; time to reconstruct a decision for a regulator or insurer.
+- **Compliance exposure seen early.** Emissions screening and excursions are counted per year. Metric: excursions found by screening before routine reporting.
+- **Knowledge retention.** Reviewed precedents, handover drafts and onboarding briefs accumulate as staff change. Metric: precedents reused per new case.
+- **Vendor independence and OT safety.** Exported data only; no control-system write path. Metric: approvals and hours from export to first case.
+
+The `/executive` page shows these as prototype metrics with provenance. No savings, availability gain or revenue is claimed; the data is one public plant without timestamps, and the thermal and grid figures are simulated or assumption-based.
+
 ## What we are not claiming
 
 No avoided downtime, no accuracy figure, no adoption, no sales, no letters of intent. The claim is narrower: a transparent investigation case built on real public data and real tool-using inference is possible today, and the pilot metrics above would tell us whether it is worth paying for.

@@ -13,7 +13,15 @@ ThermoMind is a read-only AI diagnostic investigator for gas-turbine plants. It 
 
 ## Who pays
 
-Independent power producers, O&M contractors and utility reliability groups, through a per-plant / per-turbine annual pilot. The champion is the performance or reliability engineer who today triages deviations in spreadsheets beside OEM monitoring and asset-performance software, which we complement rather than replace. Pricing is an output of the first pilots, not an input.
+The buyer is the CEO (or COO) of a generation company, IPP or O&M contractor; the champion is the reliability or performance engineer. What the CEO would be buying, each a hypothesis for a pilot with a named metric, not a result:
+
+- **Fewer forced outages through earlier, better-documented decisions.** Metric: share of washes, filter change-outs and repairs done as planned work versus forced, before vs after.
+- **Faster investigations.** Metric: engineer time per case on comparable deviations; time from data export to a reviewed case.
+- **An audit trail regulators and insurers can read.** Every number has a computation and every model step is stored. Metric: time to reconstruct why a decision was made.
+- **Knowledge that stays when people retire.** Reviewed precedents, handover drafts and onboarding briefs. Metric: precedents reused per new case; time for a new engineer to close a first case.
+- **Vendor independence.** Works on exported data beside OEM monitoring. Metric: hours and approvals from export to first case.
+
+The `/executive` view shows these as prototype metrics with provenance. Pricing is per plant / per turbine per year and is an output of the first pilots, not an input.
 
 ## How Meta is used
 
@@ -21,7 +29,7 @@ Independent power producers, O&M contractors and utility reliability groups, thr
 
 ## Why it is different
 
-OEM monitoring (e.g. Siemens Energy, GE Vernova) and vendor-neutral asset-performance software (e.g. AspenTech) already exist; our hypothesis is that the readable, auditable case, not the alarm, is the unit of value. Incumbent monitoring detects and alerts inside long-term service agreements. ThermoMind produces the thing engineers actually argue over: a transparent, auditable case file with explicit uncertainty and limitations, built on exported data without any OT integration. The unit of value is the case, not the alarm.
+OEM monitoring (e.g. Siemens Energy, GE Vernova) and vendor-neutral asset-performance software (e.g. AspenTech) already detect and alert, mostly inside long-term service agreements. ThermoMind does not compete on detection. It produces what a CEO, a regulator or an insurer can actually read: a case file where every number has its computation, every AI claim cites evidence a tool returned, uncertainty and limitations are explicit, and a named person signs the decision. It runs on exported data with no write path to any control system, so it starts without an OT project and leaves the plant owner, not a vendor, holding the record. The hypothesis is that the auditable case, not the alarm, is the unit of value.
 
 ## Ambition
 
