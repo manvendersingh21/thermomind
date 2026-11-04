@@ -23,6 +23,10 @@ Independent power producers, O&M contractors and utility reliability groups, thr
 
 OEM monitoring (e.g. Siemens Energy, GE Vernova) and vendor-neutral asset-performance software (e.g. AspenTech) already exist; our hypothesis is that the readable, auditable case, not the alarm, is the unit of value. Incumbent monitoring detects and alerts inside long-term service agreements. ThermoMind produces the thing engineers actually argue over: a transparent, auditable case file with explicit uncertainty and limitations, built on exported data without any OT integration. The unit of value is the case, not the alarm.
 
+## Ambition
+
+To become for agentic plant operations what Schneider Electric is for electrical infrastructure: agents in the picture across every subsystem, humans in control of your power. ThermoMind is an independent project with no affiliation to Schneider Electric or any OEM; the comparison is about scale of ambition, not a claim of parity.
+
 ## What we do not claim
 
 No accuracy figure, no avoided downtime, no customers, no sales. One plant's 2011–2015 data with no fault labels is the whole evidence base today; the pilot metrics in `docs/MARKET.md` are how we would find out whether this is worth paying for.
