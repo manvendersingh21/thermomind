@@ -36,7 +36,7 @@ const AMBIENT = ["AT", "AP", "AH"];
 
 /** Bounding boxes (viewBox units) for the "Look here" outlines. */
 const PART_BOXES: Record<SchematicPart, { x: number; y: number; w: number; h: number; label: string }> = {
-  ambient: { x: 4, y: 128, w: 54, h: 56, label: "Ambient" },
+  ambient: { x: -126, y: 120, w: 124, h: 96, label: "Ambient" },
   intake: { x: 52, y: 92, w: 92, h: 126, label: "Intake / filter" },
   compressor: { x: 168, y: 92, w: 186, h: 126, label: "Compressor" },
   combustor: { x: 358, y: 104, w: 144, h: 102, label: "Combustor" },
@@ -65,7 +65,7 @@ export function PlantSchematic({ values = {}, highlight = [], lookHere = [], bar
   const tagText = (k: string) => (isHot(k) ? C.hotText : C.measured);
 
   const svg = (
-    <svg viewBox="0 0 1000 280" className="h-auto w-full" role="img" aria-label="Generic combined-cycle gas turbine train schematic">
+    <svg viewBox="-130 0 1130 280" className="h-auto w-full" role="img" aria-label="Generic combined-cycle gas turbine train schematic">
       <defs>
         <pattern id="filterHatch" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
           <line x1="0" y1="0" x2="0" y2="6" stroke={C.measured} strokeOpacity="0.45" strokeWidth="1.5" />
@@ -104,11 +104,11 @@ export function PlantSchematic({ values = {}, highlight = [], lookHere = [], bar
         <line x1="10" y1="158" x2="56" y2="158" />
         <line x1="10" y1="176" x2="56" y2="176" />
       </g>
-      <text x="12" y="64" fill={C.text} fontSize="13" fontWeight="600">
+      <text x="-120" y="140" fill={C.text} fontSize="13" fontWeight="600">
         AMBIENT
       </text>
       {AMBIENT.map((k, i) => (
-        <g key={k} transform={`translate(12 ${80 + i * 18})`}>
+        <g key={k} transform={`translate(-120 ${158 + i * 19})`}>
           <text fill={isHot(k) ? C.hotText : C.measured} fontSize="12" fontFamily="JetBrains Mono, monospace" fontWeight="700">
             {k}
           </text>
