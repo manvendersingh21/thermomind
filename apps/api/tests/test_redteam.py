@@ -43,6 +43,18 @@ DOCUMENTED_MUTATING_ROUTES = {
     ("POST", "/api/plant/work-requests/{wr_id}/status"),
     ("POST", "/api/plant/notifications/{notification_id}/read"),
     ("POST", "/api/plant/whatif"),
+    # feature packages: read-only calculations carried in POST bodies, simulated records, or Muse Spark drafts
+    ("POST", "/api/planner/compressor-wash"),
+    ("POST", "/api/planner/filter-changeout"),
+    ("POST", "/api/ops/handover"),
+    ("POST", "/api/grid/drill"),
+    ("POST", "/api/grid/contingency"),
+    ("POST", "/api/connectors/historian/start"),
+    ("POST", "/api/connectors/historian/stop"),
+    ("POST", "/api/connectors/historian/tick"),
+    ("POST", "/api/connectors/cmms/drafts"),
+    ("POST", "/api/connectors/notifications/send"),
+    ("POST", "/api/thermal/evaluate"),
 }
 
 

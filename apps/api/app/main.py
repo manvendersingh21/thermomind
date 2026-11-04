@@ -53,6 +53,34 @@ for router in (health.router, demo.router, datasets.router, models.router, scena
     app.include_router(router, prefix="/api")
 from app.api import plant as _plant_api; app.include_router(_plant_api.router, prefix="/api")  # noqa: E402,E702 plant-ops
 
+# Feature packages (advisory / simulated; read-only by design). Each router is self-contained.
+from app.features.planner import router as _planner  # noqa: E402
+from app.features.instruments import router as _instruments  # noqa: E402
+from app.features.emissions import router as _emissions  # noqa: E402
+from app.features.ops import router as _ops  # noqa: E402
+from app.features.grid import router as _grid  # noqa: E402
+from app.connectors import router as _connectors  # noqa: E402
+from fastapi import APIRouter as _APIRouter  # noqa: E402
+
+
+def _resolve_router(obj):
+    """Packages export either the APIRouter itself or a module holding `router`."""
+    while not isinstance(obj, _APIRouter) and hasattr(obj, "router"):
+        obj = obj.router
+    if not isinstance(obj, _APIRouter):
+        raise TypeError(f"no APIRouter found on {obj!r}")
+    return obj
+
+
+for _mod in (_planner, _instruments, _emissions, _ops, _grid, _connectors):
+    app.include_router(_resolve_router(_mod), prefix="/api")
+for _name in ("app.features.thermal", "app.features.twin", "app.features.agents_tree"):  # optional packages
+    try:
+        _m = __import__(_name, fromlist=["router"])
+        app.include_router(_resolve_router(getattr(_m, "router")), prefix="/api")
+    except Exception as _exc:  # noqa: BLE001 - optional feature must never block startup
+        logging.getLogger("thermomind.main").info("optional package %s not mounted: %s", _name, type(_exc).__name__)
+
 
 # ---------------------------------------------------------------------------
 # Error mapping: never 500 for user-input problems, never leak secrets.

@@ -1,17 +1,37 @@
-import { Activity, BarChart3, Database, Inbox, LayoutDashboard, MessageCircleQuestion, Radio, Search, ShieldCheck } from "lucide-react";
+import { Activity, BarChart3, Cable, ClipboardList, Database, Flame, GitCompare, Inbox, LayoutDashboard, MessageCircleQuestion, Radio, Search, ShieldCheck, Stethoscope, Wind, Wrench, Zap } from "lucide-react";
+import GuidedTour from "../features/tour/GuidedTour";
 import { NavLink, Outlet } from "react-router-dom";
 import { useAsync } from "../hooks/useAsync";
 import { getHealth } from "../api/client";
 import { PersonaSwitcher } from "../plant";
 
-const NAV = [
-  { to: "/", label: "Overview", icon: LayoutDashboard, end: true },
-  { to: "/replay", label: "Replay", icon: Radio },
-  { to: "/investigations", label: "Investigation", icon: Search },
-  { to: "/data", label: "Data Sources", icon: Database },
-  { to: "/evaluation", label: "Evaluation & Trust", icon: ShieldCheck },
-  { to: "/inbox", label: "Inbox", icon: Inbox },
-  { to: "/ask", label: "Ask the plant", icon: MessageCircleQuestion },
+type NavItem = { to: string; label: string; icon: typeof LayoutDashboard; end?: boolean };
+const NAV_SECTIONS: { title: string; items: NavItem[] }[] = [
+  {
+    title: "Core",
+    items: [
+      { to: "/", label: "Overview", icon: LayoutDashboard, end: true },
+      { to: "/replay", label: "Replay", icon: Radio },
+      { to: "/investigations", label: "Investigations", icon: Search },
+      { to: "/compare", label: "Compare cases", icon: GitCompare },
+      { to: "/data", label: "Data Sources", icon: Database },
+      { to: "/evaluation", label: "Evaluation & Trust", icon: ShieldCheck },
+    ],
+  },
+  {
+    title: "Plant operations",
+    items: [
+      { to: "/inbox", label: "Inbox", icon: Inbox },
+      { to: "/ask", label: "Ask the plant", icon: MessageCircleQuestion },
+      { to: "/planner", label: "Maintenance planner", icon: Wrench },
+      { to: "/instruments", label: "Instrument health", icon: Stethoscope },
+      { to: "/emissions", label: "Emissions watch", icon: Wind },
+      { to: "/thermal", label: "Thermal monitoring", icon: Flame },
+      { to: "/grid", label: "Grid support", icon: Zap },
+      { to: "/ops", label: "Shift ops", icon: ClipboardList },
+      { to: "/connectors", label: "Plant connectors", icon: Cable },
+    ],
+  },
 ];
 
 export function Layout() {
@@ -33,21 +53,26 @@ export function Layout() {
         <div className="px-3 pb-1">
           <PersonaSwitcher />
         </div>
-        <nav className="mt-2 flex flex-1 flex-col gap-1 px-3">
-          {NAV.map(({ to, label, icon: Icon, end }) => (
-            <NavLink
-              key={to}
-              to={to}
-              end={end}
-              className={({ isActive }) =>
-                `flex items-center gap-3 rounded-lg px-3 py-2.5 text-base font-medium transition ${
-                  isActive ? "bg-blue-50 text-blue-800 ring-1 ring-blue-200" : "text-ink-300 hover:bg-ink-800 hover:text-ink-100"
-                }`
-              }
-            >
-              <Icon size={20} strokeWidth={2} />
-              {label}
-            </NavLink>
+        <nav className="mt-2 flex flex-1 flex-col gap-1 overflow-y-auto px-3">
+          {NAV_SECTIONS.map((section) => (
+            <div key={section.title} className="mb-1">
+              <div className="px-3 pb-1 pt-2 text-[11px] font-semibold uppercase tracking-wider text-ink-500">{section.title}</div>
+              {section.items.map(({ to, label, icon: Icon, end }) => (
+                <NavLink
+                  key={to}
+                  to={to}
+                  end={end}
+                  className={({ isActive }) =>
+                    `flex items-center gap-3 rounded-lg px-3 py-2 text-[15px] font-medium transition ${
+                      isActive ? "bg-blue-50 text-blue-800 ring-1 ring-blue-200" : "text-ink-300 hover:bg-ink-800 hover:text-ink-100"
+                    }`
+                  }
+                >
+                  <Icon size={18} strokeWidth={2} />
+                  {label}
+                </NavLink>
+              ))}
+            </div>
           ))}
         </nav>
         <div className="border-t border-ink-700 px-5 py-4 text-sm text-ink-400">
@@ -96,6 +121,7 @@ export function PageHeader({ title, subtitle, right }: { title: string; subtitle
         {subtitle ? <div className="mt-1 max-w-3xl text-base text-ink-300">{subtitle}</div> : null}
       </div>
       {right ? <div className="flex shrink-0 flex-wrap items-center gap-2">{right}</div> : null}
+      <GuidedTour />
     </div>
   );
 }

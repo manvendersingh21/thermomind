@@ -220,7 +220,7 @@ export function PlantSchematic({ values = {}, highlight = [], lookHere = [], bar
         <div>
           <div className="panel-title">Monitored gas turbine train</div>
           <div className="mt-0.5 text-sm text-ink-300">
-            Generic schematic — not the UCI facility. Tags show the 11 published hourly measurements.
+            Generic schematic — not the UCI facility. Tags show 9 of the 11 published hourly measurements; CO and NOx are covered on Emissions watch.
           </div>
         </div>
         <div className="flex items-center gap-3 text-sm text-ink-300">

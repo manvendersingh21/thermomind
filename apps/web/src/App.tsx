@@ -7,6 +7,15 @@ import { InvestigationPage } from "./pages/InvestigationPage";
 import { DataSourcesPage } from "./pages/DataSourcesPage";
 import { EvaluationPage } from "./pages/EvaluationPage";
 import { AskPage, InboxPage } from "./plant";
+import PlannerPage from "./features/planner/PlannerPage";
+import InstrumentsPage from "./features/instruments/InstrumentsPage";
+import EmissionsPage from "./features/emissions/EmissionsPage";
+import GridPage from "./features/grid/GridPage";
+import ConnectorsPage from "./features/connectors/ConnectorsPage";
+import OpsPage from "./features/ops/OpsPage";
+import ThermalPage from "./features/thermal/ThermalPage";
+import ComparePage from "./features/compare/ComparePage";
+import CaseReportPage from "./features/report/CaseReportPage";
 
 export function App() {
   return (
@@ -20,6 +29,15 @@ export function App() {
         <Route path="/evaluation" element={<EvaluationPage />} />
         <Route path="/inbox" element={<InboxPage />} />
         <Route path="/ask" element={<AskPage />} />
+        <Route path="/investigations/:caseId/report" element={<CaseReportPage />} />
+        <Route path="/planner" element={<PlannerPage />} />
+        <Route path="/instruments" element={<InstrumentsPage />} />
+        <Route path="/emissions" element={<EmissionsPage />} />
+        <Route path="/grid" element={<GridPage />} />
+        <Route path="/thermal" element={<ThermalPage />} />
+        <Route path="/connectors" element={<ConnectorsPage />} />
+        <Route path="/ops" element={<OpsPage />} />
+        <Route path="/compare" element={<ComparePage />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Route>
     </Routes>
