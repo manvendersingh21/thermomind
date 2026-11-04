@@ -10,7 +10,7 @@
 |---|---|
 | Project name | ThermoMind |
 | One-liner | ThermoMind is a read-only AI diagnostic investigator for gas-turbine power generation. It combines authentic operating measurements, reproducible anomaly analysis, Meta Muse Spark reasoning with real tool use, and inspectable evidence to help plant engineers prioritize investigations. |
-| Repository URL | `https://github.com/manvendersingh21/thermomind` (to be filled by the owner at submission) |
+| Repository URL | https://github.com/manvendersingh21/thermomind |
 | Demo video URL | `<FILL after upload: submission/video/thermomind_demo.mp4>` (to be filled by the owner at submission) |
 | Live demo URL (optional) | not deployed (local reproducible demo; optional quick tunnel command in docs/DEPLOY.md) |
 | Team | `<FILL: names, roles, contact email>` (to be filled by the owner at submission) |
