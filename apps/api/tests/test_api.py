@@ -358,3 +358,17 @@ def test_investigation_s01_real_only(client):
     assert inv["scenario"]["synthetic"] is False
     assert all(e["is_synthetic"] is False for e in inv["evidence"])
     assert inv["report"]["scenario_label"] == "real_only"
+
+
+def test_s02_overlay_reaches_evidence_engine(offline_case):
+    """Regression: the pipeline must analyze the scenario-applied copy, not the raw window.
+
+    With the synthetic AFDP ramp applied, AFDP evidence must be marked synthetic and the
+    top deterministic hypothesis must not be 'unknown' with nothing notable.
+    """
+    ev = {e["evidence_id"]: e for e in offline_case["evidence"]}
+    assert ev["ev_afdp_01"]["is_synthetic"] is True
+    assert ev["ev_afdp_01"]["kind"] == "measured_plus_synthetic_overlay"
+    notable = [e for e in offline_case["evidence"] if "notable_deviation" in e["flags"]]
+    assert notable, "S02 overlay produced no notable evidence — overlay not applied?"
+    assert offline_case["report"]["hypotheses"][0]["key"] == "intake_restriction"

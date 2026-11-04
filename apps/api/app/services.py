@@ -308,9 +308,10 @@ def run_investigation_pipeline(req: InvestigationRequest) -> Investigation:
     model = get_model()
     label = scenario_label_for(scenario)
 
+    # The evidence engine must see the scenario-applied COPY; the raw window is never mutated.
     analysis = analyze_case(
         case_id,
-        window_frame,
+        scenario_result.frame,
         reference_frame,
         scenario_result,
         model,

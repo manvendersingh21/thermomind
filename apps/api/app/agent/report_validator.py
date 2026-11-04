@@ -23,7 +23,7 @@ UNSAFE_PATTERNS: list[tuple[str, re.Pattern]] = [
         ("bypass", r"\bbypass(ing|ed)?\b"),
         ("override interlock", r"\boverrid(e|ing)\b|\b(bypass\w*|defeat\w*|disabl\w*|forc\w*)\s+(the\s+)?\w*\s*interlock"),
         ("adjust fuel", r"\b(adjust|increase|decrease|reduce|raise|lower|cut)\w*\s+(the\s+)?fuel\b"),
-        ("command", r"\bcommand(s|ed|ing)?\b"),
+        ("command", r"\b(issue|send|execute|dispatch)\b[^.]{0,30}\bcommand(s)?\b|\bcommand(s|ed|ing)?\b[^.]{0,40}\b(valve|breaker|setpoint|turbine|fuel|plc|dcs|scada|governor)\b"),
     ]
 ]
 
