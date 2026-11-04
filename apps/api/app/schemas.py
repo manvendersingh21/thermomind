@@ -164,6 +164,16 @@ class ModelEvaluation(BaseModel):
     feature_ranges_train: dict[str, list[float]]  # {"AT":[min,max],...} for OOD flags
     trained_at_utc: str
     notes: list[str] = Field(default_factory=list)
+    device: str | None = None  # e.g. "cpu" or "cuda:0 Tesla V100-PCIE-32GB"
+    training_seconds: float | None = None
+    role: Literal["production_baseline", "challenger"] = "production_baseline"
+
+
+class ModelComparison(BaseModel):
+    production: ModelEvaluation
+    challengers: list[ModelEvaluation]
+    selection_rule: str  # how the production model is chosen (validation-based, never holdout)
+    gpu: dict[str, Any]  # {"available": bool, "name": str|None, "memory_mb": int|None}
 
 
 # ---------------------------------------------------------------------------
