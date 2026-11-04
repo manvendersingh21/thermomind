@@ -84,6 +84,8 @@ def run_check(context, check: PageCheck, extra=None) -> None:
         check.console_errors.append(f"uncaught: {err}")
 
     def on_request_failed(req):
+        if req.failure and "ERR_ABORTED" in str(req.failure):
+            return  # client-initiated cancellation (component unmount / AbortController), not a server failure
         check.failed_requests.append(f"{req.method} {req.url} -> {req.failure}")
 
     def on_response(resp):
