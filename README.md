@@ -25,6 +25,8 @@ ThermoMind turns one window of plant data into an **investigation case**: eviden
 
 ## Architecture
 
+![Architecture](docs/architecture.svg)
+
 ```mermaid
 flowchart LR
   subgraph Browser["apps/web — React · TypeScript · Vite · Tailwind · Recharts (:5173, /api proxy)"]

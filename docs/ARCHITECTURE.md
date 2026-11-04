@@ -82,3 +82,22 @@ Without `MODEL_API_KEY` the same path runs with `use_meta` effectively false: th
 - **Validation as a hard gate.** A hallucinated evidence ID cannot pass the gate, and control-language drafts are rejected by pattern matching.
 - **Replayability.** The stored event trace lets anyone replay what the model requested and received, which is what an auditor or a sceptical reliability engineer will ask for first.
 - **One image.** Plant IT teams prefer a single container with a mounted data directory over a multi-service deployment.
+
+## Architecture: component map of the extension packages
+
+Diagram: `docs/architecture.svg`. Feature-by-feature detail: `docs/FEATURES.md`.
+
+| Package | Path | Role |
+|---|---|---|
+| Plant agents | `apps/api/app/plant/` | Personas, subsystem registry, work requests, notifications, precedent memory, sensitivity surrogate, what-if multi-agent (`whatif.py`), `recall_similar_cases` tool hook |
+| Second opinion | `apps/api/app/analytics/second_opinion.py`, `torch_baseline.py`, `comparison.py` | GPU MLP challenger and HGBR comparison; `second_opinion_only`, never production |
+| Planner | `apps/api/app/features/planner/` | Compressor wash and filter change-out what-ifs from editable assumptions |
+| Instruments | `apps/api/app/features/instruments/` | Sensor health scorecard |
+| Emissions | `apps/api/app/features/emissions/` | CO / NOx views |
+| Thermal | `apps/api/app/features/thermal/` | Simulated thermal screening (`simulated_from_real_load`) |
+| Grid | `apps/api/app/features/grid/` | Readiness, synthetic S05_GRID_EVENT drill with one Meta brief call, contingency options |
+| Ops | `apps/api/app/features/ops/` | Handover note (Meta, no tools), CMMS export, pilot metrics |
+| Connectors | `apps/api/app/connectors/` | Simulated historian, CMMS, notifier; `control_system.py` is a refusal stub |
+| Web feature pages | `apps/web/src/{plant,features}/` | Inbox, Ask, Planner, Instruments, Emissions, Thermal, Grid, Connectors, Ops, tour |
+
+All of these are read-only with respect to the plant: no package has a control write path.

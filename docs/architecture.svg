@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1400 800" width="1400" height="800" font-family="Helvetica, Arial, sans-serif">
+<defs><marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0 0L10 5L0 10z" fill="#475569"/></marker></defs>
+<rect width="1400" height="800" fill="#f8fafc"/>
+<text x="700" y="40" text-anchor="middle" font-size="26" font-weight="700" fill="#0f172a">ThermoMind architecture: read-only decision support</text>
+<g font-size="14" fill="#0f172a">
+<rect x="30" y="90" width="190" height="300" rx="10" fill="#e0f2fe" stroke="#0284c7"/><text x="125" y="115" text-anchor="middle" font-weight="700" font-size="16">Data layer</text>
+<text x="125" y="170" text-anchor="middle">UCI CSV (real)</text><text x="125" y="195" text-anchor="middle">validator</text><text x="125" y="220" text-anchor="middle">repository</text><text x="125" y="260" text-anchor="middle" font-size="12">no timestamps invented</text>
+<rect x="260" y="90" width="210" height="300" rx="10" fill="#dcfce7" stroke="#16a34a"/><text x="365" y="115" text-anchor="middle" font-weight="700" font-size="16">Analytics</text>
+<text x="365" y="165" text-anchor="middle">HGBR baseline</text><text x="365" y="190" text-anchor="middle">GPU MLP second opinion</text><text x="365" y="215" text-anchor="middle">scenarios (synthetic)</text><text x="365" y="240" text-anchor="middle">evidence engine</text>
+<rect x="510" y="90" width="230" height="300" rx="10" fill="#fef9c3" stroke="#ca8a04"/><text x="625" y="115" text-anchor="middle" font-weight="700" font-size="16">Agent layer</text>
+<text x="625" y="165" text-anchor="middle">Muse Spark tool loop</text><text x="625" y="190" text-anchor="middle">report validator</text><text x="625" y="215" text-anchor="middle">subsystem agents</text><text x="625" y="240" text-anchor="middle">handover note</text>
+<rect x="780" y="90" width="190" height="300" rx="10" fill="#ede9fe" stroke="#7c3aed"/><text x="875" y="115" text-anchor="middle" font-weight="700" font-size="16">API</text>
+<text x="875" y="170" text-anchor="middle">FastAPI</text><text x="875" y="195" text-anchor="middle">SQLite store</text><text x="875" y="220" text-anchor="middle">contracts/api.md</text>
+<rect x="1010" y="90" width="170" height="300" rx="10" fill="#fce7f3" stroke="#db2777"/><text x="1095" y="115" text-anchor="middle" font-weight="700" font-size="16">Web</text>
+<text x="1095" y="170" text-anchor="middle">React pages</text><text x="1095" y="195" text-anchor="middle">evidence drawer</text><text x="1095" y="220" text-anchor="middle">provenance badges</text>
+<rect x="1220" y="90" width="150" height="300" rx="10" fill="#ffedd5" stroke="#ea580c"/><text x="1295" y="115" text-anchor="middle" font-weight="700" font-size="16">Humans</text>
+<text x="1295" y="170" text-anchor="middle">personas</text><text x="1295" y="195" text-anchor="middle">review decision</text><text x="1295" y="220" text-anchor="middle">work requests</text>
+</g>
+<g stroke="#475569" stroke-width="2.5" marker-end="url(#a)"><path d="M220 240H258"/><path d="M470 240H508"/><path d="M740 240H778"/><path d="M970 240H1008"/><path d="M1180 240H1218"/></g>
+<rect x="530" y="430" width="190" height="50" rx="8" fill="#fff" stroke="#ca8a04"/><text x="625" y="460" text-anchor="middle" font-size="14" fill="#0f172a">Meta API muse-spark-1.3</text>
+<path d="M625 392V428" stroke="#475569" stroke-width="2" marker-end="url(#a)"/>
+<rect x="780" y="430" width="400" height="90" rx="10" fill="#f1f5f9" stroke="#64748b" stroke-dasharray="6 4"/>
+<text x="980" y="458" text-anchor="middle" font-size="15" font-weight="700" fill="#0f172a">Simulated connectors</text>
+<text x="980" y="484" text-anchor="middle" font-size="13" fill="#0f172a">historian replay · CMMS drafts · notifier outbox</text>
+<text x="980" y="506" text-anchor="middle" font-size="12" fill="#475569">no real system contacted</text>
+<path d="M875 392V428" stroke="#475569" stroke-width="2" stroke-dasharray="5 4" marker-end="url(#a)"/>
+<rect x="30" y="580" width="1340" height="130" rx="14" fill="#fee2e2" stroke="#dc2626" stroke-width="4"/>
+<text x="700" y="650" text-anchor="middle" font-size="44" font-weight="800" fill="#b91c1c">NO CONTROL WRITE PATH</text>
+<text x="700" y="684" text-anchor="middle" font-size="16" fill="#7f1d1d">No PLC / SCADA / DCS / historian writes, no setpoints. Reports are always draft_requires_human_review.</text>
+<text x="700" y="560" text-anchor="middle" font-size="14" fill="#475569">Plant control systems (not connected)</text>
+<path d="M700 520V572" stroke="#dc2626" stroke-width="3" stroke-dasharray="4 4"/>
+<text x="700" y="760" text-anchor="middle" font-size="13" fill="#475569">Labels: REAL PUBLIC DATA · MODEL-DERIVED · SYNTHETIC OVERLAY · SIMULATED · HUMAN REVIEW REQUIRED</text>
+</svg>
