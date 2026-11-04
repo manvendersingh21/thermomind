@@ -1,24 +1,37 @@
 # Demo script (3 minutes)
 
-Preconditions: `make data`, `make train`, `make seed` done; `.env` has `MODEL_API_KEY`; `make dev` running; the real live cases are stored: `case_76d34565b3dc` (S02, Muse Spark), `case_760658afb3d5` (S03), `case_b1d8db08ff82` (S01); open them under `/investigations` if the network is slow. API on http://localhost:8000, web at http://localhost:5173 (dev) or :8000 (build). Browser at http://localhost:5173. Routes (fixed): `/`, `/data`, `/investigations`, `/investigations/:caseId`, `/evaluation`, `/replay`. Button labels follow the final web build.
+This is the storyboard of the submitted video. It is recorded automatically from the running product by
+`scripts/record_demo.py` (real clicks in headless Chromium, captions + edge-tts voice-over); see
+[`docs/VIDEO.md`](VIDEO.md) for the exact command, the measured duration and the upload checklist. A presenter
+doing it live follows the same path and can read the "Say" column.
 
-| Time | Route | Click path | Say |
+Preconditions: `make data`, `make train`, `make seed` done; `.env` has `MODEL_API_KEY`; the API serves the
+built UI on http://localhost:8000; the live Muse Spark case for `S02_INTAKE_RESTRICTION`
+(`case_76d34565b3dc`) exists. The video never starts a new live run (it takes 1–2 min); it opens the stored
+`meta_live` case. Segments whose route is not served at record time are skipped with their narration.
+
+| Time (≈) | Route | What is on screen | Say (= caption) |
 |---|---|---|---|
-| 0:00–0:20 | `/` | Land on home. Point at the status banner and the provenance legend (REAL PUBLIC DATA / MODEL-DERIVED / SYNTHETIC OVERLAY / HUMAN REVIEW REQUIRED). | "ThermoMind is a read-only AI diagnostic investigator for gas turbines. It never touches a control system. Every report is a draft for an engineer. This was built from scratch today on real public data." |
-| 0:20–0:50 | `/data` | Click **Data Sources** in the nav. Show dataset card: UCI 551, CC BY 4.0, 36,733 rows, 2011–2015, per-year counts, sha256 per file. Scroll to provenance notes: no timestamps, no fault labels, CDP unit under validation. Pick measure `AFDP`, year 2014 in the series chart and hover: x-axis is `2014 • sample #…`, not a date. | "Real measurements from an undisclosed Turkish plant. There are no timestamps and no fault labels, so we show sample indices and we never invent dates." |
-| 0:50–1:10 | `/` | Back to home. Select dataset `ds_uci_551`, scenario `S02_INTAKE_RESTRICTION`, keep defaults (2014, 1200–1320, seed 42). Point at the SYNTHETIC OVERLAY badge and the transformation list in the preview (AFDP ramp up, TEY down ≤ 3.5 %, CDP slightly down). Click **Run investigation** (use_meta on). | "Because the data set has no labelled faults, this scenario overlays a seeded synthetic intake-restriction pattern on a copy of real rows. It is labelled synthetic everywhere. The original rows are untouched." |
-| 1:10–1:50 | `/investigations/:id` | Case page opens when the synchronous run returns (or open `case_76d34565b3dc`). Walk top to bottom: (1) header: `meta_live`, model id `muse-spark-1.3`, `draft_requires_human_review`, severity = review priority; (2) **Evidence** list: open `ev_afdp_…` and read the `computation` string; (3) **Baseline comparison**: observed vs expected TEY, residual z, caveats; (4) **Hypotheses**: intake_restriction ranked first with supporting and contradicting evidence IDs, limitations, "what would change the assessment"; (5) **Agent trace**: `model_request → tool_call get_sensor_window → tool_result (evidence ids) → … → validation → report_accepted`. | "Muse Spark did the investigation by calling tools: it asked for the sensor window, the baseline comparison, hypothesis evaluations and data quality, then wrote a report. The validator only accepts evidence IDs that those tools actually returned, rejects fabricated dates and control instructions, allows one rewrite, otherwise the case goes to needs_review." |
-| 1:50–2:15 | `/` → `/investigations/:id` | Run `S03_SENSOR_INCONSISTENCY` (or open `case_760658afb3d5`). Show that AFDP and TEY residual evidence are quiet, CDP alone is flagged with `isolated_single_sensor`, and `sensor_issue` ranks above `intake_restriction`. | "Same pipeline, different pattern: one pressure sensor steps with nothing corroborating. The ranking flips, and the report says what extra data would settle it." |
-| 2:15–2:35 | `/evaluation` | Click **Evaluation & Trust**. Show model card: algorithm, features, chronological split 2011–2013 / 2014 / 2015, validation and holdout metrics, naive baselines, residual quantiles, notes (not a physics model, confounded by dispatch). | "The baseline is a reproducible gradient-boosting model with an honest chronological split and naive baselines beside it. Holdout MAE 1.293 MWh against 12.957 for a naive mean. These come from `make train`; they are not fault-detection accuracy." |
-| 2:35–2:50 | `/replay` | Click **Replay**, select `case_76d34565b3dc`, step through events; point at latency and token counts and the validation event. | "Everything the model asked and received is stored and replayable. That is what an auditor or a sceptical reliability engineer wants first." |
-| 2:50–3:00 | `/investigations/:id` | Scroll to the review panel, choose **accepted** or **more data requested**, submit; point at **Export JSON**. | "The engineer decides; the system records. Read-only by design, human review by contract. ThermoMind." |
+| 0:00–0:15 | `/` | REAL UCI TURBINE DATA badge, plant schematic with real tag values | "ThermoMind reads a gas turbine's real public data and investigates deviations with evidence, never touching controls." |
+| 0:15–0:35 | `/investigations/case_76d34565b3dc` | META LIVE · muse-spark-1.3 badge → ranked hypotheses → click `ev_afdp_01` → evidence drawer (computation) → agent timeline, "show args" | "In this live case, Meta's Muse Spark 1.3 ranks hypotheses, and every evidence ID opens the deterministic computation behind it." · "Muse Spark calls the deterministic tools itself. Every call, result, latency and token count is stored, so every number is traceable." |
+| 0:35–0:55 | same case → `/twin/case_76d34565b3dc` (if served) | "Where to look" panel: highlighted generic schematic; 3D twin hot-spot when the route exists | "Where to look maps the top hypothesis onto a generic plant schematic. This scenario is a synthetic overlay on real rows, and it is labelled synthetic at every layer." · "A 3D twin marks the same spot, on a generic plant model." |
+| 0:55–1:15 | `/inbox` | Routed work request: assignee + supervisor, simulated in-app notification badge, "SIMULATED WORKFLOW · NOT A CMMS" | "Findings route to the responsible engineer and their supervisor. The notifications are simulated, and nothing is sent to a maintenance system." |
+| 1:15–1:45 | `/propose` (if served) | Pick the S02 case, intent "raise output by 5 MW", agent verdict cards, consensus, dissent, recommendation, human decision, "nothing executed" | "Before anyone acts on a proposal, like raising output by 5 megawatts, the subsystem agents confer on what it would do elsewhere in the plant." · "Verdicts, consensus and dissent lead to a recommendation. The human decides — and nothing is executed." |
+| 1:45–2:10 | `/simulator` (if served) | Start the physics simulator, inject intake fouling, AFDP rises / output falls, "Investigate last window" | "A physics-based plant simulator lets teams rehearse. We start it, and inject intake fouling." · "Filter pressure rises and output falls, and the last simulated window can be handed to an investigation." |
+| 2:10–2:30 | `/ops` → `/autonomy` (if served) | Muse Spark shift-handover draft (DRAFT — requires shift supervisor sign-off); who-decides-what policy | "Routine triage and drafts run without a human, like this Muse Spark shift handover. Anything that touches the plant always needs one." · "The autonomy policy spells out who decides what." |
+| 2:30–2:50 | `/evaluation` | Holdout (2015, untouched) vs naive baselines, production baseline vs GPU challenger table, safety disclaimer | "On the untouched 2015 holdout, the baseline's mean error is 1.29 megawatt-hours, versus 4.13 for a naive previous-value baseline. The GPU challenger is a benchmark only, and this is not a validated safety system." (numbers are read from `GET /api/models/evaluation` at record time; see `docs/EVALUATION.md`) |
+| 2:50–3:00 | `/` | Overview, repo URL github.com/manvendersingh21/thermomind | "Built today, from real public data, with humans in the loop." |
 
 ## Fallbacks
 
-- Meta API slow or down: open the pre-created live case; if none exists, run with `use_meta=false` and say clearly that it is the offline preview, "not a Meta inference".
-- Network blocked for UCI download: the API can seed from `data/fixtures/gt_2014_sample300.csv` for the `/data` view, but the default window [1200, 1320) needs the full 2014 file; use a window inside [0, 300) with a shorter reference in that case.
-- Keep the terminal with `make dev` output visible on a second screen in case a request fails; never hide errors.
+- Meta API slow or down: everything above uses stored cases; nothing in the video waits on Meta. To show a live run,
+  record the separate proof video with `python scripts/record_demo.py --live-only` (unedited 1–2 min wait).
+- A route from the table is missing in the build: the recorder skips that segment and its narration and prints
+  `route … NOT served -> segment skipped`; the video gets shorter, never broken.
+- Network blocked for the TTS service: `python scripts/record_demo.py --no-narration` (captions only).
 
 ## Things not to say
 
-No "detects faults", no "prevents outages", no accuracy percentage, no customer names, no "trained on plant X". Say "evidence", "hypothesis", "draft", "review".
+No "detects faults", no "prevents outages", no accuracy percentage, no savings claims, no customer names, no
+"trained on plant X". Say "evidence", "hypothesis", "draft", "review". The UCI data has no timestamps and no fault
+labels; S02/S03 patterns are synthetic overlays on copies of real rows.

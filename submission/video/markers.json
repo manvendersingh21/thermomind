@@ -1,0 +1,34 @@
+[
+ {
+  "t": 0.19,
+  "segment": "overview"
+ },
+ {
+  "t": 6.6,
+  "segment": "s02_case"
+ },
+ {
+  "t": 24.49,
+  "segment": "s02_timeline"
+ },
+ {
+  "t": 33.2,
+  "segment": "where"
+ },
+ {
+  "t": 42.89,
+  "segment": "inbox"
+ },
+ {
+  "t": 51.22,
+  "segment": "ops"
+ },
+ {
+  "t": 59.26,
+  "segment": "eval"
+ },
+ {
+  "t": 73.2,
+  "segment": "outro"
+ }
+]
