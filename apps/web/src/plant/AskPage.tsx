@@ -3,6 +3,7 @@ import { errorMessage, listInvestigationsForPicker, listWhatIf } from "./api";
 import type { Investigation } from "../api/types";
 import type { WhatIfSession } from "./types";
 import { WhatIfConsole, WhatIfResult } from "./WhatIfConsole";
+import { DominoMap } from "../features/collab/DominoMap";
 import "./plant.css";
 
 function fmtTs(iso: string): string {
@@ -74,6 +75,8 @@ export function AskPage() {
       </div>
 
       <WhatIfConsole caseId={caseId || undefined} />
+
+      <DominoMap caseId={caseId || undefined} />
 
       <section>
         <h2 className="pl-h2">Recent what-if sessions</h2>

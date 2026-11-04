@@ -77,7 +77,7 @@ def _resolve_router(obj):
 
 for _mod in (_planner, _instruments, _emissions, _ops, _grid, _connectors):
     app.include_router(_resolve_router(_mod), prefix="/api")
-for _name in ("app.features.thermal", "app.features.twin", "app.features.agents_tree", "app.simulator"):  # optional packages
+for _name in ("app.features.thermal", "app.features.twin", "app.features.agents_tree", "app.simulator", "app.features.collab", "app.features.executive", "app.features.deliberation"):  # optional packages
     try:
         _m = __import__(_name, fromlist=["router"])
         app.include_router(_resolve_router(getattr(_m, "router")), prefix="/api")

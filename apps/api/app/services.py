@@ -436,6 +436,11 @@ def run_investigation_pipeline(req: InvestigationRequest) -> Investigation:
     get_store().save(inv)
     from app.plant.work_requests import on_investigation_completed  # plant-ops routing (simulated in-app; never raises)
     on_investigation_completed(inv)
+    try:  # collaboration layer: autonomy-policy log (agent_auto triage or requires_human); never raises
+        from app.features.collab.autonomy import apply_autonomy_policy
+        apply_autonomy_policy(inv)
+    except Exception as exc:  # noqa: BLE001 - optional package
+        log.info("collab policy unavailable: %s", type(exc).__name__)
     log.info(
         "investigation %s %s (scenario=%s mode=%s meta_used=%s evidence=%d)",
         case_id, inv.status, req.scenario_id, inv.mode, inv.meta_used, len(inv.evidence),

@@ -83,4 +83,13 @@ export const TOUR_STEPS: TourStep[] = [
     goLabel: "Go to Evaluation",
     target: { kind: "route", to: "/evaluation" },
   },
+  {
+    id: "collaboration",
+    title: "8. Collaboration",
+    body:
+      "Alert → routed (technician + supervisor) → what-if & domino map → supervisor approval → handover drafted → onboarding. " +
+      "Agents only do read-only legwork and drafts; people make every decision, and nothing here can operate the plant.",
+    goLabel: "Go to Who decides what",
+    target: { kind: "route", to: "/autonomy" },
+  },
 ];

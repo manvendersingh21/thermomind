@@ -17,6 +17,9 @@ import ThermalPage from "./features/thermal/ThermalPage";
 import ComparePage from "./features/compare/ComparePage";
 import CaseReportPage from "./features/report/CaseReportPage";
 import AgentTreePage from "./features/agents_tree/AgentTreePage";
+import AutonomyPage from "./features/collab/AutonomyPage";
+import OnboardingPage from "./features/collab/OnboardingPage";
+import ProposePage from "./features/deliberation/ProposePage";
 
 export function App() {
   return (
@@ -40,6 +43,9 @@ export function App() {
         <Route path="/ops" element={<OpsPage />} />
         <Route path="/compare" element={<ComparePage />} />
         <Route path="/agents" element={<AgentTreePage />} />
+        <Route path="/autonomy" element={<AutonomyPage />} />
+        <Route path="/onboarding" element={<OnboardingPage />} />
+        <Route path="/propose" element={<ProposePage />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Route>
     </Routes>

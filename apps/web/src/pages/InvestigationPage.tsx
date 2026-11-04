@@ -19,6 +19,8 @@ import { SourceBadge } from "../components/SourceBadge";
 import { InvestigationStatusPill, SeverityPill } from "../components/StatusPill";
 import { useAsync } from "../hooks/useAsync";
 import { PrecedentsPanel, WhatIfConsole, WorkRequestBanner } from "../plant";
+import { CaseActivityFeed } from "../features/collab/CaseActivityFeed";
+import { DominoMap } from "../features/collab/DominoMap";
 import { fmtDateTime, fmtInt, fmtNum, fmtSigned, humanize, rangeLabel } from "../lib/format";
 
 const PREVIEW_MEASURES = ["AFDP", "TEY", "CDP"];
@@ -542,6 +544,12 @@ export function InvestigationPage() {
 
       <div className="mt-5">
         <PrecedentsPanel caseId={inv.case_id} />
+      </div>
+      <div className="mt-5">
+        <CaseActivityFeed caseId={inv.case_id} />
+      </div>
+      <div className="mt-5">
+        <DominoMap caseId={inv.case_id} />
       </div>
       <div className="mt-5">
         <WhatIfConsole caseId={inv.case_id} />
