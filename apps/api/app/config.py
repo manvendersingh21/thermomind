@@ -6,6 +6,11 @@ from pathlib import Path
 
 from dotenv import load_dotenv
 
+# Cap BLAS/OpenMP threads before numpy/sklearn/torch import: on many-core hosts the default
+# oversubscription collapses throughput under concurrent requests (see docs/LOAD_TEST.md).
+for _var in ("OMP_NUM_THREADS", "OPENBLAS_NUM_THREADS", "MKL_NUM_THREADS"):
+    os.environ.setdefault(_var, os.getenv("THERMOMIND_BLAS_THREADS", "4"))
+
 REPO_ROOT = Path(__file__).resolve().parents[3]
 load_dotenv(REPO_ROOT / ".env")
 
