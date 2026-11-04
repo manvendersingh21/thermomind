@@ -147,3 +147,20 @@ Window: year 2014, rows [1200, 1320) (120 hourly samples). Reference: 240 rows i
 - Evidence IDs: `ev_<metric_slug>_<nn>`; the agent may only cite IDs returned by tools.
 - No timestamps are ever fabricated for UCI rows (`timestamp: null`, show `2014 • sample #1253`).
 - No control actions anywhere. Reports are `draft_requires_human_review`.
+
+## Extension packages (added 2026-11-04, advisory / simulated; read-only by design)
+
+| Prefix | Purpose | Notes |
+|---|---|---|
+| `/api/plant/*` | personas, inbox, routed work requests, what-if (`POST /whatif`), sensitivity, precedents | simulated in-app notifications; see docs/PLANT_AGENTS.md |
+| `/api/planner/*` | compressor-wash and filter change-out break-even (`POST`, read-only calculations) | user assumptions labelled |
+| `/api/instruments/scorecard` | per-sensor screening scores | statistical screening only |
+| `/api/emissions/{overview,window}` | CO/NOx screening, excursions, load profiles | screening threshold = p95, not a permit limit |
+| `/api/thermal/{assets,evaluate}` | simulated electrical thermal feed (IEEE C57.91-style) from real load/ambient | no thermal sensors; advisory |
+| `/api/grid/{readiness,drill,drills,contingency}` | grid-support readiness, synthetic grid-event drill brief (Muse Spark), contingency options on a simulated topology | no switching or dispatch actions |
+| `/api/ops/{handover,cmms,metrics}` | Muse Spark shift-handover draft, CMMS draft export (JSON/CSV), prototype metrics | drafts only; no CMMS integration |
+| `/api/connectors/*` | adapter interfaces with simulated historian/CMMS/notifier; control system has no write path | labelled simulated |
+| `/api/models/comparison` | production HGBR vs GPU-trained challenger | benchmark only |
+| `/api/agents/tree` | agent organisation registry + stats | read-only |
+
+Every mutating route here is listed in `apps/api/tests/test_redteam.py::DOCUMENTED_MUTATING_ROUTES`; none touches plant control.
