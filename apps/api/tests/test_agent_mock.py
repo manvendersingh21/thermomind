@@ -106,7 +106,7 @@ def test_happy_path_calls_tools_and_accepts_report(analysis):
     # tool messages were fed back to the model in OpenAI format
     tool_msgs = [m for m in client.calls[1]["messages"] if m["role"] == "tool"]
     assert len(tool_msgs) == 5 and tool_msgs[0]["tool_call_id"] == "call_0"
-    assert client.calls[0]["tools"] == TOOL_SPECS
+    assert client.calls[0]["tools"][:len(TOOL_SPECS)] == TOOL_SPECS  # + optional plant hook tools
     assert out.deterministic_summary["get_baseline_comparison"]["available"] is True
 
 
@@ -131,7 +131,7 @@ def test_still_bad_after_rewrite_is_needs_review(analysis):
 
 
 def test_unknown_tool_name_reported_to_model_without_crash(analysis):
-    calls = [("get_secret_label", {}), ("get_baseline_comparison", {})]
+    calls = [("get_secret_label", {})] + STANDARD_CALLS  # required tools still have to run
     client = FakeMetaClient([tool_call_msg(calls), text_msg(good_report())])
     out = run_investigation(analysis, LABEL, client)
     assert out.status == "completed"

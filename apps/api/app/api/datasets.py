@@ -64,6 +64,10 @@ async def upload_dataset(file: UploadFile = File(...)) -> UploadResult:
     except CsvValidationError as exc:
         raise HTTPException(status_code=exc.status_code, detail=exc.message) from exc
     bundle = services.get_repo().register(bundle)
+    try:  # keep the raw bytes so the upload is re-registered after a restart (services.startup)
+        services.get_repo().persist_upload(bundle, [(filename, data)], Path(config.DATA_DIR) / "uploads")
+    except Exception as exc:  # noqa: BLE001 - persistence failure must not fail the upload itself
+        log.warning("upload %s not persisted to disk: %s", bundle.dataset_id, type(exc).__name__)
     log.info("upload registered: %s (%d rows, %s)", bundle.dataset_id, len(bundle.frame), filename)
     return UploadResult(
         dataset_id=bundle.dataset_id,

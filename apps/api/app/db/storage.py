@@ -7,10 +7,15 @@ are mirrored for ordering/filtering.
 """
 from __future__ import annotations
 
+import logging
 import sqlite3
 from pathlib import Path
 
+from pydantic import ValidationError
+
 from app.schemas import Investigation, ReviewRecord
+
+log = logging.getLogger("thermomind.db.storage")
 
 _SCHEMA = """
 CREATE TABLE IF NOT EXISTS investigations (
@@ -73,9 +78,16 @@ class InvestigationStore:
         """All investigations, newest first (created_at, then rowid as a tie-breaker)."""
         with self._connect() as conn:
             rows = conn.execute(
-                "SELECT json FROM investigations ORDER BY created_at DESC, rowid DESC"
+                "SELECT case_id, json FROM investigations ORDER BY created_at DESC, rowid DESC"
             ).fetchall()
-        return [Investigation.model_validate_json(r[0]) for r in rows]
+        out: list[Investigation] = []
+        for case_id, payload in rows:
+            try:
+                out.append(Investigation.model_validate_json(payload))
+            except ValidationError as exc:  # one corrupt/legacy row must not break the whole list
+                log.warning("skipping investigation %s: stored JSON fails validation (%d error(s))",
+                            case_id, exc.error_count())
+        return out
 
     def count(self) -> int:
         with self._connect() as conn:

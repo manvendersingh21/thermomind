@@ -2,9 +2,10 @@
 from __future__ import annotations
 
 import logging
+import os
 from pathlib import Path
 
-from fastapi import APIRouter, Body, HTTPException
+from fastapi import APIRouter, Body, HTTPException, Request
 from fastapi.concurrency import run_in_threadpool
 from pydantic import BaseModel
 
@@ -38,10 +39,24 @@ def model_comparison() -> ModelComparison:
         raise HTTPException(status_code=404, detail="baseline model not trained yet (run `make train`)")
 
 
+LOCAL_HOSTS = {"127.0.0.1", "::1"}
+
+
+def _train_allowed(request: Request) -> bool:
+    if os.getenv("THERMOMIND_ALLOW_REMOTE_TRAIN") == "1":
+        return True
+    host = request.client.host if request.client is not None else None
+    return host in LOCAL_HOSTS
+
+
 @router.post("/train", response_model=ModelEvaluation)
-async def train_model(body: TrainRequest | None = Body(default=None)) -> ModelEvaluation:
+async def train_model(request: Request, body: TrainRequest | None = Body(default=None)) -> ModelEvaluation:
     """Local/admin only: trains the baseline on ds_uci_551 and reloads it."""
     from app.analytics.train import train_baseline
+
+    if not _train_allowed(request):
+        raise HTTPException(status_code=403, detail="model training is only allowed from localhost "
+                                                    "(set THERMOMIND_ALLOW_REMOTE_TRAIN=1 to override)")
 
     seed = 42 if body is None or body.seed is None else int(body.seed)
     bundle = services.get_repo().get(services.UCI_DATASET_ID)  # KeyError -> 404 if not seeded

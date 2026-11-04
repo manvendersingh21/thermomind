@@ -39,6 +39,7 @@ from app.schemas import (
 NOTABLE_Z = 2.0          # |z| >= 2 -> "notable_deviation"
 MOVING_Z = 1.0           # |z| >= 1 -> counts as "moving" in the cross-sensor coherence tally
 SPIKE_Z = 3.0            # robust-z threshold for spike/segment detection
+MAX_SEGMENTS_LISTED = 10  # values.segments lists the first N segments; total_segments has the full count
 NOTABLE_FLAG = "notable_deviation"
 HEURISTIC_NOTE = "deterministic_support_score is a fixed-rule heuristic in [0,1], not a probability and not a diagnosis."
 # Challenger (second-opinion) evidence ids: appended after all production evidence and never used to score hypotheses.
@@ -76,6 +77,15 @@ def _f(x: float | None, nd: int = 3) -> str:
 
 def _finite(x: float) -> float | None:
     return float(x) if x is not None and math.isfinite(float(x)) else None
+
+
+def _finite0(x: Any) -> float:
+    """Finite float or 0.0 (for required float schema fields that must never hold NaN/inf)."""
+    try:
+        f = float(x)
+    except (TypeError, ValueError):
+        return 0.0
+    return f if math.isfinite(f) else 0.0
 
 
 def _is_notable(z: float | None, thresh: float = NOTABLE_Z) -> bool:
@@ -179,6 +189,8 @@ def _segment_evidence(
             "peak_robust_z": round(float(peak), 2), "coincident_in": coincident, "isolated": is_isolated,
         })
     first = next((r for r in rows if r["isolated"]), rows[0])
+    shown = rows[:MAX_SEGMENTS_LISTED]
+    more = f" (+{len(rows) - len(shown)} more segment(s) not listed)" if len(rows) > len(shown) else ""
     kind, synthetic = _kind_for(measure, scenario)
     flags = ["isolated_single_sensor"] if isolated > 0 else ["coincident_with_other_sensors"]
     if isolated > 0:
@@ -188,8 +200,8 @@ def _segment_evidence(
         f"robust z = (x - median_window) / (1.4826*MAD_window), threshold |z|>={SPIKE_Z}; "
         f"{len(segs)} segment(s) found: " + "; ".join(
             f"rows[{r['window_rows'][0]},{r['window_rows'][1]}) peak_z={r['peak_robust_z']}"
-            f" {'ISOLATED' if r['isolated'] else 'coincident in ' + ','.join(r['coincident_in'])}" for r in rows
-        ) + f"; isolated={isolated}/{len(segs)} (checked against {', '.join(corroborating)})"
+            f" {'ISOLATED' if r['isolated'] else 'coincident in ' + ','.join(r['coincident_in'])}" for r in shown
+        ) + more + f"; isolated={isolated}/{len(segs)} (checked against {', '.join(corroborating)})"
     )
     return Evidence(
         evidence_id=evidence_id, case_id=case_id, kind=kind, metric=f"{measure}_segments", unit="robust_z",
@@ -200,7 +212,7 @@ def _segment_evidence(
         z_score=_finite(float(first["peak_robust_z"])),
         method="robust_mad_z_segments; isolated if no corroborating sensor spikes in same rows",
         computation=comp, is_synthetic=synthetic, flags=flags,
-        values={"segments": rows, "isolated_segments": isolated, "total_segments": len(segs),
+        values={"segments": shown, "isolated_segments": isolated, "total_segments": len(segs),
                 "corroborating_checked": corroborating},
     )
 
@@ -235,13 +247,15 @@ def analyze_case(
     # --- model-derived residual evidence -------------------------------------------
     baseline: BaselineComparison | None = None
     resid_evidence: list[Evidence] = []
-    if model is not None and len(wf) > 0:
-        resid_w = model.residuals(wf)
+    resid_w = np.asarray(model.residuals(wf), dtype=float) if (model is not None and len(wf) > 0) else None
+    residuals_ok = resid_w is not None and bool(np.isfinite(resid_w).any())
+    if residuals_ok:
         resid_r = model.residuals(rf) if len(rf) > 0 else np.array([], dtype=float)
+        resid_r = np.asarray(resid_r, dtype=float)
         expected_w = model.predict(wf)
         std_val = float(model.evaluation.residual_std_validation)
-        rw = resid_w[~np.isnan(resid_w)]
-        rr = resid_r[~np.isnan(resid_r)]
+        rw = resid_w[np.isfinite(resid_w)]
+        rr = resid_r[np.isfinite(resid_r)]
         resid_mean = float(np.mean(rw)) if rw.size else float("nan")
         resid_std_w = float(np.std(rw, ddof=1)) if rw.size > 1 else float("nan")
         ref_resid_mean = float(np.mean(rr)) if rr.size else float("nan")
@@ -318,15 +332,18 @@ def analyze_case(
         ]
         if synthetic_resid:
             caveats.append("One or more model inputs or the target carry a synthetic overlay in this case; residuals are computed on the overlaid rows.")
-        baseline = BaselineComparison(
+        baseline = BaselineComparison(  # every float finite: NaN would persist as null and fail re-validation
             case_id=case_id, model_version=model_version, window=window, reference=reference,
-            observed_tey_mean=float(np.nanmean(wf[TARGET_KEY])), expected_tey_mean=float(np.nanmean(expected_w)),
-            residual_mean=resid_mean, residual_std_window=resid_std_w if math.isfinite(resid_std_w) else 0.0,
-            residual_std_validation=std_val, residual_z=float(z_raw) if math.isfinite(z_raw) else 0.0,
-            reference_residual_mean=ref_resid_mean if math.isfinite(ref_resid_mean) else 0.0,
-            unit="MWh", holdout_mae=float(model.evaluation.holdout.mae), holdout_r2=float(model.evaluation.holdout.r2),
+            observed_tey_mean=_finite0(np.nanmean(wf[TARGET_KEY])), expected_tey_mean=_finite0(np.nanmean(expected_w)),
+            residual_mean=_finite0(resid_mean), residual_std_window=_finite0(resid_std_w),
+            residual_std_validation=_finite0(std_val), residual_z=_finite0(z_raw),
+            reference_residual_mean=_finite0(ref_resid_mean),
+            unit="MWh", holdout_mae=_finite0(model.evaluation.holdout.mae), holdout_r2=_finite0(model.evaluation.holdout.r2),
             caveats=caveats,
         )
+    elif resid_w is not None:
+        dq_notes.append("Baseline residuals are not computable for this window (TEY or model inputs missing in every "
+                        "row): model-derived residual evidence and the baseline comparison were skipped.")
     else:
         dq_notes.append("Baseline model not available: model-derived evidence (TEY residuals, OOD counts vs training range) was skipped.")
     ev.extend(resid_evidence)
@@ -427,6 +444,7 @@ def analyze_case(
         consistency.append(f"CDP deviates (z={_f(cdp_z, 2)}) while AFDP/TEY/TIT do not (|z|<1)")
     if cdp_seg is not None and cdp_seg.values.get("isolated_segments", 0) > 0:
         rows_txt = ", ".join(f"[{r['absolute_rows'][0]},{r['absolute_rows'][1]})" for r in cdp_seg.values["segments"] if r["isolated"])
+        rows_txt = rows_txt or f"beyond the first {MAX_SEGMENTS_LISTED} listed segments"
         consistency.append(f"CDP shows isolated step/spike segment(s) at rows {rows_txt} with no coincident change in TEY/AFDP/TIT/GTEP")
     if resid_e is not None and NOTABLE_FLAG in resid_e.flags and not _is_notable(afdp_z) and not _is_notable(tey_z):
         consistency.append("TEY residual deviates notably while raw TEY and AFDP do not: model inputs and output disagree")
@@ -437,7 +455,8 @@ def analyze_case(
     if any(v > 0 for v in missing.values()):
         dq_notes.append("Missing values present in the window: " + ", ".join(f"{k}={v}" for k, v in missing.items() if v))
     if scenario.synthetic:
-        dq_notes.append(f"Synthetic overlay {scenario.scenario_id} (seed {scenario.seed}) applied to: {', '.join(scenario.affected_measurements)}; original rows unchanged.")
+        dq_notes.append(f"Synthetic overlay applied to measurements [{', '.join(scenario.affected_measurements)}] "
+                        f"(seed {scenario.seed}); original rows unchanged.")
     dq_notes.append("Rows are hourly aggregates without timestamps (source_year + row_index only).")
     data_quality = DataQualityReport(
         case_id=case_id, missing_values=missing, out_of_training_range=ood, sensor_consistency_flags=consistency,

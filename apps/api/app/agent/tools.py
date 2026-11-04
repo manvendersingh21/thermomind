@@ -8,6 +8,7 @@ never exposed; only scenario_label and which measurements carry a synthetic over
 from __future__ import annotations
 
 import math
+import re
 from typing import Any
 
 import pandas as pd
@@ -188,6 +189,20 @@ def _clean(v: Any) -> Any:
     return v
 
 
+_SCENARIO_ID = re.compile(r"\s*\bS0\d_[A-Z_]+\b")
+
+
+def _strip_scenario_ids(v: Any) -> Any:
+    """Defence in depth: scenario ids (which name the injected answer) never reach the model."""
+    if isinstance(v, str):
+        return _SCENARIO_ID.sub("", v)
+    if isinstance(v, dict):
+        return {k: _strip_scenario_ids(x) for k, x in v.items()}
+    if isinstance(v, list):
+        return [_strip_scenario_ids(x) for x in v]
+    return v
+
+
 def _dump(obj: Any) -> dict:
     if obj is None:
         return {}
@@ -225,7 +240,8 @@ class ToolRunner:
         if not isinstance(args, dict):
             raise ToolError("tool arguments must be a JSON object")
         handler = getattr(self, f"_tool_{name}")
-        return handler(**self._validate_args(name, args))
+        result, ids = handler(**self._validate_args(name, args))
+        return _strip_scenario_ids(result), ids
 
     def _validate_args(self, name: str, args: dict) -> dict:
         spec = next(t["function"]["parameters"] for t in TOOL_SPECS if t["function"]["name"] == name)
@@ -376,6 +392,8 @@ class ToolRunner:
                or any(k in (e.metric or "").lower() for k in ("ood", "coherence", "consistency"))
                or any("out_of_training_range" in f or "isolated" in f for f in (e.flags or []))]
         d = _dump(dq) if dq is not None else {"available": False}
+        if isinstance(d.get("notes"), list):
+            d["notes"] = [_SCENARIO_ID.sub("", str(n)) for n in d["notes"]]
         d.setdefault("scenario_label", self.scenario_label)
         d.setdefault("synthetic_measurements", self.synthetic_measurements)
         d["scenario_label"] = self.scenario_label

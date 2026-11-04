@@ -24,6 +24,17 @@ from typing import Any
 _KEY_LIKE = re.compile(r"(sk-[A-Za-z0-9_\-]{8,}|Bearer\s+[A-Za-z0-9_\-\.]{8,})")
 
 
+CONNECTION_RETRY_DELAY_S = 1.0
+
+
+def _is_connection_error(exc: Exception) -> bool:
+    try:
+        from openai import APIConnectionError, APITimeoutError
+    except Exception:  # pragma: no cover - SDK missing
+        return False
+    return isinstance(exc, APIConnectionError) and not isinstance(exc, APITimeoutError)
+
+
 class MetaClientError(RuntimeError):
     """Safe, key-free description of a failed Meta API call."""
 
@@ -87,7 +98,7 @@ class MetaClient:
             from openai import OpenAI  # imported lazily so offline mode needs no SDK init
 
             self._client = OpenAI(api_key=self._api_key, base_url=base_url,
-                                  timeout=self.timeout_s, max_retries=2)
+                                  timeout=self.timeout_s, max_retries=0)  # retries: see chat()
 
     @property
     def configured(self) -> bool:
@@ -109,10 +120,17 @@ class MetaClient:
         if response_format:
             kwargs["response_format"] = response_format
         t0 = time.perf_counter()
-        try:
-            resp = self._client.chat.completions.create(**kwargs)
-        except Exception as exc:  # noqa: BLE001 - everything becomes a safe error
-            raise MetaClientError(self._safe_error(exc)) from None
+        for attempt in (0, 1):
+            try:
+                resp = self._client.chat.completions.create(**kwargs)
+                break
+            except Exception as exc:  # noqa: BLE001 - everything becomes a safe error
+                # One retry, only for a connection error (never for timeouts/HTTP errors: those would just
+                # double the wall-clock time of a slow call).
+                if attempt == 0 and _is_connection_error(exc):
+                    time.sleep(CONNECTION_RETRY_DELAY_S)
+                    continue
+                raise MetaClientError(self._safe_error(exc)) from None
         latency_ms = int((time.perf_counter() - t0) * 1000)
         if not getattr(resp, "choices", None):
             raise MetaClientError("Meta API returned no choices")

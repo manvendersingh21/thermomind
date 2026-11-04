@@ -58,7 +58,8 @@ SCENARIOS: dict[str, ScenarioInfo] = {
         title="Isolated CDP sensor inconsistency (synthetic)",
         synthetic=True,
         description=(
-            "CDP alone receives a +1.5 mbar offset (plus small seeded noise) for window rows [40, 80). TEY, AFDP, "
+            "CDP alone receives a +1.5 mbar offset (plus small seeded noise) for the middle third of the window "
+            "(rows [n/3, 2n/3), i.e. [40, 80) for the default 120-row window). TEY, AFDP, "
             "TIT, GTEP and all other measurements are untouched."
         ),
         rationale=(
@@ -167,7 +168,8 @@ def apply_scenario(window: pd.DataFrame, scenario_id: str, seed: int | None = No
         transformations.append(_multiply_ramp(frame, "TEY", 0.965))
         transformations.append(_multiply_ramp(frame, "CDP", 0.99))
     elif scenario_id == "S03_SENSOR_INCONSISTENCY":
-        transformations.append(_add_offset(frame, "CDP", 1.5, (40, 80), 0.05, rng, "mbar"))
+        n = len(frame)  # middle third, so short windows still change rows; n=120 -> [40, 80)
+        transformations.append(_add_offset(frame, "CDP", 1.5, (n // 3, 2 * n // 3), 0.05, rng, "mbar"))
     elif scenario_id == "S04_AMBIENT_SHIFT":
         transformations.append(_add_ramp(frame, "AT", 6.0, 0.1, rng, "degC"))
         transformations.append(_add_ramp(frame, "AH", -10.0, 0.2, rng, "%"))

@@ -8,6 +8,7 @@ a fault detector. See ``_NOTES`` for the caveats that travel with every
 """
 from __future__ import annotations
 
+import os
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -183,10 +184,16 @@ def train_baseline(frame: pd.DataFrame, model_dir: Path, seed: int = 42) -> Mode
         notes=[*_NOTES, f"HistGradientBoostingRegressor params: {HGBR_PARAMS}, random_state={seed}.", *notes],
     )
 
+    # Atomic publish: write each file to a temp name and os.replace() it. The JSON goes first and the joblib
+    # last, so a reader keyed on the joblib mtime never pairs a new model with a stale evaluation.
+    json_tmp = model_dir / f".{JSON_NAME}.tmp"
+    json_tmp.write_text(evaluation.model_dump_json(indent=2), encoding="utf-8")
+    os.replace(json_tmp, model_dir / JSON_NAME)
+    joblib_tmp = model_dir / f".{JOBLIB_NAME}.tmp"
     joblib.dump(
         {"model": model, "features": list(FEATURE_KEYS), "version": MODEL_VERSION, "model_id": MODEL_ID,
          "target": TARGET_KEY, "seed": int(seed)},
-        model_dir / JOBLIB_NAME,
+        joblib_tmp,
     )
-    (model_dir / JSON_NAME).write_text(evaluation.model_dump_json(indent=2), encoding="utf-8")
+    os.replace(joblib_tmp, model_dir / JOBLIB_NAME)
     return evaluation

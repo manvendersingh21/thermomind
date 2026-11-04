@@ -8,7 +8,9 @@ so other processes/tools can see what was loaded. Raw frames are never mutated:
 from __future__ import annotations
 
 import json
+import logging
 import math
+import re
 import sqlite3
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -32,6 +34,8 @@ from app.schemas import (
     SeriesResponse,
     SourceFileInfo,
 )
+
+log = logging.getLogger("thermomind.data.repository")
 
 UNKNOWN_YEAR = -1
 UCI_DATASET_ID = "ds_uci_551"
@@ -218,6 +222,51 @@ class DatasetRepository:
 
     def list(self) -> list[DatasetSummary]:
         return [b.summary() for b in self._bundles.values()]
+
+    # --- upload persistence (bytes on disk so uploads survive a restart) ----------------
+    @staticmethod
+    def _safe_filename(filename: str) -> str:
+        name = re.sub(r"[^A-Za-z0-9._-]", "_", Path(str(filename or "")).name).lstrip(".")
+        return name[:200] or "upload.csv"
+
+    def persist_upload(self, bundle: DatasetBundle, files: list[tuple[str, bytes]], uploads_dir: Path) -> Path:
+        """Write the raw uploaded bytes to ``uploads_dir/<dataset_id>/<filename>`` (idempotent)."""
+        target = Path(uploads_dir) / bundle.dataset_id
+        target.mkdir(parents=True, exist_ok=True)
+        for filename, data in files:
+            path = target / self._safe_filename(filename)
+            tmp = path.with_name(f".{path.name}.tmp")
+            tmp.write_bytes(data)
+            tmp.replace(path)
+        return target
+
+    def restore_uploads(self, uploads_dir: Path) -> list[str]:
+        """Re-register every persisted upload under ``uploads_dir``; bad entries are logged and skipped."""
+        from app.data.uci_loader import load_csv_files  # local import avoids a circular import
+
+        uploads_dir = Path(uploads_dir)
+        restored: list[str] = []
+        if not uploads_dir.is_dir():
+            return restored
+        for d in sorted(p for p in uploads_dir.iterdir() if p.is_dir()):
+            if d.name in self._bundles:
+                continue
+            files = [(f.name, f.read_bytes()) for f in sorted(d.iterdir())
+                     if f.is_file() and not f.name.startswith(".")]
+            if not files:
+                continue
+            try:
+                bundle = load_csv_files(files, source="USER_UPLOAD")
+            except Exception as exc:  # noqa: BLE001 - one bad upload must not block startup
+                log.warning("persisted upload %s could not be restored: %s", d.name, type(exc).__name__)
+                continue
+            if bundle.dataset_id != d.name:
+                log.warning("persisted upload %s re-hashed to %s; registered under the new id", d.name, bundle.dataset_id)
+            self.register(bundle)
+            restored.append(bundle.dataset_id)
+        if restored:
+            log.info("restored %d uploaded dataset(s): %s", len(restored), ", ".join(restored))
+        return restored
 
     def seed_uci(self, raw_dir: Path) -> DatasetBundle:
         """Load the UCI files once; subsequent calls return the already-loaded bundle."""
