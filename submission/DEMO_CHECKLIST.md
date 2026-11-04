@@ -11,7 +11,7 @@
 - [ ] One live `S03_SENSOR_INCONSISTENCY` case created; existing real case: `case_760658afb3d5` (18:33:19Z); S01: `case_b1d8db08ff82`
 - [ ] `make dev` running; http://localhost:8000/api/health returns `model_ready=true`, `data_ready=true`, `meta_configured=true`
 - [ ] http://localhost:8000/api/demo/status reports `ready_for_demo=true`, blockers empty
-- [ ] Browser: http://localhost:5173, zoom 110–125 %, dark/light theme chosen, no stale tabs, bookmarks bar hidden
+- [ ] Browser: http://localhost:5173, light UI, browser zoom 110–125 %, no stale tabs, bookmarks bar hidden
 - [ ] Second screen / terminal with `make dev` logs visible to presenter only
 
 ## T-10 min: rehearsal

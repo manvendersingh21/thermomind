@@ -1,6 +1,6 @@
 # Evaluation
 
-All numbers in this file must come from running the code in this repository. Placeholders are left empty on purpose; nothing is estimated.
+All numbers in this file must come from running the code in this repository. All numbers in this file come from running the code in this repository; nothing is estimated.
 
 ## Baseline model
 
@@ -9,7 +9,7 @@ All numbers in this file must come from running the code in this repository. Pla
 | Model | `sklearn.ensemble.HistGradientBoostingRegressor` |
 | Model id / version | `baseline_tey_hgbr` / `baseline_v1` |
 | Target | TEY (MWh, as published) |
-| Features | AT, AP, AH, AFDP, GTEP, TIT, TAT, CDP (CO and NOX excluded: combustion outputs, would leak target-correlated information) |
+| Features | AT, AP, AH, AFDP, GTEP, TIT, TAT, CDP (CO and NOX excluded: they are combustion outputs, not operating inputs) |
 | Split | chronological by `source_year`: train 2011–2013, validation 2014, holdout 2015 (holdout never used for fitting or threshold selection) |
 | Seed | 42 |
 | Produced by | `make train` → `scripts/train.py` → `data/models/baseline_v1.json` (`ModelEvaluation`); served by `GET /api/models/evaluation`; shown on `/evaluation` |
@@ -39,6 +39,23 @@ Note the validation residual median is +1.02 MWh: 2014 sits slightly above the 2
 - `residual_std_validation` and the validation quantiles are the only thresholds used by the evidence engine (`BaselineComparison.residual_z`). The holdout year plays no role in threshold selection.
 - Beating the naive baselines shows that the features carry information about TEY; it does not show that the model detects faults, because no fault labels exist.
 
+### GPU challenger (benchmark only)
+
+`mlp_v1` (`torch.nn` MLP 8-256-256-128-1, same features, split and seed; trained on `cuda:0 Tesla V100-PCIE-32GB` in 27.6 s). Source: `data/models/mlp_v1.json`.
+
+| Split | n | MAE (MWh) | RMSE (MWh) | R² |
+|---|---|---|---|---|
+| Validation (2014) | 7158 | 1.113 | 1.383 | 0.9897 |
+| Holdout (2015) | 7384 | 1.664 | 2.183 | 0.9818 |
+
+| Item | Value |
+|---|---|
+| Device | cuda:0 Tesla V100-PCIE-32GB |
+| training_seconds | 27.6 |
+| Role | challenger (not used for investigations or thresholds) |
+
+The challenger wins on 2014 validation but loses on the untouched 2015 holdout; the HGBR remains the production baseline. Selection would be made on validation only; this result is reported, not used.
+
 ## Scenario behaviour (deterministic evidence engine)
 
 
@@ -53,15 +70,16 @@ Real-only control windows in 2015 (rows [500,620), [3000,3120), [6000,6120)) plu
 
 ## Live Meta smoke test record
 
-Produced by `make meta-smoke` (`scripts/meta_live_smoke.py`), which performs one real `chat/completions` call with function tools against `https://api.meta.ai/v1`. Record the output verbatim; the key is never printed.
+Produced by `make meta-smoke` (`scripts/meta_live_smoke.py`), which performs one real `chat/completions` call with function tools against `https://api.meta.ai/v1`. The table below is from full-pipeline runs; the key is never printed.
 
-Three real investigations were run through the full pipeline (`services.run_investigation_pipeline`, `use_meta=True`) on 2026-11-04 against `https://api.meta.ai/v1`. They are stored in `data/thermomind.db` and visible under `/investigations` in the UI. Token counts are from the API's `usage` field; latency is the sum of model-call round trips. The key is never printed.
+Four real investigations were run through the full pipeline (`services.run_investigation_pipeline`, `use_meta=True`) on 2026-11-04 against `https://api.meta.ai/v1`. They are stored in `data/thermomind.db` and visible under `/investigations` in the UI. Token counts are from the API's `usage` field; latency is the sum of model-call round trips. The key is never printed.
 
 | Scenario | Case id | Timestamp (UTC) | Model id returned | Model turns | Tool calls | Model latency (ms) | Tokens prompt / completion / reasoning | Validator | Rank-1 hypothesis | Report hash |
 |---|---|---|---|---|---|---|---|---|---|---|
 | S02_INTAKE_RESTRICTION | case_76d34565b3dc | 2026-11-04T18:32:03Z | muse-spark-1.3 | 4 | 10 (get_baseline_comparison, get_sensor_window, get_data_quality, list_evidence, evaluate_hypothesis, evaluate_hypothesis, evaluate_hypothesis, evaluate_hypothesis, get_sensor_window, lookup_reference) | 75040 | 42262 / 7234 / 4141 | accepted first pass | Intake restriction (possible) | `134a5460c43905de…` |
 | S03_SENSOR_INCONSISTENCY | case_760658afb3d5 | 2026-11-04T18:33:19Z | muse-spark-1.3 | 3 | 9 (get_baseline_comparison, get_sensor_window, get_data_quality, evaluate_hypothesis, evaluate_hypothesis, list_evidence, get_sensor_window, evaluate_hypothesis, evaluate_hypothesis) | 43577 | 27663 / 4422 / 1733 | accepted first pass | Sensor issue / measurement inconsistency (CDP) (possible) | `f16579c471a71a9d…` |
 | S01_NORMAL | case_b1d8db08ff82 | 2026-11-04T18:34:03Z | muse-spark-1.3 | 4 | 11 (get_baseline_comparison, get_data_quality, list_evidence, get_sensor_window, get_sensor_window, evaluate_hypothesis, evaluate_hypothesis, evaluate_hypothesis, evaluate_hypothesis, lookup_reference, lookup_reference) | 63817 | 36670 / 6816 / 3707 | accepted first pass | Unknown / no fault / normal variation (possible) | `92feaa1d7b532ff8…` |
+| S04_AMBIENT_SHIFT | case_753818208605 | 2026-11-04T18:45:10Z | muse-spark-1.3 | 4 | 10 (get_baseline_comparison, get_data_quality, list_evidence, get_sensor_window, evaluate_hypothesis, evaluate_hypothesis, evaluate_hypothesis, evaluate_hypothesis, get_sensor_window, get_sensor_window) | 124428 | 38867 / 11530 / 8807 | accepted first pass (zero validation errors) | Operating condition including ambient influence (inconclusive); severity informational | `973a527aeb89b45760484632e18ff3ec3ff10bc1bfc9b37143f39ced892ae78f` |
 
 The earlier standalone smoke (`scripts/meta_live_smoke.py`, 18:27:24 UTC, fake 3-evidence case) also completed: 5 model turns, 9 tool calls, 38,057 total tokens (5,843 reasoning), one rewrite because the validator flagged the word "command" in an engineer check; the rewrite was accepted.
 

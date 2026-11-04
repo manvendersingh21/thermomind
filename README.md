@@ -4,7 +4,7 @@
 
 ThermoMind combines authentic operating measurements, reproducible anomaly analysis, Meta Muse Spark reasoning with real tool use, and inspectable evidence to help plant engineers prioritize investigations.
 
-> **Status (honest banner):** hackathon prototype, written from scratch on **4 November 2026** during the Meta Global AI Developer Hackathon (Startup Track). It is decision-support software for exploring a public data set. It is **not** a validated plant safety, monitoring or control system; it has **no** write path to any PLC, SCADA, DCS or historian; every report is `draft_requires_human_review`. No accuracy, uptime, adoption or commercial claims are made. All numbers shown in the app come from running the code in this repository (see [docs/EVALUATION.md](docs/EVALUATION.md)).
+> **Status (honest banner):** hackathon prototype built during the Meta Global AI Developer Hackathon (Startup Track). The repository's git history begins 2026-11-04 18:15 UTC; the project was restarted from an empty directory that day after earlier work became inaccessible. All code in this repository was written during the hackathon window. It is decision-support software for exploring a public data set. It is **not** a validated plant safety, monitoring or control system; it has **no** write path to any PLC, SCADA, DCS or historian; every report is `draft_requires_human_review`. No accuracy, uptime, adoption or commercial claims are made. All numbers shown in the app come from running the code in this repository (see [docs/EVALUATION.md](docs/EVALUATION.md)).
 
 ---
 
@@ -28,7 +28,7 @@ ThermoMind turns one window of plant data into an **investigation case**: eviden
 ```mermaid
 flowchart LR
   subgraph Browser["apps/web — React · TypeScript · Vite · Tailwind · Recharts (:5173, /api proxy)"]
-    UI["/  ·  /data  ·  /investigations/:id  ·  /evaluation  ·  /replay"]
+    UI["/  ·  /data  ·  /investigations  ·  /investigations/:id  ·  /evaluation  ·  /replay"]
   end
   subgraph API["apps/api — FastAPI (:8000)"]
     R["routers: datasets · models · scenarios · investigations · health"]
@@ -56,11 +56,12 @@ All values below were produced by running this repository's code; source: [docs/
 - **TEY baseline, 2015 holdout (n = 7384, never used for fitting):** MAE 1.293 MWh, RMSE 1.646, R² 0.9896. Naive train-mean MAE 12.957; naive previous-observation MAE 4.125. Chronological split: train 2011-2013, validation 2014, holdout 2015. This shows the features carry information about TEY; it is not a fault-detection accuracy (no fault labels exist).
 - **Control windows:** 0 of 4 real-only windows (three 2015 windows plus S01) raised a notable residual flag. The three synthetic scenarios S02-S04 each ranked the expected deterministic hypothesis (S04 claims no fault). Not a false-alarm study.
 - **Live Meta record (2026-11-04, `muse-spark-1.3` via `https://api.meta.ai/v1`):** three real investigations through the full pipeline: `case_76d34565b3dc` (S02, 10 tool calls, 4 model turns), `case_760658afb3d5` (S03, 9 tool calls, 3 turns), `case_b1d8db08ff82` (S01, 11 tool calls, 4 turns). All three accepted by the validator on the first pass, i.e. zero validation errors and no rewrites. Diagnostic correctness of the reports is not benchmarked.
+- **GPU challenger (benchmark only):** PyTorch MLP `mlp_v1` (V100): validation MAE 1.113 vs HGBR 1.364; 2015 holdout MAE 1.664 vs HGBR 1.293 (RMSE 2.183 vs 1.646, R² 0.9818 vs 0.9896). HGBR retained as production.
 - **Tests:** 140 passed (`cd apps/api && python -m pytest -q`).
 
 ## Screenshots
 
-Demo video: `submission/video/thermomind_demo.mp4`.
+Demo video: link added at submission time (recording lives in `submission/video/`).
 
 | View | File |
 |---|---|
@@ -96,7 +97,7 @@ make train                      # trains data/models/baseline_v1.* and prints re
 make dev                        # API http://localhost:8000, web http://localhost:5173
 ```
 
-Other targets: `make seed` (demo cases), `make test` (pytest on fixtures + web typecheck), `make smoke` (HTTP smoke test), `make meta-smoke` (one live Muse Spark call, records model id / latency / tool calls), `make build` (web build + Docker image when Docker is available).
+Other targets: `make seed` (demo cases), `make test` (pytest on fixtures + web typecheck), `make smoke` (HTTP smoke test), `make meta-smoke` (one live Muse Spark call, records model id / latency / tool calls), `make gpu-train` (optional PyTorch challenger on GPU), `make build` (web build + Docker image when Docker is available).
 
 **Docker**
 
@@ -108,7 +109,7 @@ docker compose run --rm thermomind python /app/scripts/train.py
 docker compose up                # http://localhost:8000 (API + built web UI from one image)
 ```
 
-The image is a two-stage build (`node:20-alpine` builds `apps/web`, `python:3.12-slim` serves the API and `apps/web/dist`). `data/` is a volume; the key is passed by environment only.
+The image is a two-stage build (`node:20-alpine` builds `apps/web`, `python:3.12-slim` serves the API and `apps/web/dist`). `data/` is a volume; the key is passed by environment only. The Docker path is written but was not exercised on the build machine (Docker not installed there).
 
 ## Meta integration
 
@@ -133,7 +134,7 @@ Default window: year 2014, rows [1200, 1320); reference: the 240 real rows immed
 
 ## Safety and scope
 
-Read-only decision support. Zero write endpoints toward control systems; no PLC/SCADA/DCS/historian writes, no setpoints, no recommendations phrased as control actions (the validator rejects them). Reports are drafts that require human review; `severity` ranks review priority and is not an alarm. Threat model, mitigations and the planned OT-security assessment: [docs/SAFETY.md](docs/SAFETY.md).
+Read-only decision support. Zero write endpoints toward control systems; no PLC/SCADA/DCS/historian writes, no setpoints, no recommendations phrased as control actions (the validator rejects drafts matching a set of control-instruction patterns; this is a guard, not a guarantee). Reports are drafts that require human review; `severity` ranks review priority and is not an alarm. Threat model, mitigations and the planned OT-security assessment: [docs/SAFETY.md](docs/SAFETY.md).
 
 ## Tests
 
@@ -153,13 +154,13 @@ API tests run on `data/fixtures` only (no network, no key). CI: [.github/workflo
 - CDP is labelled "mbar" by the source; its magnitude suggests another unit. We display it as published and flag it.
 - The baseline is a statistical model, not thermodynamics; metrics are in [docs/EVALUATION.md](docs/EVALUATION.md) and come from `make train`. The optional PyTorch MLP is a benchmark challenger only; the HGBR stays the production baseline.
 - Muse Spark output quality is not benchmarked; the validator guarantees form and provenance, not correctness. Human review is mandatory.
-- Three live Muse Spark runs is a record, not a benchmark; S04 and the rest of the scenario set have no stored live case yet.
+- Four live Muse Spark runs (S01-S04) are a record, not a benchmark.
 - Single-user SQLite prototype: no auth, no multi-tenancy, not hardened for an OT network.
 
 ## License
 
-MIT, copyright 2026 ThermoMind contributors (see [LICENSE](LICENSE)). The UCI data set is CC BY 4.0 and attributed above.
+MIT, copyright 2026 ThermoMind contributors (see [LICENSE](LICENSE)). The UCI data set is CC BY 4.0 and attributed above. The Overview and case pages embed the 'Combined Cycle Power Plant' interactive animation by educational-animation.org (MIT licence, https://www.educational-animation.org/en/combined-cycle-power-plant/). It is a generic educational plant, not the UCI facility.
 
 ## Hackathon attribution
 
-Built for the **Meta Global AI Developer Hackathon** (Startup Track), event window 26 October – 4 November 2026, submission deadline 4 November 2026, 9 PM ET. Everything in this repository was written on 4 November 2026 during the event as a from-scratch rebuild; no prior code was reused. See [docs/HACKATHON_WORK.md](docs/HACKATHON_WORK.md) and [docs/SUBMISSION.md](docs/SUBMISSION.md).
+Built for the **Meta Global AI Developer Hackathon** (Startup Track), event window 26 October – 4 November 2026, submission deadline 4 November 2026, 9 PM ET. The repository's git history begins 2026-11-04 18:15 UTC; the project was restarted from an empty directory that day after earlier work became inaccessible. All code in this repository was written during the hackathon window. See [docs/HACKATHON_WORK.md](docs/HACKATHON_WORK.md) and [docs/SUBMISSION.md](docs/SUBMISSION.md).

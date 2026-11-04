@@ -6,9 +6,9 @@ Event window 26 October – 4 November 2026. Submission deadline 4 November 2026
 
 ## Statement
 
-**Everything in this repository was written on 4 November 2026, during the event.** It is a from-scratch rebuild: the machine that held earlier work became inaccessible, so the project was restarted from an empty directory on 4 November 2026. **No prior code was reused.** The only external inputs are the public UCI data set (CC BY 4.0), open-source dependencies listed in `apps/api/requirements.txt` and `apps/web/package.json`, and the Meta Model API.
+The repository's git history begins 2026-11-04 18:15 UTC; the project was restarted from an empty directory that day after earlier work became inaccessible. All code in this repository was written during the hackathon window. The only external inputs are the public UCI data set (CC BY 4.0), open-source dependencies listed in `apps/api/requirements.txt` and `apps/web/package.json`, and the Meta Model API.
 
-The repository's first commit (`chore: initialize ThermoMind hackathon rebuild`) and every file timestamp reflect that date.
+The repository's first commit is `chore: initialize ThermoMind hackathon rebuild`.
 
 ## Components built today (4 November 2026)
 
@@ -24,7 +24,7 @@ Inventory as of the last commit in this section, from `find apps scripts docs -t
 | Evidence engine | `apps/api/app/analytics/anomaly.py`, `evidence.py`, `_io.py` | Window-vs-reference statistics, baseline comparison, data-quality report, deterministic hypothesis support |
 | Meta agent | `apps/api/app/agent/` (`meta_client`, `tools`, `orchestrator`, `prompts`, `report_validator`, `_fake_case`) | `muse-spark-1.3` tool loop with six tools, report validator, one rewrite, offline preview |
 | API and storage | `apps/api/app/main.py`, `services.py`, `api/` (datasets, scenarios, investigations, models, demo, health), `db/storage.py` | FastAPI routers, SQLite case store, pipeline service, static web serving |
-| Tests | `apps/api/tests/` (9 test files incl. red-team and torch) | Pytest suite, fixture-only for the API tests |
+| Tests | `apps/api/tests/` (8 test files incl. red-team and torch) | Pytest suite, fixture-only for the API tests |
 | Web app | `apps/web/src/` (pages: Overview, Investigations, Investigation, DataSources, Evaluation, Replay; components, typed API client) | React + TypeScript + Vite + Tailwind + Recharts UI with provenance badges |
 | Scripts | `scripts/` (`fetch_uci`, `train`, `train_torch`, `evaluate`, `seed_demo`, `meta_live_smoke`, `smoke_test.sh`, `e2e_browser.py`, `dev.sh`) | Data fetch, training, scenario evaluation, seeding, live Meta smoke, HTTP smoke, browser e2e |
 | Build and CI | `Makefile`, `Dockerfile`, `docker-compose.yml`, `.github/workflows/ci.yml` | Make targets, Docker image, CI |
@@ -32,7 +32,7 @@ Inventory as of the last commit in this section, from `find apps scripts docs -t
 
 ## Real numbers
 
-- **Commits (all 2026-11-04 UTC):** 10 commits from `e6364fd` at 18:15:57 (initial contracts, schemas, config, fixtures) to `6456503` at 18:39:34. Others: data layer 18:22:29; docs/CI/Docker 18:28:57; contract update 18:29:18; analytics 18:30:00; agent 18:30:13; API 18:30:13; fix 18:31:48; evaluation 18:36:29. (Later work in the tree is uncommitted at the time of writing.)
+- **Commits (all 2026-11-04 UTC):** 15 commits from `e6364fd` at 18:15:57 (initial contracts, schemas, config, fixtures) to `0e61535` at 18:50:19 (`git log --oneline`).
 - **Tests:** `cd apps/api && python -m pytest -q` -> `140 passed, 1 warning in 72.79s`.
 - **Live Muse Spark investigations** (`muse-spark-1.3`, `https://api.meta.ai/v1`, recorded in `docs/EVALUATION.md`):
   - `case_76d34565b3dc` S02_INTAKE_RESTRICTION, 2026-11-04T18:32:03Z

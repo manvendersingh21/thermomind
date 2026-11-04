@@ -2,20 +2,18 @@
 
 ## Pitch (≤ 100 words)
 
-ThermoMind is a read-only AI diagnostic investigator for gas-turbine plants. It turns real operating data into an investigation case: deterministic evidence with the computation shown, a reproducible baseline with explicit uncertainty, and a Meta Muse Spark report that may cite only evidence its tool calls returned. A validator rejects fabricated evidence, invented dates and control language; every report is a draft for an engineer. Built from scratch during the hackathon on public UCI data, it never touches a control system. It helps reliability engineers decide what to investigate first.
-
-(81 words)
+ThermoMind is a read-only AI diagnostic investigator for gas-turbine plants. It turns real operating data into an investigation case: deterministic evidence with the computation shown, a reproducible baseline with explicit uncertainty, and a Meta Muse Spark report that may cite only evidence its tool calls returned. A validator rejects fabricated evidence, invented dates and control language; every report is a draft for an engineer. Built during the hackathon window (git history starts 2026-11-04) on public UCI data, it never touches a control system. It helps reliability engineers decide what to investigate first.
 
 ## Innovation
 
-- **Evidence-gated reasoning.** The model does not compute; it selects, ranks and explains over server-side evidence. Evidence IDs are a whitelist enforced after generation, so a hallucinated citation cannot reach a human.
-- **Provenance as a first-class type.** `real_observation` / `model_derived` / `synthetic_overlay` travel with every value, and the UI badges them. Synthetic demo scenarios are impossible to confuse with real data.
+- **Evidence-gated reasoning.** The model does not compute; it selects, ranks and explains over server-side evidence. Evidence IDs are a whitelist enforced after generation, so a hallucinated citation is rejected before it reaches a human.
+- **Provenance as a first-class type.** `real_observation` / `model_derived` / `synthetic_overlay` travel with every value, and the UI badges them. Synthetic demo scenarios are labelled at every layer.
 - **Replayable investigations.** Every model request, tool call, tool result, validation and rewrite is stored and replayable, with latency and token counts.
 - **Honest data handling.** No fabricated timestamps, no fabricated labels, no unit laundering (CDP is flagged, TEY stays MWh).
 
 ## Who pays
 
-Independent power producers, O&M contractors and utility reliability groups, through a per-plant / per-turbine annual pilot. The champion is the performance or reliability engineer who today triages deviations in spreadsheets beside OEM monitoring (Siemens Energy, GE Vernova, AspenTech), which we complement rather than replace. Pricing is an output of the first pilots, not an input.
+Independent power producers, O&M contractors and utility reliability groups, through a per-plant / per-turbine annual pilot. The champion is the performance or reliability engineer who today triages deviations in spreadsheets beside OEM monitoring and asset-performance software, which we complement rather than replace. Pricing is an output of the first pilots, not an input.
 
 ## How Meta is used
 
@@ -23,7 +21,7 @@ Independent power producers, O&M contractors and utility reliability groups, thr
 
 ## Why it is different
 
-Incumbent monitoring detects and alerts inside long-term service agreements. ThermoMind produces the thing engineers actually argue over: a transparent, auditable case file with explicit uncertainty and limitations, built on exported data without any OT integration. The unit of value is the case, not the alarm.
+OEM monitoring (e.g. Siemens Energy, GE Vernova) and vendor-neutral asset-performance software (e.g. AspenTech) already exist; our hypothesis is that the readable, auditable case, not the alarm, is the unit of value. Incumbent monitoring detects and alerts inside long-term service agreements. ThermoMind produces the thing engineers actually argue over: a transparent, auditable case file with explicit uncertainty and limitations, built on exported data without any OT integration. The unit of value is the case, not the alarm.
 
 ## What we do not claim
 

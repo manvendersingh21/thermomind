@@ -39,7 +39,7 @@ The model never sees the raw frame directly: it sees tool results, each of which
 | Orchestrator | `apps/api/app/agent/orchestrator.py` | Multi-turn tool loop (bounded by `META_MAX_TOOL_ROUNDS`), validation, one rewrite, fallback to `needs_review`; offline preview when no key | `meta_used=true` only after a real Meta call; `mode` is `meta_live` or `offline_preview` |
 | Validator | `apps/api/app/agent/report_validator.py` | Parse → `DiagnosticReport`; reject unknown evidence IDs, case-ID mismatch, schema errors, fabricated dates, control instructions; `report_hash` | Report status is always `draft_requires_human_review` |
 | API + storage | `apps/api/app/main.py`, `app/api/*`, `app/db/storage.py` | Routers per `contracts/api.md`; CORS allowlist; static `apps/web/dist`; SQLite `InvestigationStore` | Never 500 on user input; never leak the key |
-| Web | `apps/web/` | React + TypeScript + Vite + Tailwind + Recharts; routes `/`, `/data`, `/investigations/:id`, `/evaluation`, `/replay` | Provenance badges: REAL PUBLIC DATA / MODEL-DERIVED / SYNTHETIC OVERLAY / HUMAN REVIEW REQUIRED |
+| Web | `apps/web/` | React + TypeScript + Vite + Tailwind + Recharts; routes `/`, `/data`, `/investigations` (list), `/investigations/:id`, `/evaluation`, `/replay`; embeds the 'Combined Cycle Power Plant' interactive animation by educational-animation.org (MIT licence, https://www.educational-animation.org/en/combined-cycle-power-plant/). It is a generic educational plant, not the UCI facility. | Provenance badges: REAL PUBLIC DATA / MODEL-DERIVED / SYNTHETIC OVERLAY / HUMAN REVIEW REQUIRED |
 | Scripts | `scripts/` | `fetch_uci.py`, `train.py`, `seed_demo.py`, `dev.sh`, `smoke_test.sh`, `meta_live_smoke.py` | Driven by the `Makefile` targets |
 | Packaging | `Dockerfile`, `docker-compose.yml`, `.github/workflows/ci.yml` | Two-stage image; `data/` volume; CI runs fixture-only pytest and the web typecheck/build | No secrets in image or CI |
 
@@ -79,6 +79,6 @@ Without `MODEL_API_KEY` the same path runs with `use_meta` effectively false: th
 ## Why this shape
 
 - **Evidence first, prose second.** The model's job is to select and explain, not to compute. Every number in a report can be traced to an `Evidence.computation` string.
-- **Validation as a hard gate.** A hallucinated evidence ID or a control instruction cannot reach the engineer.
+- **Validation as a hard gate.** A hallucinated evidence ID cannot pass the gate, and control-language drafts are rejected by pattern matching.
 - **Replayability.** The stored event trace lets anyone replay what the model requested and received, which is what an auditor or a sceptical reliability engineer will ask for first.
 - **One image.** Plant IT teams prefer a single container with a mounted data directory over a multi-service deployment.

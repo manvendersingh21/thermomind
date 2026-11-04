@@ -14,7 +14,7 @@ Gas-turbine fleets are run by people who must decide, every week, which performa
 
 ## The wedge
 
-Incumbent monitoring from **Siemens Energy, GE Vernova and AspenTech** (and OEM remote monitoring centres) is deep, physics-informed and embedded in long-term service agreements. We do not compete with it and do not dismiss it. ThermoMind sits *beside* those systems:
+Incumbent monitoring from **Siemens Energy, GE Vernova and AspenTech** (and OEM remote monitoring centres) is OEM-integrated and embedded in long-term service agreements. We do not compete with it and do not dismiss it. ThermoMind sits *beside* those systems:
 
 - works on **exported data** (CSV / historian extract) rather than live integration, so it can start without an OT project;
 - produces a **transparent, auditable investigation case**: every number traceable to a computation, every hypothesis tied to evidence IDs, explicit limitations and "what would change the assessment";
