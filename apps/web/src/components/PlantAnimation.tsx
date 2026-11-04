@@ -5,9 +5,10 @@
  *   highlight parameter. It loads the OAL SVG board scripts only. No documented API: users must click.
  * - A different product, the "SceneForge" 3D scene editor (3d-scene-editor/index.html?scene=...&mode=view),
  *   does ship ExternalAPI.js with a postMessage API (action: selectObject / hideObject / setProperty,
- *   object: <name>) and URL params (mode, hide, color:Name, cam, ui). Its relation to the embedded 2D
- *   animation is unconfirmed and it is NOT what we embed, so we do not drive anything.
- * - Conclusion: no documented API for the embedded animation; instruct the user to click the named objects.
+ *   object: <name>) and URL params (mode, hide, color:Name, cam, ui). That 3D scene contains the same 11
+ *   named objects as this 2D animation and IS embedded separately by Plant3D.tsx, which drives it with a
+ *   verified selectObject / objectSelected protocol (see docs/PLANT_3D.md).
+ * - Conclusion for THIS component: the 2D animation has no API; instruct the user to click the named objects.
  */
 import { ExternalLink } from "lucide-react";
 import type { AnimationObject } from "../lib/subsystems";
