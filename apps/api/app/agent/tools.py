@@ -323,12 +323,33 @@ class ToolRunner:
         if baseline is None:
             return ({"available": False,
                      "note": "no baseline model available for this case; model-derived evidence absent",
-                     "evidence_ids": ids, "scenario_label": self.scenario_label}, ids)
+                     "evidence_ids": ids, "scenario_label": self.scenario_label,
+                     "second_opinion": self._second_opinion()}, ids)
         result = {"available": True, "provenance_kind": "model_derived",
                   "baseline": _dump(baseline), "evidence_ids": ids,
                   "evidence": [self._compact(e) for e in model_ev],
-                  "scenario_label": self.scenario_label}
+                  "scenario_label": self.scenario_label,
+                  "second_opinion": self._second_opinion()}
         return result, ids
+
+    def _second_opinion(self) -> dict:
+        """Self-describing GPU challenger block (additive; the production baseline above stays the model of record)."""
+        so = getattr(self.analysis, "second_opinion", None)
+        if not so:
+            return {"available": False,
+                    "note": "second_opinion: no independent challenger baseline was run for this case; "
+                            "only the production baseline is available"}
+        d = _clean(dict(so))
+        agreement = d.get("agreement") or "n/a"
+        d["note"] = (
+            f"second_opinion: an independent GPU-trained MLP baseline ({d.get('model_version')}, challenger, not "
+            f"production; holdout MAE {d.get('holdout_mae')} MWh) computed the same TEY residual on the same rows; "
+            f"agreement={agreement}. {d.get('agreement_note') or ''} Cite ev_tey_residual_mlp_01 / "
+            "ev_model_agreement_01 for these numbers; the production baseline remains the model of record."
+        ).strip()
+        d["evidence_ids"] = [i for i in ("ev_tey_residual_mlp_01", "ev_model_agreement_01")
+                             if i in self.evidence_by_id]
+        return d
 
     def _tool_evaluate_hypothesis(self, hypothesis_key: Any) -> tuple[dict, list[str]]:
         evals = getattr(self.analysis, "hypothesis_evals", None) or {}

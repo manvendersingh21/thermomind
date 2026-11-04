@@ -48,6 +48,23 @@ def demo_status() -> DemoStatus:
         )
     else:
         blockers.append("baseline model not trained (run `make train`)")
+    # GPU challenger: optional second opinion only (never a blocker, never the production model)
+    try:
+        challenger = services.get_challenger()
+    except Exception:  # noqa: BLE001
+        challenger = None
+    model["challenger_ready"] = challenger is not None
+    model["challenger_version"] = challenger.version if challenger is not None else None
+    model["challenger_role"] = "second_opinion_only (not production)"
+    if challenger is not None:
+        model["challenger_device"] = str(getattr(challenger, "_device", "cpu"))
+        model["challenger_holdout_mae"] = challenger.evaluation.holdout.mae
+    try:
+        from app.analytics.comparison import gpu_info
+
+        model["gpu"] = gpu_info()
+    except Exception as exc:  # noqa: BLE001
+        model["gpu"] = {"available": False, "error": type(exc).__name__}
 
     # --- meta ------------------------------------------------------------------------
     meta: dict[str, Any] = {

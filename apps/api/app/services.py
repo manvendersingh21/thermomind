@@ -123,6 +123,53 @@ def get_model(recheck: bool = False) -> "BaselineModel | None":
         return _model
 
 
+# ---------------------------------------------------------------------------
+# GPU challenger (second opinion) — owned by the GPU-integration agent
+# ---------------------------------------------------------------------------
+# The challenger (``mlp_v1``, TorchBaselineModel) never replaces the production baseline; it only adds a second
+# opinion to each investigation. Cached per (MODEL_DIR, weights mtime) so tests that repoint config.MODEL_DIR never
+# see a stale model. torch is optional: any import/load failure yields None.
+
+_challenger_lock = threading.Lock()
+_challenger: Any = None
+_challenger_key: tuple[str, float | None] | None = None
+
+
+def _challenger_weights() -> Path:
+    return Path(config.MODEL_DIR) / "mlp_v1.pt"
+
+
+def get_challenger() -> Any:
+    """Cached ``TorchBaselineModel`` (cuda:0 when available, else cpu) or None when absent/unloadable."""
+    global _challenger, _challenger_key
+    weights = _challenger_weights()
+    try:
+        mtime: float | None = weights.stat().st_mtime if (weights.with_suffix(".json")).is_file() else None
+    except OSError:
+        mtime = None
+    key = (str(Path(config.MODEL_DIR)), mtime)
+    with _challenger_lock:
+        if key == _challenger_key:
+            return _challenger
+        _challenger_key = key
+        _challenger = None
+        if mtime is None:
+            return None
+        try:
+            import pandas as pd
+
+            from app.analytics.torch_baseline import TorchBaselineModel
+
+            model = TorchBaselineModel.load(Path(config.MODEL_DIR), device=None)  # None -> cuda:0 if available
+            model.predict(pd.DataFrame([model._x_mean], columns=model.features))  # warm-up (CUDA context/kernels)
+            _challenger = model
+            log.info("challenger model loaded: %s on %s", model.version, getattr(model, "_device", "cpu"))
+        except Exception as exc:  # noqa: BLE001 - optional second opinion, never crash the API
+            log.warning("challenger model present but failed to load: %s", type(exc).__name__)
+            _challenger = None
+        return _challenger
+
+
 def get_meta_client() -> "MetaClient":
     global _meta_client
     with _lock:
@@ -264,7 +311,9 @@ def _deterministic_summary(analysis: Any) -> dict[str, Any]:
 
     def notable(ev: Any) -> bool:
         z = ev.z_score
-        return (z is not None and abs(z) >= 2.0) or ev.data_quality != "pass" or bool(ev.flags)
+        informational = {"gpu_second_opinion", "baselines_agree"}
+        meaningful_flags = [f for f in ev.flags if f not in informational]
+        return (z is not None and abs(z) >= 2.0) or ev.data_quality != "pass" or bool(meaningful_flags)
 
     notable_ids = [ev.evidence_id for ev in analysis.evidence if notable(ev)][:12]
     return {
@@ -317,6 +366,7 @@ def run_investigation_pipeline(req: InvestigationRequest) -> Investigation:
         model,
         window,
         reference,
+        challenger=get_challenger(),
     )
 
     client: Any = None

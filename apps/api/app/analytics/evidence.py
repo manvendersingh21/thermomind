@@ -14,6 +14,7 @@ from __future__ import annotations
 
 import math
 from dataclasses import dataclass, field
+from typing import Any
 
 import numpy as np
 import pandas as pd
@@ -40,6 +41,10 @@ MOVING_Z = 1.0           # |z| >= 1 -> counts as "moving" in the cross-sensor co
 SPIKE_Z = 3.0            # robust-z threshold for spike/segment detection
 NOTABLE_FLAG = "notable_deviation"
 HEURISTIC_NOTE = "deterministic_support_score is a fixed-rule heuristic in [0,1], not a probability and not a diagnosis."
+# Challenger (second-opinion) evidence ids: appended after all production evidence and never used to score hypotheses.
+CHALLENGER_RESIDUAL_ID = "ev_tey_residual_mlp_01"
+MODEL_AGREEMENT_ID = "ev_model_agreement_01"
+CHALLENGER_EVIDENCE_IDS = (CHALLENGER_RESIDUAL_ID, MODEL_AGREEMENT_ID)
 
 
 @dataclass
@@ -54,6 +59,8 @@ class CaseAnalysis:
     data_quality: DataQualityReport | None = None
     baseline: BaselineComparison | None = None
     hypothesis_evals: dict[str, HypothesisEvaluation] = field(default_factory=dict)
+    # Additive: GPU challenger second opinion (``compute_second_opinion`` output) or None when no challenger.
+    second_opinion: dict[str, Any] | None = None
 
     def evidence_by_id(self) -> dict[str, Evidence]:
         return {e.evidence_id: e for e in self.evidence}
@@ -208,7 +215,11 @@ def analyze_case(
     model: BaselineModel | None,
     window: SampleRange,
     reference: SampleRange,
+    challenger: Any = None,
 ) -> CaseAnalysis:
+    """``challenger`` (optional, keyword) is a ``TorchBaselineModel``-like second-opinion model. When given, two
+    evidence items are appended after all production evidence (``ev_tey_residual_mlp_01``,
+    ``ev_model_agreement_01``); every pre-existing evidence item, its order and its numbers are unchanged."""
     wf = window_frame.reset_index(drop=True)
     rf = reference_frame.reset_index(drop=True)
     info = SCENARIOS.get(scenario.scenario_id)
@@ -393,6 +404,19 @@ def analyze_case(
             values={"counts": ood, "total": total, "n_rows": int(len(wf))},
         ))
 
+    # --- GPU challenger second opinion (additive; never replaces the production baseline) ----------------
+    second_opinion: dict[str, Any] | None = None
+    if challenger is not None and len(wf) > 0:
+        try:
+            second_opinion, so_evidence = _second_opinion_evidence(
+                case_id, wf, rf, scenario, challenger, window, reference,
+                production_z=resid_z if resid_e is not None else None, production_version=model_version,
+            )
+            ev.extend(so_evidence)
+        except Exception as exc:  # noqa: BLE001 - a failing challenger must never break the investigation
+            second_opinion = None
+            dq_notes.append(f"Challenger second opinion unavailable for this case ({type(exc).__name__}).")
+
     # --- data quality --------------------------------------------------------------------
     missing = {k: int(wf[k].isna().sum()) for k in MEASUREMENT_KEYS if k in wf.columns}
     consistency: list[str] = []
@@ -425,6 +449,7 @@ def analyze_case(
         case_id=case_id, window=window, reference=reference, window_frame=wf, reference_frame=rf, scenario=scenario,
         evidence=ev, data_quality=data_quality, baseline=baseline,
     )
+    analysis.second_opinion = second_opinion
     analysis.hypothesis_evals = _evaluate_hypotheses(analysis)
     _ = info  # scenario info is only used for its id/affected list; expected_behavior is never read here
     return analysis
@@ -473,7 +498,9 @@ def _evaluate_hypotheses(a: CaseAnalysis) -> dict[str, HypothesisEvaluation]:
     ambient_notable = [e for e in ambient_ids if notable(e)]
     single_sensor_ids = ["ev_cdp_01", "ev_tit_01", "ev_tat_01", "ev_gtep_01", "ev_tey_01", "ev_afdp_01"]
     single_notable = [e for e in single_sensor_ids if notable(e)]
-    anything_notable = [e.evidence_id for e in a.evidence if NOTABLE_FLAG in e.flags]
+    # challenger second-opinion evidence is excluded from scoring (it is only attached as a note below)
+    anything_notable = [e.evidence_id for e in a.evidence
+                        if NOTABLE_FLAG in e.flags and e.evidence_id not in CHALLENGER_EVIDENCE_IDS]
 
     evals: dict[str, HypothesisEvaluation] = {}
 
@@ -587,7 +614,88 @@ def _evaluate_hypotheses(a: CaseAnalysis) -> dict[str, HypothesisEvaluation]:
         case_id=a.case_id, hypothesis_key="unknown", supporting_evidence_ids=_dedupe(sup),
         contradicting_evidence_ids=_dedupe(con), deterministic_notes=notes, deterministic_support_score=round(min(1.0, score), 3),
     )
+    _attach_second_opinion_notes(a, evals)
     return {k: evals[k] for k in HYPOTHESIS_KEYS}
+
+
+def _attach_second_opinion_notes(a: CaseAnalysis, evals: dict[str, HypothesisEvaluation]) -> None:
+    """When the production and challenger baselines disagree, add a supporting note (and the agreement evidence id)
+    to ``unknown`` and ``sensor_issue``. Scores are NOT changed: the second opinion only qualifies the residual."""
+    agree = a.evidence_by_id().get(MODEL_AGREEMENT_ID)
+    if agree is None or "baselines_disagree" not in agree.flags:
+        return
+    note = (f"baselines_disagree: production and challenger residual z disagree ({MODEL_AGREEMENT_ID}: production "
+            f"z={_f(agree.observed_stat, 2)}, challenger z={_f(agree.comparison_stat, 2)}); treat the residual as "
+            "uncertain (supporting note only, score unchanged).")
+    for key in ("sensor_issue", "unknown"):
+        h = evals.get(key)
+        if h is None:
+            continue
+        evals[key] = h.model_copy(update={
+            "supporting_evidence_ids": _dedupe([*h.supporting_evidence_ids, MODEL_AGREEMENT_ID]),
+            "deterministic_notes": [*h.deterministic_notes, note],
+        })
+
+
+def _second_opinion_evidence(
+    case_id: str, wf: pd.DataFrame, rf: pd.DataFrame, scenario: ScenarioResult, challenger: Any,
+    window: SampleRange, reference: SampleRange, production_z: float | None, production_version: str | None,
+) -> tuple[dict[str, Any], list[Evidence]]:
+    """Challenger residual evidence + (when the production residual exists) the model-agreement evidence."""
+    from app.analytics.second_opinion import compute_second_opinion
+
+    so = compute_second_opinion(wf, rf, challenger, production_z=production_z)
+    version = so["model_version"]
+    synthetic_resid = scenario.synthetic and any(m in (*FEATURE_KEYS, TARGET_KEY) for m in scenario.affected_measurements)
+    z_ref = so["z_vs_reference"]
+    flags = ["gpu_second_opinion"]
+    if _is_notable(z_ref):
+        flags.append(NOTABLE_FLAG)
+    mean_w, mean_r, std_val = so["residual_mean_window"], so["residual_mean_reference"], so["residual_std_validation"]
+    comp = (
+        f"challenger residual = observed TEY - expected TEY ({version}, {so['device']}, inference {so['inference_ms']:.1f} ms); "
+        f"mean_window={_f(mean_w)} MWh (observed mean {_f(so['observed_tey_mean'])} - expected mean {_f(so['expected_tey_mean'])}); "
+        f"mean_reference={_f(mean_r)} MWh; z_raw = {_f(mean_w)} / residual_std_validation({version}) {_f(std_val)} = {_f(so['z_raw'], 2)}; "
+        f"z_vs_reference = ({_f(mean_w)} - {_f(mean_r)}) / {_f(std_val)} = {_f(z_ref, 2)}; "
+        f"std_window={_f(so['residual_std_window'])}; n={so['n_window']}; challenger holdout MAE {_f(so['holdout_mae'], 3)} MWh"
+    )
+    items = [Evidence(
+        evidence_id=CHALLENGER_RESIDUAL_ID, case_id=case_id, kind="model_derived", metric="TEY_residual_challenger", unit="MWh",
+        title="Second opinion: TEY residual from the GPU-trained challenger MLP (not the production baseline)",
+        sample_range=window, reference_range=reference,
+        observed_stat=mean_w, comparison_stat=mean_r,
+        delta=_finite(mean_w - mean_r) if (mean_w is not None and mean_r is not None) else None, delta_pct=None,
+        z_score=z_ref,
+        method="challenger_mlp_residual_window_vs_reference",
+        computation=comp, is_synthetic=bool(synthetic_resid), model_version=version, flags=flags,
+        values={k: so[k] for k in (
+            "residual_mean_window", "residual_mean_reference", "residual_std_window", "residual_std_validation",
+            "z_raw", "z_vs_reference", "n_window", "n_reference", "observed_tey_mean", "expected_tey_mean",
+            "device", "inference_ms", "holdout_mae", "holdout_r2", "role")},
+    )]
+    if production_z is not None and so["agreement"] is not None:
+        label = so["agreement"]
+        pz = _finite(production_z)
+        items.append(Evidence(
+            evidence_id=MODEL_AGREEMENT_ID, case_id=case_id, kind="model_derived", metric="model_agreement", unit="z",
+            title="Do the production baseline and the GPU challenger agree on the TEY residual?",
+            sample_range=window, reference_range=reference,
+            observed_stat=pz, comparison_stat=z_ref,
+            delta=_finite(pz - z_ref) if (pz is not None and z_ref is not None) else None, delta_pct=None, z_score=None,
+            method=(f"agreement of residual z_vs_reference: agree_notable if both |z|>={NOTABLE_Z} with the same sign, "
+                    f"agree_normal if both |z|<{NOTABLE_Z}, else disagree"),
+            computation=(
+                f"production ({production_version}) z_vs_reference={_f(pz, 2)}, challenger ({version}) "
+                f"z_vs_reference={_f(z_ref, 2)}, threshold |z|>={NOTABLE_Z} -> {label}. {so['agreement_note']}"
+            ),
+            is_synthetic=bool(synthetic_resid),
+            model_version=f"{production_version}+{version}" if production_version else version,
+            flags=["baselines_agree"] if label.startswith("agree") else ["baselines_disagree"],
+            values={"agreement": label, "agreement_note": so["agreement_note"], "production_z": pz, "challenger_z": z_ref,
+                    "production_model_version": production_version, "challenger_model_version": version,
+                    "threshold": NOTABLE_Z},
+        ))
+    return so, items
 
 
 def _dedupe(ids: list[str]) -> list[str]:
