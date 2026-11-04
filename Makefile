@@ -22,3 +22,7 @@ meta-smoke:
 	$(PY) scripts/meta_live_smoke.py
 build:
 	cd apps/web && npm run build && cd ../.. && docker build -t thermomind . || echo "docker not available; web built to apps/web/dist"
+
+# GPU challenger (optional)
+gpu-train:
+	$(PY) scripts/train_torch.py
