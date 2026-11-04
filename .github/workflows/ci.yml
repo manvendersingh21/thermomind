@@ -41,6 +41,6 @@ jobs:
       - name: Install dependencies
         run: npm ci
       - name: Typecheck
-        run: npm run typecheck
+        run: npm run typecheck && npm run test
       - name: Build
         run: npm run build

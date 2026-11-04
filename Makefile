@@ -15,7 +15,7 @@ web:
 dev:
 	@echo "API: http://localhost:8000  Web: http://localhost:5173"; ./scripts/dev.sh
 test:
-	cd apps/api && ../../$(PY) -m pytest -q && cd ../web && npm run typecheck
+	cd apps/api && ../../$(PY) -m pytest -q && cd ../web && npm run typecheck && npm run test
 smoke:
 	./scripts/smoke_test.sh
 meta-smoke:
