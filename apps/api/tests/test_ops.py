@@ -129,7 +129,7 @@ def test_handover_valid_json_accepted_and_persisted(invs, store):
     fake = FakeMetaClient([good_draft()])
     note = _gen(fake, invs, store)
     assert note.mode == "meta_live" and note.meta_used and note.meta_calls == 1 and not note.rewrite_used
-    assert len(fake.calls) == 1 and fake.calls[0]["max_tokens"] == 3000
+    assert len(fake.calls) == 1 and fake.calls[0]["max_tokens"] == 10000
     assert fake.calls[0]["messages"][0]["content"].startswith("Draft a shift handover note")
     assert {c.case_id for c in note.cases} == {"case_aaa111", "case_bbb222"}  # case_old999 outside 8 h
     assert note.status.startswith("DRAFT") and len(note.note_hash) == 64
