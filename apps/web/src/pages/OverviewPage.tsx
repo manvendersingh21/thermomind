@@ -1,9 +1,17 @@
-import { Activity, ChevronDown, ChevronRight, Database, FlaskConical, Gauge, Layers, Play, Search, Sigma } from "lucide-react";
+import {
+  Activity, Bot, Boxes, Cable, ChevronDown, ChevronRight, ClipboardList, Cpu, Crown, Database, Eye, Flame, FlaskConical, Gauge,
+  Inbox, Layers, MessageCircleQuestion, Network, Play, Rocket, Scale, Search, Sigma, Stethoscope, Wind, Wrench, Zap,
+} from "lucide-react";
+import type { ReactNode } from "react";
 import { useEffect, useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { EmissionsCard } from "../features/emissions/EmissionsCard";
+import { getScorecard } from "../features/instruments/api";
+import { evaluateThermal } from "../features/thermal/api";
 import {
   createInvestigation,
   errorMessage,
+  ApiError,
   getHealth,
   getModelEvaluation,
   getSeries,
@@ -27,6 +35,50 @@ import { fmtInt, fmtNum, sampleLabel } from "../lib/format";
 
 const DEFAULT_LENGTH = 120;
 
+interface OpsLink {
+  to: string;
+  title: string;
+  blurb: string;
+  badge: string;
+  tone: "sim" | "real" | "model" | "info";
+  icon: ReactNode;
+}
+
+const OPS_LINKS: OpsLink[] = [
+  { to: "/simulator", title: "Simulator", blurb: "Physics-based plant model, live diagram, fault injection.", badge: "SIMULATED", tone: "sim", icon: <Cpu size={18} /> },
+  { to: "/twin/latest", title: "3D twin", blurb: "Hot spot and flows in 3D on a generic plant.", badge: "GENERIC PLANT", tone: "sim", icon: <Boxes size={18} /> },
+  { to: "/propose", title: "Propose an action", blurb: "Subsystem agents confer before anyone acts; a human decides.", badge: "HUMAN DECIDES", tone: "info", icon: <Bot size={18} /> },
+  { to: "/inbox", title: "Inbox", blurb: "Routed work requests with simulated notifications.", badge: "SIMULATED", tone: "sim", icon: <Inbox size={18} /> },
+  { to: "/ask", title: "Ask the plant", blurb: "What-if across subsystems using modelled sensitivity.", badge: "MODEL-DERIVED", tone: "model", icon: <MessageCircleQuestion size={18} /> },
+  { to: "/watchdog", title: "Watchdog", blurb: "Agents notice needs and tell the right person; auxiliaries are simulated.", badge: "SIMULATED", tone: "sim", icon: <Eye size={18} /> },
+  { to: "/executive", title: "Executive view", blurb: "What a plant CEO needs to see, with prototype metrics.", badge: "PROTOTYPE", tone: "info", icon: <Crown size={18} /> },
+  { to: "/planner", title: "Maintenance planner", blurb: "Screening-level maintenance priorities from evidence.", badge: "DECISION SUPPORT", tone: "info", icon: <Wrench size={18} /> },
+  { to: "/instruments", title: "Instrument health", blurb: "Statistical screening of sensor quality on historical data.", badge: "REAL DATA", tone: "real", icon: <Stethoscope size={18} /> },
+  { to: "/emissions", title: "Emissions watch", blurb: "CO and NOX excursions against p95 screening thresholds.", badge: "REAL DATA", tone: "real", icon: <Wind size={18} /> },
+  { to: "/thermal", title: "Thermal monitoring", blurb: "Electrical asset margins to alarm from a simulated thermal feed.", badge: "SIMULATED", tone: "sim", icon: <Flame size={18} /> },
+  { to: "/grid", title: "Grid support", blurb: "Grid-support view for the plant.", badge: "PROTOTYPE", tone: "info", icon: <Zap size={18} /> },
+  { to: "/ops", title: "Shift ops", blurb: "Shift handover and operations summary.", badge: "PROTOTYPE", tone: "info", icon: <ClipboardList size={18} /> },
+  { to: "/connectors", title: "Plant connectors", blurb: "Read-only connector status for plant data sources.", badge: "READ-ONLY", tone: "info", icon: <Cable size={18} /> },
+  { to: "/agents", title: "Agent organisation", blurb: "The agent tree and what each agent is responsible for.", badge: "DECISION SUPPORT", tone: "info", icon: <Network size={18} /> },
+  { to: "/autonomy", title: "Who decides what", blurb: "Autonomy levels: what agents may do and what needs a human.", badge: "POLICY", tone: "info", icon: <Scale size={18} /> },
+  { to: "/onboarding", title: "Onboarding", blurb: "Get oriented: how to read the evidence and labels.", badge: "GUIDE", tone: "info", icon: <Rocket size={18} /> },
+];
+
+const TONE_CLS: Record<OpsLink["tone"], string> = {
+  sim: "border-yellow-400 bg-yellow-100 text-yellow-900",
+  real: "border-green-300 bg-green-50 text-green-800",
+  model: "border-dashed border-green-400 bg-white text-green-800",
+  info: "border-blue-300 bg-blue-50 text-blue-800",
+};
+
+const is404 = (e: unknown) => isApiError(e) && e.status === 404;
+
+async function fetchWorkRequestCount(signal: AbortSignal): Promise<number> {
+  const res = await fetch("/api/plant/work-requests", { headers: { Accept: "application/json" }, signal });
+  if (!res.ok) throw new ApiError(res.status, res.statusText || `HTTP ${res.status}`, "/api/plant/work-requests");
+  const list = (await res.json()) as { status?: string }[];
+  return list.filter((w) => w.status === "open" || w.status === "acknowledged").length;
+}
 function toRows(s: SeriesResponse | null, withExpected: boolean): ChartRow[] {
   if (!s) return [];
   return s.points.map((p) => {
@@ -114,6 +166,18 @@ export function OverviewPage() {
     },
     [datasetId, year, start, safeLength],
   );
+
+  // plant-operations KPIs: independent, tolerant of missing endpoints
+  const workReqs = useAsync((signal) => fetchWorkRequestCount(signal), []);
+  const thermal = useAsync(
+    (signal) => evaluateThermal({ year, start, end: start + safeLength }, signal),
+    [year, start, safeLength],
+  );
+  const scorecard = useAsync((signal) => getScorecard({ year }, signal), [year]);
+  const minMargin = thermal.data && thermal.data.status.length > 0 ? Math.min(...thermal.data.status.map((a) => a.margin_to_alarm_k)) : null;
+  const minMarginAsset = thermal.data?.status.find((a) => a.margin_to_alarm_k === minMargin)?.name;
+  const sc = scorecard.data?.summary;
+  const kpiNote = (e: unknown, ok: string) => (e ? (is404(e) ? "endpoint not available" : "could not load") : ok);
 
   const teyRows = useMemo(() => toRows(tey.data, true), [tey.data]);
   const afdpRows = useMemo(() => toRows(afdp.data, false), [afdp.data]);
@@ -377,6 +441,59 @@ export function OverviewPage() {
           </div>
         ) : null}
       </div>
+
+      {/* plant operations at a glance */}
+      <section className="mb-6" aria-label="Plant operations at a glance">
+        <h2 className="mb-3 text-lg font-semibold text-ink-50">Plant operations at a glance</h2>
+        <div className="mb-4 grid grid-cols-1 gap-4 xl:grid-cols-2">
+          <EmissionsCard year={year} />
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+            <KpiCard
+              label="Open work requests"
+              value={workReqs.data !== null ? workReqs.data : "n/a"}
+              caption={kpiNote(workReqs.error, "open or acknowledged")}
+              icon={<Inbox size={18} />}
+              loading={workReqs.loading}
+              tone="amber"
+            />
+            <KpiCard
+              label="Min thermal margin"
+              value={minMargin !== null ? fmtNum(minMargin, 1) : "n/a"}
+              unit={minMargin !== null ? "K" : undefined}
+              caption={
+                <span className="flex flex-col gap-1">
+                  <span>{kpiNote(thermal.error, minMarginAsset ? `to alarm · ${minMarginAsset}` : "to alarm")}</span>
+                  <SourceBadge variant="synthetic" size="sm" label="SIMULATED" />
+                </span>
+              }
+              icon={<Flame size={18} />}
+              loading={thermal.loading}
+            />
+            <KpiCard
+              label="Instrument health"
+              value={sc ? `${sc.trust.length}/${sc.use_with_cross_check.length}/${sc.verify_first.length}` : "n/a"}
+              caption={kpiNote(scorecard.error, "ok / watch / check")}
+              icon={<Stethoscope size={18} />}
+              loading={scorecard.loading}
+              tone="model"
+            />
+          </div>
+        </div>
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          {OPS_LINKS.map((l) => (
+            <Link key={l.to} to={l.to} className="panel flex flex-col gap-1.5 px-4 py-3 transition-colors hover:border-blue-400">
+              <div className="flex items-center justify-between gap-2">
+                <span className="flex items-center gap-2 font-semibold text-ink-50">
+                  <span className="text-blue-700">{l.icon}</span>
+                  {l.title}
+                </span>
+              </div>
+              <p className="text-sm text-ink-300">{l.blurb}</p>
+              <span className={`mt-auto w-fit rounded-full border px-2 py-0.5 text-xs font-semibold ${TONE_CLS[l.tone]}`}>{l.badge}</span>
+            </Link>
+          ))}
+        </div>
+      </section>
 
       {/* charts */}
       <div className="grid grid-cols-2 gap-4">

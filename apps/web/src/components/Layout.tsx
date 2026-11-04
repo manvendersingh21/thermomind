@@ -1,4 +1,4 @@
-import { Activity, BarChart3, Menu, X, Cable, Network, ClipboardList, Database, Flame, GitCompare, Inbox, LayoutDashboard, MessageCircleQuestion, Radio, Search, ShieldCheck, Stethoscope, Wind, Wrench, Zap } from "lucide-react";
+import { Activity, BarChart3, Boxes, Briefcase, Cable, ClipboardList, Database, Eye, Flame, GitCompare, GraduationCap, Inbox, LayoutDashboard, Menu, MessageCircleQuestion, Network, Radio, Scale, Search, ShieldAlert, ShieldCheck, Stethoscope, Vote, Wind, Wrench, X, Zap } from "lucide-react";
 import GuidedTour from "../features/tour/GuidedTour";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { NavLink, Outlet, useLocation } from "react-router-dom";
@@ -12,6 +12,7 @@ const NAV_SECTIONS: { title: string; items: NavItem[] }[] = [
     title: "Core",
     items: [
       { to: "/", label: "Overview", icon: LayoutDashboard, end: true },
+      { to: "/executive", label: "Executive view", icon: Briefcase },
       { to: "/replay", label: "Replay", icon: Radio },
       { to: "/investigations", label: "Investigations", icon: Search },
       { to: "/compare", label: "Compare cases", icon: GitCompare },
@@ -32,6 +33,17 @@ const NAV_SECTIONS: { title: string; items: NavItem[] }[] = [
       { to: "/ops", label: "Shift ops", icon: ClipboardList },
       { to: "/connectors", label: "Plant connectors", icon: Cable },
       { to: "/agents", label: "Agent organisation", icon: Network },
+    ],
+  },
+  {
+    title: "Simulation & autonomy",
+    items: [
+      { to: "/simulator", label: "Plant simulator", icon: Boxes },
+      { to: "/twin", label: "3D twin", icon: Eye },
+      { to: "/watchdog", label: "Watchdog", icon: ShieldAlert },
+      { to: "/propose", label: "Propose an action", icon: Vote },
+      { to: "/autonomy", label: "Who decides what", icon: Scale },
+      { to: "/onboarding", label: "Onboarding", icon: GraduationCap },
     ],
   },
 ];
