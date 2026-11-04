@@ -18,8 +18,8 @@ export default {
           800: "#eef1f5", // hover rows, secondary buttons
           700: "#e2e6ec", // borders, skeletons
           600: "#cfd5de", // input borders
-          500: "#94a3b8", // very muted text
-          400: "#64748b", // muted text
+          500: "#5f6e82", // very muted text (>= 4.5:1 on #eef1f5 and lighter)
+          400: "#556377", // muted text (>= 5.3:1 on all surfaces)
           300: "#475569", // secondary text
           200: "#334155",
           100: "#1e293b", // primary text

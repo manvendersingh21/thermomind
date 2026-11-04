@@ -1,5 +1,5 @@
 import { AlertTriangle, CheckCircle2, Flag, X, XCircle } from "lucide-react";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import type { Evidence } from "../api/types";
 import { fmtNum, fmtPct, fmtSigned, humanize, rangeLabel } from "../lib/format";
 import { SourceBadge } from "./SourceBadge";
@@ -54,6 +54,23 @@ function Row({ k, v, mono = false }: { k: string; v: React.ReactNode; mono?: boo
 
 export function EvidenceDrawer({ evidence, missingId, onClose }: Props) {
   const open = evidence !== null || !!missingId;
+  const closeRef = useRef<HTMLButtonElement>(null);
+  const returnFocusTo = useRef<HTMLElement | null>(null);
+  const wasOpen = useRef(false);
+
+  // Move focus into the drawer on open; restore it to the opener on close.
+  useEffect(() => {
+    if (open && !wasOpen.current) {
+      const active = document.activeElement;
+      returnFocusTo.current = active instanceof HTMLElement && active !== document.body ? active : null;
+      closeRef.current?.focus();
+    } else if (!open && wasOpen.current) {
+      returnFocusTo.current?.focus();
+      returnFocusTo.current = null;
+    }
+    wasOpen.current = open;
+  }, [open]);
+
   useEffect(() => {
     if (!open) return;
     const onKey = (e: KeyboardEvent) => {
@@ -71,19 +88,19 @@ export function EvidenceDrawer({ evidence, missingId, onClose }: Props) {
         aria-hidden="true"
       />
       <aside
-        className={`fixed right-0 top-0 z-50 flex h-full w-[520px] max-w-full flex-col border-l border-ink-600 bg-ink-850 shadow-2xl transition-transform duration-200 ${
+        className={`fixed right-0 top-0 z-50 flex h-full w-full flex-col sm:w-[520px] border-l border-ink-600 bg-ink-850 shadow-2xl transition-transform duration-200 ${
           open ? "translate-x-0" : "translate-x-full"
         }`}
-        role="dialog"
-        aria-label="Evidence detail"
+        {...(open ? { role: "dialog", "aria-modal": true, "aria-labelledby": "evidence-drawer-title" } : { "aria-hidden": true })}
+        {...(open ? {} : ({ inert: "" } as Record<string, unknown>))}
       >
         <div className="flex items-start justify-between gap-3 border-b border-ink-700 px-5 py-4">
           <div className="min-w-0">
             <div className="label">Evidence</div>
-            <div className="mt-0.5 font-mono text-lg font-semibold text-blue-700">{evidence?.evidence_id ?? missingId}</div>
+            <div id="evidence-drawer-title" className="mt-0.5 break-all font-mono text-lg font-semibold text-blue-700">{evidence?.evidence_id ?? missingId}</div>
           </div>
-          <button type="button" onClick={onClose} className="btn-secondary h-9 w-9 px-0" aria-label="Close">
-            <X size={18} />
+          <button ref={closeRef} type="button" onClick={onClose} className="btn-secondary h-9 w-9 px-0" aria-label="Close">
+            <X size={18} aria-hidden="true" />
           </button>
         </div>
         <div className="flex-1 overflow-y-auto px-5 py-4">

@@ -20,10 +20,10 @@ function CopyHash({ value }: { value: string }) {
     }
   }
   return (
-    <span className="inline-flex items-center gap-2 font-mono text-sm">
-      <span title={value}>{truncateMiddle(value, 12, 8)}</span>
-      <button type="button" onClick={copy} className="rounded border border-ink-600 p-1 text-ink-300 hover:border-blue-400 hover:text-blue-700" title="Copy sha256">
-        {copied ? <Check size={14} /> : <Copy size={14} />}
+    <span className="inline-flex max-w-full items-center gap-2 font-mono text-sm">
+      <span title={value} className="break-all">{truncateMiddle(value, 12, 8)}</span>
+      <button type="button" onClick={copy} className="rounded border border-ink-600 p-1 text-ink-300 hover:border-blue-400 hover:text-blue-700" title="Copy sha256" aria-label="Copy sha256">
+        {copied ? <Check size={14} aria-hidden="true" /> : <Copy size={14} aria-hidden="true" />}
       </button>
     </span>
   );
@@ -72,8 +72,8 @@ export function DataSourcesPage() {
       {datasets.error ? <ErrorBanner className="mb-5" title="Could not load datasets" error={datasets.error} onRetry={datasets.reload} /> : null}
       {datasetEmpty ? <EmptyDataset className="mb-5" /> : null}
 
-      <div className="mb-5 grid grid-cols-3 gap-4">
-        <div className="panel col-span-2 overflow-hidden">
+      <div className="mb-5 grid grid-cols-1 gap-4 xl:grid-cols-3">
+        <div className="panel min-w-0 overflow-hidden xl:col-span-2">
           <div className="panel-header">
             <div className="panel-title">Registered datasets</div>
           </div>
@@ -82,6 +82,7 @@ export function DataSourcesPage() {
               <PanelSkeleton lines={3} />
             </div>
           ) : (
+            <div className="overflow-x-auto">
             <table className="table-base">
               <thead>
                 <tr>
@@ -96,7 +97,7 @@ export function DataSourcesPage() {
               <tbody>
                 {(datasets.data ?? []).map((ds) => (
                   <tr key={ds.dataset_id} className={`cursor-pointer hover:bg-ink-800/60 ${ds.dataset_id === selectedId ? "bg-blue-50/60" : ""}`} onClick={() => setSelected(ds.dataset_id)}>
-                    <td className="font-mono text-blue-700">{ds.dataset_id}</td>
+                    <td className="break-all font-mono text-blue-700">{ds.dataset_id}</td>
                     <td>
                       <div className="flex items-center gap-2">
                         {ds.source === "UCI_GAS_TURBINE_551" ? <SourceBadge variant="real" size="sm" label="UCI 551" /> : <SourceBadge variant="offline" size="sm" label="USER UPLOAD" />}
@@ -111,9 +112,10 @@ export function DataSourcesPage() {
                 ))}
               </tbody>
             </table>
+            </div>
           )}
         </div>
-        <div className="panel">
+        <div className="panel min-w-0">
           <div className="panel-header">
             <div className="panel-title flex items-center gap-2">
               <Upload size={18} className="text-ink-300" /> Upload CSV
@@ -124,7 +126,7 @@ export function DataSourcesPage() {
               Same column layout as the UCI files (AT, AP, AH, AFDP, GTEP, TIT, TAT, TEY, CDP, CO, NOX). Name the file like{" "}
               <code className="font-mono text-ink-100">gt_2016.csv</code> to infer the year. Uploads are labelled USER_UPLOAD and never mixed into the UCI dataset.
             </p>
-            <input ref={fileRef} type="file" accept=".csv,text/csv" className="hidden" onChange={(e) => onUpload(e.target.files?.[0])} />
+            <input ref={fileRef} type="file" aria-label="Choose CSV file to upload" accept=".csv,text/csv" className="hidden" onChange={(e) => onUpload(e.target.files?.[0])} />
             <button type="button" className="btn-secondary mt-3 w-full" onClick={() => fileRef.current?.click()} disabled={uploading}>
               {uploading ? <Spinner /> : <FileUp size={18} />} {uploading ? "Validating…" : "Choose CSV file"}
             </button>
@@ -154,19 +156,19 @@ export function DataSourcesPage() {
       {detail.loading && selectedId ? <PanelSkeleton lines={6} className="mb-5" /> : null}
       {d ? (
         <>
-          <div className="mb-5 grid grid-cols-3 gap-4">
-            <div className="panel col-span-2 px-5 py-4">
+          <div className="mb-5 grid grid-cols-1 gap-4 xl:grid-cols-3">
+            <div className="panel min-w-0 px-5 py-4 xl:col-span-2">
               <div className="label mb-2">Dataset detail</div>
-              <dl className="grid grid-cols-[180px_1fr] gap-x-4 gap-y-2 text-base">
-                <dt className="text-ink-300">Dataset id</dt>
-                <dd className="font-mono">{d.dataset_id}</dd>
-                <dt className="text-ink-300">Source</dt>
-                <dd className="font-mono">{d.source}</dd>
-                <dt className="text-ink-300">License</dt>
+              <dl className="grid grid-cols-1 gap-x-4 sm:grid-cols-[180px_minmax(0,1fr)] gap-y-2 text-base">
+                <dt className="mt-2 text-ink-300 sm:mt-0">Dataset id</dt>
+                <dd className="break-all font-mono">{d.dataset_id}</dd>
+                <dt className="mt-2 text-ink-300 sm:mt-0">Source</dt>
+                <dd className="break-all font-mono">{d.source}</dd>
+                <dt className="mt-2 text-ink-300 sm:mt-0">License</dt>
                 <dd>{d.source_license ?? "—"}</dd>
-                <dt className="text-ink-300">Citation</dt>
-                <dd className="text-ink-100">{d.citation ?? "—"}</dd>
-                <dt className="text-ink-300">DOI / URL</dt>
+                <dt className="mt-2 text-ink-300 sm:mt-0">Citation</dt>
+                <dd className="break-words text-ink-100">{d.citation ?? "—"}</dd>
+                <dt className="mt-2 text-ink-300 sm:mt-0">DOI / URL</dt>
                 <dd>
                   {d.source === "UCI_GAS_TURBINE_551" ? (
                     <a href={doi} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-blue-700 hover:underline">
@@ -181,16 +183,16 @@ export function DataSourcesPage() {
                     <span className="text-ink-400">—</span>
                   )}
                 </dd>
-                <dt className="text-ink-300">Plant</dt>
+                <dt className="mt-2 text-ink-300 sm:mt-0">Plant</dt>
                 <dd>{d.plant ?? "—"}</dd>
-                <dt className="text-ink-300">Years</dt>
+                <dt className="mt-2 text-ink-300 sm:mt-0">Years</dt>
                 <dd className="font-mono">{d.years.join(", ")}</dd>
-                <dt className="text-ink-300">Time axis</dt>
+                <dt className="mt-2 text-ink-300 sm:mt-0">Time axis</dt>
                 <dd>
                   {d.has_timestamps ? "Row-level timestamps" : "No row-level timestamps (ordered hourly samples)"}{" "}
-                  <span className="font-mono text-sm text-ink-400">{d.time_axis_type}</span>
+                  <span className="break-all font-mono text-sm text-ink-400">{d.time_axis_type}</span>
                 </dd>
-                <dt className="text-ink-300">Rows</dt>
+                <dt className="mt-2 text-ink-300 sm:mt-0">Rows</dt>
                 <dd className="font-mono">{fmtInt(d.row_count)}</dd>
               </dl>
               {d.warnings.length > 0 ? (
@@ -203,8 +205,9 @@ export function DataSourcesPage() {
                 </WarnBanner>
               ) : null}
             </div>
-            <div className="panel px-5 py-4">
+            <div className="panel min-w-0 px-5 py-4">
               <div className="label mb-2">Rows per year</div>
+              <div className="overflow-x-auto">
               <table className="table-base">
                 <tbody>
                   {Object.entries(d.rows_per_year)
@@ -217,6 +220,7 @@ export function DataSourcesPage() {
                     ))}
                 </tbody>
               </table>
+              </div>
             </div>
           </div>
 
@@ -229,6 +233,7 @@ export function DataSourcesPage() {
                 </div>
               </div>
             </div>
+            <div className="overflow-x-auto">
             <table className="table-base">
               <thead>
                 <tr>
@@ -257,13 +262,15 @@ export function DataSourcesPage() {
                 ))}
               </tbody>
             </table>
+            </div>
           </div>
 
-          <div className="mb-5 grid grid-cols-2 gap-4">
-            <div className="panel overflow-hidden">
+          <div className="mb-5 grid grid-cols-1 gap-4 xl:grid-cols-2">
+            <div className="panel min-w-0 overflow-hidden">
               <div className="panel-header">
                 <div className="panel-title">Source files</div>
               </div>
+              <div className="overflow-x-auto">
               <table className="table-base">
                 <thead>
                   <tr>
@@ -277,7 +284,7 @@ export function DataSourcesPage() {
                 <tbody>
                   {d.source_files.map((f) => (
                     <tr key={f.filename}>
-                      <td className="font-mono text-sm">{f.filename}</td>
+                      <td className="break-all font-mono text-sm">{f.filename}</td>
                       <td className="font-mono">{f.source_year ?? "—"}</td>
                       <td className="text-right font-mono">{fmtInt(f.rows)}</td>
                       <td className="text-right font-mono text-sm">{fmtBytes(f.bytes)}</td>
@@ -288,8 +295,9 @@ export function DataSourcesPage() {
                   ))}
                 </tbody>
               </table>
+              </div>
             </div>
-            <div className="panel">
+            <div className="panel min-w-0">
               <div className="panel-header">
                 <div className="panel-title">Provenance notes</div>
               </div>
@@ -297,7 +305,7 @@ export function DataSourcesPage() {
                 {d.provenance_notes.length === 0 ? (
                   <div className="text-base text-ink-400">No provenance notes.</div>
                 ) : (
-                  <ul className="list-disc space-y-2 pl-5 text-base text-ink-100">
+                  <ul className="list-disc space-y-2 break-words pl-5 text-base text-ink-100 [overflow-wrap:anywhere]">
                     {d.provenance_notes.map((n, i) => (
                       <li key={i}>{n}</li>
                     ))}

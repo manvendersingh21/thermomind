@@ -50,7 +50,7 @@ export function SourceBadge({ variant, label, title, size = "md", className = ""
   return (
     <span
       title={title}
-      className={`inline-flex items-center gap-1.5 whitespace-nowrap rounded-md border font-semibold tracking-wide ${sizing} ${s.cls} ${className}`}
+      className={`inline-flex max-w-full items-center gap-1.5 rounded-md border font-semibold sm:whitespace-nowrap tracking-wide ${sizing} ${s.cls} ${className}`}
     >
       {s.icon}
       {label ?? s.defaultLabel}

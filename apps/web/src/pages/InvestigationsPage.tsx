@@ -37,6 +37,7 @@ export function InvestigationsPage() {
       ) : null}
       {list.length > 0 ? (
         <div className="panel overflow-hidden">
+          <div className="overflow-x-auto">
           <table className="table-base">
             <thead>
               <tr>
@@ -89,14 +90,15 @@ export function InvestigationsPage() {
                     )}
                   </td>
                   <td>
-                    <Link to={`/investigations/${i.case_id}`} className="text-ink-300 hover:text-blue-700">
-                      <ArrowRight size={18} />
+                    <Link to={`/investigations/${i.case_id}`} aria-label={`Open case ${i.case_id}`} className="text-ink-300 hover:text-blue-700">
+                      <ArrowRight size={18} aria-hidden="true" />
                     </Link>
                   </td>
                 </tr>
               ))}
             </tbody>
           </table>
+          </div>
         </div>
       ) : null}
     </div>

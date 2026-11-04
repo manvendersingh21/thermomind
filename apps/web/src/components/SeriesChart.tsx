@@ -69,6 +69,7 @@ export function SeriesChart({
   emptyMessage = "No points in this window.",
 }: Props) {
   const hasData = data.length > 0;
+  const chartLabel = `${typeof title === "string" ? title : "Time series"} line chart, ${series.map((s) => s.name).join(", ")}, unit ${unit || "none"}, year ${year}, ${hasData ? `${data.length} samples` : "no data"}`;
   return (
     <div className="panel">
       <div className="panel-header">
@@ -100,7 +101,12 @@ export function SeriesChart({
         </div>
         {badges ? <div className="flex shrink-0 flex-wrap items-center gap-2">{badges}</div> : null}
       </div>
-      <div className="px-2 pb-2 pt-4" style={{ height: height + 24 }}>
+      <div
+        className="px-2 pb-2 pt-4"
+        style={{ height: height + 24 }}
+        role="img"
+        aria-label={chartLabel}
+      >
         {hasData ? (
           <ResponsiveContainer width="100%" height="100%">
             <LineChart data={data} margin={{ top: 8, right: 24, bottom: 8, left: 8 }}>

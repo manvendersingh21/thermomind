@@ -24,7 +24,7 @@ export function EvidenceChip({ id, evidenceById, onOpen, tone = "neutral" }: Pro
       className={`chip ${unknown ? "border-dashed border-red-300 text-red-700 line-through" : TONE[tone]}`}
     >
       {id}
-      {ev?.is_synthetic ? <span className="ml-1 rounded bg-yellow-200 px-1 text-[11px] font-bold not-italic text-yellow-900 no-underline">SYN</span> : null}
+      {ev?.is_synthetic ? <span className="ml-1 rounded bg-yellow-200 px-1 text-xs font-bold not-italic text-yellow-900 no-underline">SYN</span> : null}
     </button>
   );
 }

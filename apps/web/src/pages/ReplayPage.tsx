@@ -133,8 +133,8 @@ export function ReplayPage() {
       {datasetEmpty ? <EmptyDataset className="mb-5" /> : null}
 
       <div className="panel mb-5">
-        <div className="grid grid-cols-12 gap-4 px-5 py-4">
-          <label className="col-span-2 flex flex-col gap-1.5">
+        <div className="grid grid-cols-2 gap-4 px-5 py-4 sm:grid-cols-6 lg:grid-cols-12">
+          <label className="col-span-1 flex flex-col gap-1.5 sm:col-span-2">
             <span className="label">Year</span>
             <select className="input" value={year} onChange={(e) => setYear(Number(e.target.value))}>
               {(dataset?.years ?? [2011, 2012, 2013, 2014, 2015]).map((y) => (
@@ -144,15 +144,15 @@ export function ReplayPage() {
               ))}
             </select>
           </label>
-          <label className="col-span-2 flex flex-col gap-1.5">
+          <label className="col-span-1 flex flex-col gap-1.5 sm:col-span-2">
             <span className="label">Start index</span>
             <input className="input font-mono" type="number" min={0} value={start} onChange={(e) => setStart(Math.max(0, Math.floor(Number(e.target.value) || 0)))} />
           </label>
-          <label className="col-span-2 flex flex-col gap-1.5">
+          <label className="col-span-2 flex flex-col gap-1.5 sm:col-span-2">
             <span className="label">Length</span>
             <input className="input font-mono" type="number" min={10} max={2000} value={length} onChange={(e) => setLength(Math.floor(Number(e.target.value) || 480))} />
           </label>
-          <div className="col-span-6 flex flex-col gap-1.5">
+          <div className="col-span-2 flex flex-col gap-1.5 sm:col-span-6">
             <span className="label">Measurements (up to {MAX_SELECTED})</span>
             <div className="flex flex-wrap gap-1.5">
               {MEASUREMENT_KEYS.map((m) => {
@@ -163,6 +163,8 @@ export function ReplayPage() {
                     type="button"
                     onClick={() => toggleMeasure(m)}
                     title={MEASUREMENTS[m].name}
+                    aria-label={`${m} ${MEASUREMENTS[m].name}`}
+                    aria-pressed={on}
                     className={`rounded-md border px-2.5 py-1 font-mono text-sm font-semibold transition ${
                       on ? "border-blue-500 bg-blue-50 text-blue-800" : "border-ink-600 bg-ink-900 text-ink-300 hover:border-ink-500"
                     }`}
@@ -176,11 +178,11 @@ export function ReplayPage() {
         </div>
         <div className="flex flex-wrap items-center gap-3 border-t border-ink-700 px-5 py-4">
           <button type="button" className="btn-primary" onClick={() => setPlaying((p) => !p)} disabled={!series.data || totalPoints === 0 || (cursor >= totalPoints && !playing)}>
-            {playing ? <Pause size={18} /> : <Play size={18} />}
+            {playing ? <Pause size={18} aria-hidden="true" /> : <Play size={18} aria-hidden="true" />}
             {playing ? "Pause" : cursor > 0 && cursor < totalPoints ? "Resume" : "Play"}
           </button>
           <button type="button" className="btn-secondary" onClick={() => setCursor((c) => Math.min(totalPoints, c + 10))} disabled={!series.data}>
-            <SkipForward size={16} /> +10
+            <SkipForward size={16} aria-hidden="true" /> +10
           </button>
           <button
             type="button"
@@ -191,7 +193,7 @@ export function ReplayPage() {
             }}
             disabled={!series.data}
           >
-            <RotateCcw size={16} /> Reset
+            <RotateCcw size={16} aria-hidden="true" /> Reset
           </button>
           <div className="ml-2 flex items-center gap-1.5">
             <span className="text-sm font-medium text-ink-300">Speed</span>
@@ -200,20 +202,21 @@ export function ReplayPage() {
                 key={s}
                 type="button"
                 onClick={() => setSpeed(s)}
+                aria-pressed={speed === s}
                 className={`rounded-md border px-2.5 py-1 font-mono text-sm ${speed === s ? "border-blue-500 bg-blue-50 text-blue-800" : "border-ink-600 text-ink-300"}`}
               >
                 {s}×
               </button>
             ))}
           </div>
-          <div className="ml-auto flex items-center gap-3">
+          <div className="ml-auto flex max-w-full flex-wrap items-center gap-3">
             <input
               type="range"
               min={0}
               max={Math.max(0, totalPoints)}
               value={cursor}
               onChange={(e) => setCursor(Number(e.target.value))}
-              className="w-56 accent-blue-600"
+              aria-label="Replay position" className="w-56 max-w-full accent-blue-600"
               disabled={!series.data}
             />
             <span className="font-mono text-sm text-ink-200">
