@@ -1,0 +1,31 @@
+# ThermoMind — local single-container deployment.
+#
+#   cp .env.example .env            # set MODEL_API_KEY (server-side only, never committed)
+#   docker compose build
+#   docker compose run --rm thermomind python /app/scripts/fetch_uci.py   # UCI 551 -> data/raw/uci_551
+#   docker compose run --rm thermomind python /app/scripts/train.py       # -> data/models
+#   docker compose up
+#   open http://localhost:8000
+#
+# data/ is mounted as a volume so the raw data set, the trained model and the SQLite
+# database survive container restarts and are never baked into the image.
+services:
+  thermomind:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: thermomind:local
+    container_name: thermomind
+    ports:
+      - "8000:8000"
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      MODEL_API_KEY: ${MODEL_API_KEY:-}
+      META_BASE_URL: ${META_BASE_URL:-https://api.meta.ai/v1}
+      META_MODEL: ${META_MODEL:-muse-spark-1.3}
+      THERMOMIND_DB: /app/data/thermomind.db
+    volumes:
+      - ./data:/app/data
+    restart: unless-stopped

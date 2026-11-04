@@ -1,0 +1,30 @@
+# ThermoMind — pitch
+
+## Pitch (≤ 100 words)
+
+ThermoMind is a read-only AI diagnostic investigator for gas-turbine power generation. It turns real operating measurements into an investigation case: deterministic evidence with the computation behind every number, a reproducible baseline model with explicit uncertainty, and a Meta Muse Spark report that may only cite evidence its tool calls returned. A validator rejects fabricated evidence, invented dates and control language; every report is a draft for an engineer. Built from scratch during the hackathon on the public UCI gas-turbine data set, it never touches a control system and helps reliability engineers decide what to investigate first.
+
+(96 words)
+
+## Innovation
+
+- **Evidence-gated reasoning.** The model does not compute; it selects, ranks and explains over server-side evidence. Evidence IDs are a whitelist enforced after generation, so a hallucinated citation cannot reach a human.
+- **Provenance as a first-class type.** `real_observation` / `model_derived` / `synthetic_overlay` travel with every value, and the UI badges them. Synthetic demo scenarios are impossible to confuse with real data.
+- **Replayable investigations.** Every model request, tool call, tool result, validation and rewrite is stored and replayable, with latency and token counts.
+- **Honest data handling.** No fabricated timestamps, no fabricated labels, no unit laundering (CDP is flagged, TEY stays MWh).
+
+## Who pays
+
+Independent power producers, O&M contractors and utility reliability groups, through a per-plant / per-turbine annual pilot. The champion is the performance or reliability engineer who today triages deviations in spreadsheets beside OEM monitoring (Siemens Energy, GE Vernova, AspenTech), which we complement rather than replace. Pricing is an output of the first pilots, not an input.
+
+## How Meta is used
+
+`muse-spark-1.3` via `https://api.meta.ai/v1` (OpenAI-compatible chat completions with function tools). The model runs a bounded multi-turn loop over six tools (`get_sensor_window`, `get_baseline_comparison`, `evaluate_hypothesis`, `get_data_quality`, `list_evidence`, `lookup_reference`), then returns a JSON report that is validated, rewritten at most once, or sent to `needs_review`. Because Muse Spark is a reasoning model, the token budget covers reasoning tokens. `meta_used` is true only for real calls; the offline preview is labelled "not a Meta inference".
+
+## Why it is different
+
+Incumbent monitoring detects and alerts inside long-term service agreements. ThermoMind produces the thing engineers actually argue over: a transparent, auditable case file with explicit uncertainty and limitations, built on exported data without any OT integration. The unit of value is the case, not the alarm.
+
+## What we do not claim
+
+No accuracy figure, no avoided downtime, no customers, no sales. One plant's 2011–2015 data with no fault labels is the whole evidence base today; the pilot metrics in `docs/MARKET.md` are how we would find out whether this is worth paying for.

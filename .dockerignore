@@ -1,0 +1,9 @@
+node_modules
+.venv
+data/raw
+data/models
+*.db
+.env
+apps/web/dist
+.git
+__pycache__

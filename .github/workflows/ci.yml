@@ -1,0 +1,46 @@
+name: ci
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  api:
+    name: API tests (python 3.12, fixtures only)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: apps/api/requirements.txt
+      - name: Install dependencies
+        run: pip install -r apps/api/requirements.txt
+      - name: Run tests
+        # Tests use data/fixtures only: no network, no UCI download, no MODEL_API_KEY.
+        env:
+          MODEL_API_KEY: ""
+          MUSE_API_KEY: ""
+        run: cd apps/api && python -m pytest -q
+
+  web:
+    name: Web typecheck + build (node 20)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/web
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: Install dependencies
+        run: npm ci
+      - name: Typecheck
+        run: npm run typecheck
+      - name: Build
+        run: npm run build

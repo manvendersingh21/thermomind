@@ -1,0 +1,562 @@
+{
+  "_note": "illustrative example shape, not a real run",
+  "_schema": "apps/api/app/schemas.py :: Investigation (GET /api/investigations/{case_id})",
+  "_warning": "All numeric values, ids, hashes, timestamps of events and token counts are placeholders chosen to show the shape. Timestamps here are event times (ts_utc), never row timestamps: UCI rows have none.",
+  "case_id": "case_example_s02_0001",
+  "status": "completed",
+  "created_at_utc": "2026-11-04T00:00:00Z",
+  "completed_at_utc": "2026-11-04T00:00:20Z",
+  "request": {
+    "dataset_id": "ds_uci_551",
+    "scenario_id": "S02_INTAKE_RESTRICTION",
+    "year": 2014,
+    "start_index": 1200,
+    "end_index": 1320,
+    "seed": 42,
+    "use_meta": true
+  },
+  "scenario": {
+    "scenario_id": "S02_INTAKE_RESTRICTION",
+    "title": "Progressive intake filter restriction (synthetic)",
+    "synthetic": true,
+    "description": "Synthetic overlay on a copy of real rows: AFDP linear ramp up, TEY scaled down to at most -3.5%, CDP scaled slightly down.",
+    "rationale": "Illustration of the documented tendency of intake filter fouling to raise filter differential pressure and reduce output; not a recorded event at the source plant.",
+    "affected_measurements": [
+      "AFDP",
+      "TEY",
+      "CDP"
+    ],
+    "default_year": 2014,
+    "default_start": 1200,
+    "default_end": 1320,
+    "default_seed": 42,
+    "expected_behavior": "Documentation only; never passed to the model."
+  },
+  "scenario_label": "synthetic_overlay",
+  "window": {
+    "source_year": 2014,
+    "start": 1200,
+    "end": 1320
+  },
+  "reference": {
+    "source_year": 2014,
+    "start": 960,
+    "end": 1200
+  },
+  "model_version": "baseline_v1",
+  "meta_model": "muse-spark-1.3",
+  "meta_used": true,
+  "mode": "meta_live",
+  "report": {
+    "case_id": "case_example_s02_0001",
+    "title": "Coherent intake-side deviation in window 2014 • samples #1200–#1319 (synthetic overlay)",
+    "summary": "AFDP rises steadily across the window while TEY falls below the baseline expectation and CDP drifts slightly low; ambient conditions are stable. The pattern is consistent with a progressive intake restriction but the data is a synthetic overlay and no fault label exists.",
+    "severity": "review",
+    "data_source": "UCI_GAS_TURBINE_551",
+    "scenario_label": "synthetic_overlay",
+    "observations": [
+      {
+        "statement": "AFDP median is 1.2 mbar above the reference with a positive linear trend.",
+        "evidence_ids": [
+          "ev_afdp_01",
+          "ev_afdp_trend_02"
+        ]
+      },
+      {
+        "statement": "TEY is on average 2.5 MWh below the baseline expectation, versus +0.1 MWh in the reference.",
+        "evidence_ids": [
+          "ev_tey_residual_03"
+        ]
+      },
+      {
+        "statement": "Ambient temperature is essentially unchanged.",
+        "evidence_ids": [
+          "ev_at_05"
+        ]
+      }
+    ],
+    "hypotheses": [
+      {
+        "name": "Progressive intake filter restriction",
+        "key": "intake_restriction",
+        "rank": 1,
+        "supporting_evidence_ids": [
+          "ev_afdp_01",
+          "ev_afdp_trend_02",
+          "ev_tey_residual_03",
+          "ev_cdp_04"
+        ],
+        "contradicting_evidence_ids": [],
+        "limitations": [
+          "Synthetic overlay; no recorded fault.",
+          "No load/dispatch signal to exclude operator action."
+        ],
+        "status": "possible",
+        "rationale": "Rising AFDP with falling output and slightly lower CDP is a coherent multi-sensor pattern.",
+        "what_would_change_assessment": "A flat AFDP trend, or a dispatch log showing a deliberate load reduction."
+      },
+      {
+        "name": "Operating-condition change",
+        "key": "operating_condition",
+        "rank": 2,
+        "supporting_evidence_ids": [],
+        "contradicting_evidence_ids": [
+          "ev_at_05"
+        ],
+        "limitations": [
+          "Only ambient temperature checked here."
+        ],
+        "status": "not_supported",
+        "rationale": "Ambient conditions are stable across window and reference.",
+        "what_would_change_assessment": "A notable AT/AH/AP shift coinciding with the output change."
+      },
+      {
+        "name": "Sensor or instrumentation issue",
+        "key": "sensor_issue",
+        "rank": 3,
+        "supporting_evidence_ids": [],
+        "contradicting_evidence_ids": [
+          "ev_tey_residual_03",
+          "ev_cdp_04"
+        ],
+        "limitations": [
+          "CDP unit under validation."
+        ],
+        "status": "inconclusive",
+        "rationale": "Several independent sensors move together, which is unlike an isolated sensor fault.",
+        "what_would_change_assessment": "AFDP moving alone with TEY residual near zero."
+      },
+      {
+        "name": "Unknown / no fault",
+        "key": "unknown",
+        "rank": 4,
+        "supporting_evidence_ids": [],
+        "contradicting_evidence_ids": [],
+        "limitations": [
+          "Residual confounding cannot be fully excluded."
+        ],
+        "status": "not_supported",
+        "rationale": null,
+        "what_would_change_assessment": null
+      }
+    ],
+    "additional_data_needed": [
+      "Dispatch/load setpoint log for the window",
+      "Filter change or inspection records",
+      "CDP sensor calibration record and unit confirmation"
+    ],
+    "engineer_review_checks": [
+      "Verify AFDP trend against local trend display",
+      "Confirm no deliberate load reduction",
+      "Check filter house inspection status"
+    ],
+    "limitations": [
+      "Data set has no timestamps and no fault labels.",
+      "Scenario is a synthetic overlay on real rows.",
+      "Baseline is a statistical model confounded by dispatch."
+    ],
+    "disclaimer": "Not a validated plant safety or control system.",
+    "report_status": "draft_requires_human_review"
+  },
+  "deterministic_summary": {},
+  "evidence": [
+    {
+      "evidence_id": "ev_afdp_01",
+      "case_id": "case_example_s02_0001",
+      "kind": "measured_plus_synthetic_overlay",
+      "metric": "AFDP",
+      "unit": "mbar",
+      "title": "AFDP window median vs reference median",
+      "sample_range": {
+        "source_year": 2014,
+        "start": 1200,
+        "end": 1320
+      },
+      "reference_range": {
+        "source_year": 2014,
+        "start": 960,
+        "end": 1200
+      },
+      "observed_stat": 5.2,
+      "comparison_stat": 4.0,
+      "delta": 1.2,
+      "delta_pct": 30.0,
+      "z_score": 4.0,
+      "method": "median_window_vs_reference",
+      "computation": "median(AFDP[1200:1320]) = 5.2 mbar; median(AFDP[960:1200]) = 4.0 mbar; delta = +1.2 mbar (+30.0%); z = 1.2 / 0.3 = 4.0",
+      "data_quality": "pass",
+      "is_synthetic": true,
+      "model_version": null,
+      "flags": [
+        "synthetic_overlay"
+      ],
+      "values": {
+        "reference_std": 0.3
+      }
+    },
+    {
+      "evidence_id": "ev_afdp_trend_02",
+      "case_id": "case_example_s02_0001",
+      "kind": "measured_plus_synthetic_overlay",
+      "metric": "AFDP_trend",
+      "unit": "mbar/sample",
+      "title": "AFDP linear trend across window",
+      "sample_range": {
+        "source_year": 2014,
+        "start": 1200,
+        "end": 1320
+      },
+      "reference_range": null,
+      "observed_stat": 0.015,
+      "comparison_stat": null,
+      "delta": null,
+      "delta_pct": null,
+      "z_score": null,
+      "method": "ols_slope_over_window",
+      "computation": "OLS slope of AFDP over window rows 0..119 = +0.015 mbar/sample (R^2 = 0.90)",
+      "data_quality": "pass",
+      "is_synthetic": true,
+      "model_version": null,
+      "flags": [
+        "synthetic_overlay"
+      ],
+      "values": {
+        "r2": 0.9
+      }
+    },
+    {
+      "evidence_id": "ev_tey_residual_03",
+      "case_id": "case_example_s02_0001",
+      "kind": "model_derived",
+      "metric": "TEY_residual",
+      "unit": "MWh",
+      "title": "TEY residual vs baseline model (observed - expected)",
+      "sample_range": {
+        "source_year": 2014,
+        "start": 1200,
+        "end": 1320
+      },
+      "reference_range": {
+        "source_year": 2014,
+        "start": 960,
+        "end": 1200
+      },
+      "observed_stat": -2.5,
+      "comparison_stat": 0.1,
+      "delta": -2.6,
+      "delta_pct": null,
+      "z_score": -1.9,
+      "method": "mean_residual_window_vs_reference",
+      "computation": "mean(observed - expected TEY) window = -2.5 MWh; reference = +0.1 MWh; z = -2.6 / residual_std_validation(1.4) = -1.9",
+      "data_quality": "pass",
+      "is_synthetic": true,
+      "model_version": "baseline_v1",
+      "flags": [
+        "synthetic_overlay"
+      ],
+      "values": {
+        "residual_std_validation": 1.4
+      }
+    },
+    {
+      "evidence_id": "ev_cdp_04",
+      "case_id": "case_example_s02_0001",
+      "kind": "measured_plus_synthetic_overlay",
+      "metric": "CDP",
+      "unit": "mbar (as published; unit under validation)",
+      "title": "CDP window median vs reference median",
+      "sample_range": {
+        "source_year": 2014,
+        "start": 1200,
+        "end": 1320
+      },
+      "reference_range": {
+        "source_year": 2014,
+        "start": 960,
+        "end": 1200
+      },
+      "observed_stat": 12.3,
+      "comparison_stat": 12.4,
+      "delta": -0.1,
+      "delta_pct": -0.8,
+      "z_score": -0.5,
+      "method": "median_window_vs_reference",
+      "computation": "median(CDP[1200:1320]) = 12.3; median(CDP[960:1200]) = 12.4; delta = -0.1 (-0.8%); z = -0.5",
+      "data_quality": "warn",
+      "is_synthetic": true,
+      "model_version": null,
+      "flags": [
+        "synthetic_overlay",
+        "unit_under_validation"
+      ],
+      "values": {}
+    },
+    {
+      "evidence_id": "ev_at_05",
+      "case_id": "case_example_s02_0001",
+      "kind": "real_observation",
+      "metric": "AT",
+      "unit": "°C",
+      "title": "Ambient temperature window median vs reference median",
+      "sample_range": {
+        "source_year": 2014,
+        "start": 1200,
+        "end": 1320
+      },
+      "reference_range": {
+        "source_year": 2014,
+        "start": 960,
+        "end": 1200
+      },
+      "observed_stat": 18.0,
+      "comparison_stat": 17.5,
+      "delta": 0.5,
+      "delta_pct": 2.9,
+      "z_score": 0.2,
+      "method": "median_window_vs_reference",
+      "computation": "median(AT[1200:1320]) = 18.0 °C; median(AT[960:1200]) = 17.5 °C; delta = +0.5 °C; z = 0.2",
+      "data_quality": "pass",
+      "is_synthetic": false,
+      "model_version": null,
+      "flags": [],
+      "values": {}
+    }
+  ],
+  "data_quality": {
+    "case_id": "case_example_s02_0001",
+    "missing_values": {
+      "AT": 0,
+      "AP": 0,
+      "AH": 0,
+      "AFDP": 0,
+      "GTEP": 0,
+      "TIT": 0,
+      "TAT": 0,
+      "TEY": 0,
+      "CDP": 0,
+      "CO": 0,
+      "NOX": 0
+    },
+    "out_of_training_range": {
+      "AT": 0,
+      "AP": 0,
+      "AH": 0,
+      "AFDP": 0,
+      "GTEP": 0,
+      "TIT": 0,
+      "TAT": 0,
+      "CDP": 0
+    },
+    "sensor_consistency_flags": [],
+    "scenario_label": "synthetic_overlay",
+    "synthetic_measurements": [
+      "AFDP",
+      "TEY",
+      "CDP"
+    ],
+    "source": "UCI_GAS_TURBINE_551",
+    "notes": [
+      "No row-level timestamps in source; rows identified by source_year + row_index.",
+      "CDP unit 'mbar' as published; under validation."
+    ]
+  },
+  "baseline": {
+    "case_id": "case_example_s02_0001",
+    "model_version": "baseline_v1",
+    "window": {
+      "source_year": 2014,
+      "start": 1200,
+      "end": 1320
+    },
+    "reference": {
+      "source_year": 2014,
+      "start": 960,
+      "end": 1200
+    },
+    "observed_tey_mean": 130.0,
+    "expected_tey_mean": 132.5,
+    "residual_mean": -2.5,
+    "residual_std_window": 1.1,
+    "residual_std_validation": 1.4,
+    "residual_z": -1.8,
+    "reference_residual_mean": 0.1,
+    "unit": "MWh",
+    "holdout_mae": 1.3,
+    "holdout_r2": 0.99,
+    "caveats": [
+      "Statistical model, not a thermodynamic model.",
+      "Residuals are confounded by dispatch/load changes not present in the data.",
+      "Window contains a synthetic overlay on TEY, AFDP and CDP."
+    ]
+  },
+  "events": [
+    {
+      "seq": 1,
+      "ts_utc": "2026-11-04T00:00:00Z",
+      "kind": "case_opened",
+      "tool_name": null,
+      "args": null,
+      "summary": "Case opened for S02_INTAKE_RESTRICTION (synthetic overlay), window 2014 [1200,1320).",
+      "evidence_ids": [],
+      "latency_ms": null,
+      "ok": true,
+      "tokens": null
+    },
+    {
+      "seq": 2,
+      "ts_utc": "2026-11-04T00:00:01Z",
+      "kind": "model_request",
+      "tool_name": null,
+      "args": null,
+      "summary": "chat.completions with 6 function tools",
+      "evidence_ids": [],
+      "latency_ms": null,
+      "ok": true,
+      "tokens": {
+        "prompt_tokens": 0
+      }
+    },
+    {
+      "seq": 3,
+      "ts_utc": "2026-11-04T00:00:05Z",
+      "kind": "tool_call",
+      "tool_name": "get_sensor_window",
+      "args": {
+        "measurements": [
+          "AFDP",
+          "TEY",
+          "CDP",
+          "AT"
+        ]
+      },
+      "summary": "Model requested sensor window statistics.",
+      "evidence_ids": [],
+      "latency_ms": 0,
+      "ok": true,
+      "tokens": null
+    },
+    {
+      "seq": 4,
+      "ts_utc": "2026-11-04T00:00:05Z",
+      "kind": "tool_result",
+      "tool_name": "get_sensor_window",
+      "args": null,
+      "summary": "Returned 4 evidence items.",
+      "evidence_ids": [
+        "ev_afdp_01",
+        "ev_afdp_trend_02",
+        "ev_cdp_04",
+        "ev_at_05"
+      ],
+      "latency_ms": null,
+      "ok": true,
+      "tokens": null
+    },
+    {
+      "seq": 5,
+      "ts_utc": "2026-11-04T00:00:09Z",
+      "kind": "tool_call",
+      "tool_name": "get_baseline_comparison",
+      "args": {},
+      "summary": "Model requested baseline comparison.",
+      "evidence_ids": [],
+      "latency_ms": null,
+      "ok": true,
+      "tokens": null
+    },
+    {
+      "seq": 6,
+      "ts_utc": "2026-11-04T00:00:09Z",
+      "kind": "tool_result",
+      "tool_name": "get_baseline_comparison",
+      "args": null,
+      "summary": "Returned baseline comparison.",
+      "evidence_ids": [
+        "ev_tey_residual_03"
+      ],
+      "latency_ms": null,
+      "ok": true,
+      "tokens": null
+    },
+    {
+      "seq": 7,
+      "ts_utc": "2026-11-04T00:00:13Z",
+      "kind": "tool_call",
+      "tool_name": "evaluate_hypothesis",
+      "args": {
+        "hypothesis_key": "intake_restriction"
+      },
+      "summary": "Model requested deterministic hypothesis evaluation.",
+      "evidence_ids": [],
+      "latency_ms": null,
+      "ok": true,
+      "tokens": null
+    },
+    {
+      "seq": 8,
+      "ts_utc": "2026-11-04T00:00:13Z",
+      "kind": "tool_result",
+      "tool_name": "evaluate_hypothesis",
+      "args": null,
+      "summary": "Returned support/contradiction evidence ids.",
+      "evidence_ids": [
+        "ev_afdp_01",
+        "ev_afdp_trend_02",
+        "ev_tey_residual_03",
+        "ev_cdp_04"
+      ],
+      "latency_ms": null,
+      "ok": true,
+      "tokens": null
+    },
+    {
+      "seq": 9,
+      "ts_utc": "2026-11-04T00:00:20Z",
+      "kind": "model_response",
+      "tool_name": null,
+      "args": null,
+      "summary": "Final JSON report received.",
+      "evidence_ids": [],
+      "latency_ms": 0,
+      "ok": true,
+      "tokens": {
+        "prompt_tokens": 0,
+        "completion_tokens": 0,
+        "reasoning_tokens": 0
+      }
+    },
+    {
+      "seq": 10,
+      "ts_utc": "2026-11-04T00:00:20Z",
+      "kind": "validation",
+      "tool_name": null,
+      "args": null,
+      "summary": "Schema ok; 5/5 cited evidence ids known; no dates; no control language.",
+      "evidence_ids": [],
+      "latency_ms": null,
+      "ok": true,
+      "tokens": null
+    },
+    {
+      "seq": 11,
+      "ts_utc": "2026-11-04T00:00:20Z",
+      "kind": "report_accepted",
+      "tool_name": null,
+      "args": null,
+      "summary": "Report accepted as draft_requires_human_review.",
+      "evidence_ids": [],
+      "latency_ms": null,
+      "ok": true,
+      "tokens": null
+    }
+  ],
+  "validation_errors": [],
+  "report_hash": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+  "review": {
+    "decision": "more_data_requested",
+    "reviewer": "demo-engineer",
+    "comment": "Need dispatch log before accepting.",
+    "ts_utc": "2026-11-04T00:05:00Z"
+  },
+  "error": null
+}

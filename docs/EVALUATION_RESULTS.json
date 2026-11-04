@@ -1,0 +1,547 @@
+{
+  "generated_at_utc": "2026-11-04T18:28:45Z",
+  "model": {
+    "model_id": "baseline_tey_hgbr",
+    "model_version": "baseline_v1",
+    "algorithm": "sklearn.ensemble.HistGradientBoostingRegressor",
+    "features": [
+      "AT",
+      "AP",
+      "AH",
+      "AFDP",
+      "GTEP",
+      "TIT",
+      "TAT",
+      "CDP"
+    ],
+    "target": "TEY",
+    "target_unit": "MWh",
+    "seed": 42,
+    "split": {
+      "train_years": [
+        2011,
+        2012,
+        2013
+      ],
+      "validation_years": [
+        2014
+      ],
+      "test_years": [
+        2015
+      ],
+      "train_rows": 22191,
+      "validation_rows": 7158,
+      "test_rows": 7384,
+      "method": "chronological_by_source_year"
+    },
+    "validation": {
+      "mae": 1.3644976014192474,
+      "rmse": 1.7402319168449623,
+      "r2": 0.9836312796241868,
+      "n": 7158
+    },
+    "holdout": {
+      "mae": 1.2928525558088886,
+      "rmse": 1.6458855484101307,
+      "r2": 0.9896499238353019,
+      "n": 7384
+    },
+    "naive_baselines": {
+      "train_mean": {
+        "mae": 12.956948536108726,
+        "rmse": 16.1845376214382,
+        "r2": -0.0007944189124056145,
+        "n": 7384
+      },
+      "previous_observation": {
+        "mae": 4.125295950155763,
+        "rmse": 8.466922394475947,
+        "r2": 0.7260904189246328,
+        "n": 7383
+      }
+    },
+    "residual_std_validation": 1.3752109344540826,
+    "residual_quantiles_validation": {
+      "p01": -2.242694553551666,
+      "p05": -0.9311818722752846,
+      "p50": 1.0238590118632516,
+      "p95": 3.6976428859932153,
+      "p99": 4.579114244420845
+    },
+    "feature_ranges_train": {
+      "AT": [
+        0.28985,
+        34.929
+      ],
+      "AP": [
+        985.85,
+        1034.2
+      ],
+      "AH": [
+        27.504,
+        100.2
+      ],
+      "AFDP": [
+        2.0874,
+        7.6106
+      ],
+      "GTEP": [
+        17.878,
+        37.402
+      ],
+      "TIT": [
+        1000.8,
+        1100.8
+      ],
+      "TAT": [
+        512.45,
+        550.61
+      ],
+      "CDP": [
+        9.8754,
+        15.081
+      ]
+    },
+    "trained_at_utc": "2026-11-04T18:28:34Z",
+    "notes": [
+      "Model learns the contemporaneous statistical relation between operating/ambient sensor readings and TEY in the UCI 551 data set; it is NOT a physics or thermodynamic model of the turbine.",
+      "Features are hourly aggregates recorded at the same time as the target; the model cannot forecast and its residuals are confounded by dispatch/load changes that are not observed as a separate signal.",
+      "The data set contains no verified fault labels; residuals indicate deviation from the learned relation, not a diagnosed fault. Any fault interpretation requires engineer review.",
+      "CDP unit is 'mbar' as published by UCI and is under validation (values ~10-15 look like bar); the model uses it as an unscaled numeric feature so the unit question does not affect predictions.",
+      "Leakage review: TEY (target) is excluded from the features. CO and NOX are excluded because they are emission outputs of the combustion process, not operating inputs, and would leak target-correlated information. Remaining features: AT, AP, AH, AFDP, GTEP, TIT, TAT, CDP.",
+      "Split is chronological by source_year (train 2011-2013, validation 2014, holdout 2015); the holdout year is never used for fitting or threshold selection. Rows have no timestamps; order within a year is file order.",
+      "Naive baselines: 'train_mean' predicts the training-set mean TEY; 'previous_observation' predicts each row's TEY from the previous row of the same year (first row of each year dropped). Both are evaluated on the holdout.",
+      "TEY is in MWh as published (hourly aggregate); it is not converted to MW.",
+      "HistGradientBoostingRegressor params: {'max_iter': 300, 'learning_rate': 0.05, 'max_leaf_nodes': 31, 'min_samples_leaf': 40, 'l2_regularization': 1.0, 'early_stopping': False}, random_state=42."
+    ]
+  },
+  "notable_threshold_z": 2.0,
+  "cases": [
+    {
+      "case_id": "eval_S01_NORMAL_2014_1200_1320",
+      "scenario_id": "S01_NORMAL",
+      "synthetic": false,
+      "window": {
+        "source_year": 2014,
+        "start": 1200,
+        "end": 1320
+      },
+      "reference": {
+        "source_year": 2014,
+        "start": 960,
+        "end": 1200
+      },
+      "top_hypothesis": "unknown",
+      "scores": {
+        "intake_restriction": 0.0,
+        "operating_condition": 0.0,
+        "sensor_issue": 0.0,
+        "unknown": 0.7
+      },
+      "notable_evidence_ids": [],
+      "residual_notable": false,
+      "residual_mean": 1.2632561491681613,
+      "residual_z_raw": 0.9185908267008043,
+      "residual_z_vs_reference": -0.14608140623038893,
+      "reference_residual_mean": 1.464148896336621,
+      "evidence_z": {
+        "ev_afdp_01": -0.0022934561992148036,
+        "ev_afdp_02": 0.6373131903506456,
+        "ev_tey_residual_01": 0.9185908267008043,
+        "ev_tey_residual_02": 0.03599937453872633,
+        "ev_tey_01": -0.0881079473460153,
+        "ev_cdp_01": -0.07811448028930372,
+        "ev_cdp_02": -6.88,
+        "ev_tit_01": 0.024822807831045676,
+        "ev_tat_01": 0.24553826564068598,
+        "ev_gtep_01": -0.09954188548083912,
+        "ev_at_01": 0.08562998930698809,
+        "ev_at_02": 1.6219223178120241,
+        "ev_ah_01": -0.6053572786889362,
+        "ev_ap_01": 0.4766497211813368,
+        "ev_coherence_01": null,
+        "ev_ood_01": null
+      },
+      "sensor_consistency_flags": [],
+      "out_of_training_range": {
+        "AT": 0,
+        "AP": 0,
+        "AH": 0,
+        "AFDP": 0,
+        "GTEP": 0,
+        "TIT": 0,
+        "TAT": 0,
+        "CDP": 0
+      },
+      "evidence_count": 16
+    },
+    {
+      "case_id": "eval_S02_INTAKE_RESTRICTION_2014_1200_1320",
+      "scenario_id": "S02_INTAKE_RESTRICTION",
+      "synthetic": true,
+      "window": {
+        "source_year": 2014,
+        "start": 1200,
+        "end": 1320
+      },
+      "reference": {
+        "source_year": 2014,
+        "start": 960,
+        "end": 1200
+      },
+      "top_hypothesis": "intake_restriction",
+      "scores": {
+        "intake_restriction": 1.0,
+        "operating_condition": 0.0,
+        "sensor_issue": 0.0,
+        "unknown": 0.05
+      },
+      "notable_evidence_ids": [
+        "ev_afdp_01",
+        "ev_afdp_02",
+        "ev_tey_residual_02"
+      ],
+      "residual_notable": true,
+      "residual_mean": -0.6554182719003698,
+      "residual_z_raw": -0.4765947212022068,
+      "residual_z_vs_reference": -1.5412669541333999,
+      "reference_residual_mean": 1.464148896336621,
+      "evidence_z": {
+        "ev_afdp_01": 2.0591854164757364,
+        "ev_afdp_02": 4.769730529664945,
+        "ev_tey_residual_01": -0.4765947212022068,
+        "ev_tey_residual_02": -2.1975699179952057,
+        "ev_tey_01": -0.2767737190776482,
+        "ev_cdp_01": -0.14701626670098972,
+        "ev_cdp_02": -5.3,
+        "ev_tit_01": 0.024822807831045676,
+        "ev_tat_01": 0.24553826564068598,
+        "ev_gtep_01": -0.09954188548083912,
+        "ev_at_01": 0.08562998930698809,
+        "ev_at_02": 1.6219223178120241,
+        "ev_ah_01": -0.6053572786889362,
+        "ev_ap_01": 0.4766497211813368,
+        "ev_coherence_01": null,
+        "ev_ood_01": null
+      },
+      "sensor_consistency_flags": [],
+      "out_of_training_range": {
+        "AT": 0,
+        "AP": 0,
+        "AH": 0,
+        "AFDP": 0,
+        "GTEP": 0,
+        "TIT": 0,
+        "TAT": 0,
+        "CDP": 0
+      },
+      "evidence_count": 16
+    },
+    {
+      "case_id": "eval_S03_SENSOR_INCONSISTENCY_2014_1200_1320",
+      "scenario_id": "S03_SENSOR_INCONSISTENCY",
+      "synthetic": true,
+      "window": {
+        "source_year": 2014,
+        "start": 1200,
+        "end": 1320
+      },
+      "reference": {
+        "source_year": 2014,
+        "start": 960,
+        "end": 1200
+      },
+      "top_hypothesis": "sensor_issue",
+      "scores": {
+        "intake_restriction": 0.15,
+        "operating_condition": 0.0,
+        "sensor_issue": 0.85,
+        "unknown": 0.15
+      },
+      "notable_evidence_ids": [
+        "ev_tey_residual_01",
+        "ev_cdp_02"
+      ],
+      "residual_notable": true,
+      "residual_mean": -4.0539142623733415,
+      "residual_z_raw": -2.9478490614115307,
+      "residual_z_vs_reference": -4.012521294342724,
+      "reference_residual_mean": 1.464148896336621,
+      "evidence_z": {
+        "ev_afdp_01": -0.0022934561992148036,
+        "ev_afdp_02": 0.6373131903506456,
+        "ev_tey_residual_01": -2.9478490614115307,
+        "ev_tey_residual_02": 0.03599937453872633,
+        "ev_tey_01": -0.0881079473460153,
+        "ev_cdp_01": 0.4970245501588645,
+        "ev_cdp_02": 8.15,
+        "ev_tit_01": 0.024822807831045676,
+        "ev_tat_01": 0.24553826564068598,
+        "ev_gtep_01": -0.09954188548083912,
+        "ev_at_01": 0.08562998930698809,
+        "ev_at_02": 1.6219223178120241,
+        "ev_ah_01": -0.6053572786889362,
+        "ev_ap_01": 0.4766497211813368,
+        "ev_coherence_01": null,
+        "ev_ood_01": null
+      },
+      "sensor_consistency_flags": [
+        "CDP shows isolated step/spike segment(s) at rows [1240,1245), [1246,1269) with no coincident change in TEY/AFDP/TIT/GTEP",
+        "TEY residual deviates notably while raw TEY and AFDP do not: model inputs and output disagree"
+      ],
+      "out_of_training_range": {
+        "AT": 0,
+        "AP": 0,
+        "AH": 0,
+        "AFDP": 0,
+        "GTEP": 0,
+        "TIT": 0,
+        "TAT": 0,
+        "CDP": 5
+      },
+      "evidence_count": 16
+    },
+    {
+      "case_id": "eval_S04_AMBIENT_SHIFT_2014_1200_1320",
+      "scenario_id": "S04_AMBIENT_SHIFT",
+      "synthetic": true,
+      "window": {
+        "source_year": 2014,
+        "start": 1200,
+        "end": 1320
+      },
+      "reference": {
+        "source_year": 2014,
+        "start": 960,
+        "end": 1200
+      },
+      "top_hypothesis": "operating_condition",
+      "scores": {
+        "intake_restriction": 0.0,
+        "operating_condition": 0.5,
+        "sensor_issue": 0.0,
+        "unknown": 0.5
+      },
+      "notable_evidence_ids": [
+        "ev_at_02"
+      ],
+      "residual_notable": false,
+      "residual_mean": 2.537571575093603,
+      "residual_z_raw": 1.8452235300913622,
+      "residual_z_vs_reference": 0.7805512971601689,
+      "reference_residual_mean": 1.464148896336621,
+      "evidence_z": {
+        "ev_afdp_01": -0.0022934561992148036,
+        "ev_afdp_02": 0.6373131903506456,
+        "ev_tey_residual_01": 1.8452235300913622,
+        "ev_tey_residual_02": 1.616984953130312,
+        "ev_tey_01": -0.0881079473460153,
+        "ev_cdp_01": -0.07811448028930372,
+        "ev_cdp_02": -6.88,
+        "ev_tit_01": 0.024822807831045676,
+        "ev_tat_01": 0.24553826564068598,
+        "ev_gtep_01": -0.09954188548083912,
+        "ev_at_01": 1.0691367129151925,
+        "ev_at_02": 3.598265106982324,
+        "ev_ah_01": -1.1020235630452668,
+        "ev_ap_01": 0.4766497211813368,
+        "ev_coherence_01": null,
+        "ev_ood_01": null
+      },
+      "sensor_consistency_flags": [],
+      "out_of_training_range": {
+        "AT": 0,
+        "AP": 0,
+        "AH": 0,
+        "AFDP": 0,
+        "GTEP": 0,
+        "TIT": 0,
+        "TAT": 0,
+        "CDP": 0
+      },
+      "evidence_count": 16
+    },
+    {
+      "case_id": "eval_S01_NORMAL_2015_500_620",
+      "scenario_id": "S01_NORMAL",
+      "synthetic": false,
+      "window": {
+        "source_year": 2015,
+        "start": 500,
+        "end": 620
+      },
+      "reference": {
+        "source_year": 2015,
+        "start": 260,
+        "end": 500
+      },
+      "top_hypothesis": "operating_condition",
+      "scores": {
+        "intake_restriction": 0.0,
+        "operating_condition": 0.5,
+        "sensor_issue": 0.0,
+        "unknown": 0.5
+      },
+      "notable_evidence_ids": [
+        "ev_at_02",
+        "ev_ap_01"
+      ],
+      "residual_notable": false,
+      "residual_mean": 0.7437771930708892,
+      "residual_z_raw": 0.540845898208442,
+      "residual_z_vs_reference": 0.24756797861354643,
+      "reference_residual_mean": 0.4033190018608457,
+      "evidence_z": {
+        "ev_afdp_01": -0.7918411927029754,
+        "ev_afdp_02": 0.5266949548993101,
+        "ev_tey_residual_01": 0.540845898208442,
+        "ev_tey_residual_02": 0.08793497272177733,
+        "ev_tey_01": -0.8812584802709165,
+        "ev_cdp_01": -0.9336492163300723,
+        "ev_cdp_02": -9.97,
+        "ev_tit_01": -0.8009586043654123,
+        "ev_tat_01": 1.0464191424006468,
+        "ev_gtep_01": -0.8231409298871925,
+        "ev_at_01": 0.50838945759944,
+        "ev_at_02": 2.9920005502147644,
+        "ev_ah_01": -0.06350474427625262,
+        "ev_ap_01": -2.359197082901076,
+        "ev_coherence_01": null,
+        "ev_ood_01": null
+      },
+      "sensor_consistency_flags": [],
+      "out_of_training_range": {
+        "AT": 0,
+        "AP": 0,
+        "AH": 0,
+        "AFDP": 0,
+        "GTEP": 0,
+        "TIT": 0,
+        "TAT": 0,
+        "CDP": 0
+      },
+      "evidence_count": 16
+    },
+    {
+      "case_id": "eval_S01_NORMAL_2015_3000_3120",
+      "scenario_id": "S01_NORMAL",
+      "synthetic": false,
+      "window": {
+        "source_year": 2015,
+        "start": 3000,
+        "end": 3120
+      },
+      "reference": {
+        "source_year": 2015,
+        "start": 2760,
+        "end": 3000
+      },
+      "top_hypothesis": "unknown",
+      "scores": {
+        "intake_restriction": 0.0,
+        "operating_condition": 0.0,
+        "sensor_issue": 0.35,
+        "unknown": 0.65
+      },
+      "notable_evidence_ids": [
+        "ev_tat_01"
+      ],
+      "residual_notable": false,
+      "residual_mean": 1.0266315531759012,
+      "residual_z_raw": 0.7465266072680283,
+      "residual_z_vs_reference": -0.8223701716224481,
+      "reference_residual_mean": 2.1575640053599723,
+      "evidence_z": {
+        "ev_afdp_01": 1.2002256805104001,
+        "ev_afdp_02": 0.49684775642305323,
+        "ev_tey_residual_01": 0.7465266072680283,
+        "ev_tey_residual_02": -0.6976470426735837,
+        "ev_tey_01": 0.9462853809737999,
+        "ev_cdp_01": 1.060738694011783,
+        "ev_cdp_02": -5.6,
+        "ev_tit_01": 0.6798114586777891,
+        "ev_tat_01": -3.3585635776987983,
+        "ev_gtep_01": 1.200256242366077,
+        "ev_at_01": 0.7233668667976014,
+        "ev_at_02": 1.5523611501876111,
+        "ev_ah_01": -0.3080423804935743,
+        "ev_ap_01": -0.7944156622566294,
+        "ev_coherence_01": null,
+        "ev_ood_01": null
+      },
+      "sensor_consistency_flags": [],
+      "out_of_training_range": {
+        "AT": 0,
+        "AP": 0,
+        "AH": 0,
+        "AFDP": 0,
+        "GTEP": 0,
+        "TIT": 0,
+        "TAT": 0,
+        "CDP": 0
+      },
+      "evidence_count": 16
+    },
+    {
+      "case_id": "eval_S01_NORMAL_2015_6000_6120",
+      "scenario_id": "S01_NORMAL",
+      "synthetic": false,
+      "window": {
+        "source_year": 2015,
+        "start": 6000,
+        "end": 6120
+      },
+      "reference": {
+        "source_year": 2015,
+        "start": 5760,
+        "end": 6000
+      },
+      "top_hypothesis": "unknown",
+      "scores": {
+        "intake_restriction": 0.0,
+        "operating_condition": 0.0,
+        "sensor_issue": 0.0,
+        "unknown": 0.7
+      },
+      "notable_evidence_ids": [],
+      "residual_notable": false,
+      "residual_mean": 0.9121147256369865,
+      "residual_z_raw": 0.6632544163118282,
+      "residual_z_vs_reference": 0.025336047679982,
+      "reference_residual_mean": 0.8772723158316252,
+      "evidence_z": {
+        "ev_afdp_01": -0.9659157860957637,
+        "ev_afdp_02": 0.39517606128304217,
+        "ev_tey_residual_01": 0.6632544163118282,
+        "ev_tey_residual_02": -0.5053820965605522,
+        "ev_tey_01": -0.969980767134939,
+        "ev_cdp_01": -0.9164840984908545,
+        "ev_cdp_02": 3.02,
+        "ev_tit_01": -1.3240117760906587,
+        "ev_tat_01": -0.26120423242409935,
+        "ev_gtep_01": -0.9626780466002531,
+        "ev_at_01": -1.7916697343582446,
+        "ev_at_02": -0.8893464784517262,
+        "ev_ah_01": -0.663465221383579,
+        "ev_ap_01": 0.8042287399401521,
+        "ev_coherence_01": null,
+        "ev_ood_01": null
+      },
+      "sensor_consistency_flags": [],
+      "out_of_training_range": {
+        "AT": 0,
+        "AP": 0,
+        "AH": 0,
+        "AFDP": 0,
+        "GTEP": 0,
+        "TIT": 0,
+        "TAT": 0,
+        "CDP": 0
+      },
+      "evidence_count": 16
+    }
+  ],
+  "normal_window_false_positive_count": 0,
+  "normal_window_count": 4,
+  "note": "Deterministic heuristic evaluation on UCI 551 data; synthetic overlays are illustrations, not recorded faults. Real numbers from this run."
+}
