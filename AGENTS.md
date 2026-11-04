@@ -16,3 +16,8 @@ Read `contracts/api.md` and `apps/api/app/schemas.py` first. They are the contra
 - Do NOT run `git commit`; the principal commits. Do not create branches.
 - Return: files changed, commands run, real test output, blockers, integration notes.
 - Keep secrets out of logs. Keep UI copy honest (REAL PUBLIC DATA / MODEL-DERIVED / SYNTHETIC OVERLAY / HUMAN REVIEW REQUIRED).
+
+## Delegation policy (applies recursively)
+- Any agent may spawn sub-agents when a task splits cleanly. Each sub-agent gets explicit file ownership, a concrete deliverable, and must report real command output.
+- Choose model and effort per task: lighter model / lower effort for mechanical work (screenshots, doc fill-ins, lint, copying data); heavier model / higher effort for integration-critical or reasoning-heavy work (orchestration, debugging, cross-module changes). Sub-agents apply the same rule to their own sub-agents.
+- Never spawn without a deliverable; merge continuously; keep `main` runnable.
