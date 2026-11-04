@@ -7,8 +7,8 @@
 - [ ] `make train` done: `data/models/baseline_v1.json` exists; `/evaluation` shows the metrics
 - [ ] `make seed` done: cases for S01–S04 exist in the SQLite DB
 - [ ] `make meta-smoke` returns ok with model id `muse-spark-1.3`; latency noted
-- [ ] One **live** `S02_INTAKE_RESTRICTION` case created now (status `completed`, `mode=meta_live`); case id written down: `________`
-- [ ] One live `S03_SENSOR_INCONSISTENCY` case created; case id: `________`
+- [ ] One **live** `S02_INTAKE_RESTRICTION` case created now (status `completed`, `mode=meta_live`); existing real case: `case_76d34565b3dc` (2026-11-04T18:32:03Z)
+- [ ] One live `S03_SENSOR_INCONSISTENCY` case created; existing real case: `case_760658afb3d5` (18:33:19Z); S01: `case_b1d8db08ff82`
 - [ ] `make dev` running; http://localhost:8000/api/health returns `model_ready=true`, `data_ready=true`, `meta_configured=true`
 - [ ] http://localhost:8000/api/demo/status reports `ready_for_demo=true`, blockers empty
 - [ ] Browser: http://localhost:5173, zoom 110–125 %, dark/light theme chosen, no stale tabs, bookmarks bar hidden
@@ -35,3 +35,4 @@
 - [ ] Screenshots captured at `docs/screenshots/{home,data,investigation,evaluation,replay}.png`
 - [ ] Record the live smoke-test fields in docs/EVALUATION.md
 - [ ] Stop `make dev`; confirm `.env` was not committed
+- [ ] Demo video at `submission/video/thermomind_demo.mp4`, ≤ 3:00

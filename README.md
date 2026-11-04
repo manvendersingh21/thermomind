@@ -49,9 +49,18 @@ flowchart LR
 
 Full data flow, component table and the sequence of one investigation: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md). The HTTP contract: [contracts/api.md](contracts/api.md); an illustrative `Investigation` payload: [contracts/examples/investigation.json](contracts/examples/investigation.json).
 
+## Results (measured)
+
+All values below were produced by running this repository's code; source: [docs/EVALUATION.md](docs/EVALUATION.md) (`data/models/baseline_v1.json`, `docs/EVALUATION_RESULTS.json`).
+
+- **TEY baseline, 2015 holdout (n = 7384, never used for fitting):** MAE 1.293 MWh, RMSE 1.646, R² 0.9896. Naive train-mean MAE 12.957; naive previous-observation MAE 4.125. Chronological split: train 2011-2013, validation 2014, holdout 2015. This shows the features carry information about TEY; it is not a fault-detection accuracy (no fault labels exist).
+- **Control windows:** 0 of 4 real-only windows (three 2015 windows plus S01) raised a notable residual flag. The three synthetic scenarios S02-S04 each ranked the expected deterministic hypothesis (S04 claims no fault). Not a false-alarm study.
+- **Live Meta record (2026-11-04, `muse-spark-1.3` via `https://api.meta.ai/v1`):** three real investigations through the full pipeline: `case_76d34565b3dc` (S02, 10 tool calls, 4 model turns), `case_760658afb3d5` (S03, 9 tool calls, 3 turns), `case_b1d8db08ff82` (S01, 11 tool calls, 4 turns). All three accepted by the validator on the first pass, i.e. zero validation errors and no rewrites. Diagnostic correctness of the reports is not benchmarked.
+- **Tests:** 140 passed (`cd apps/api && python -m pytest -q`).
+
 ## Screenshots
 
-To be added before submission (placeholders; files do not exist yet):
+Demo video: `submission/video/thermomind_demo.mp4`.
 
 | View | File |
 |---|---|
@@ -60,6 +69,9 @@ To be added before submission (placeholders; files do not exist yet):
 | Investigation case with evidence and tool trace (`/investigations/:id`) | `docs/screenshots/investigation.png` |
 | Baseline model evaluation (`/evaluation`) | `docs/screenshots/evaluation.png` |
 | Agent replay (`/replay`) | `docs/screenshots/replay.png` |
+
+![Home](docs/screenshots/home.png)
+![Investigation](docs/screenshots/investigation.png)
 
 ## Data source and attribution
 
@@ -139,8 +151,9 @@ API tests run on `data/fixtures` only (no network, no key). CI: [.github/workflo
 - No timestamps, no fault labels, no load/dispatch signal: baseline residuals are confounded by dispatch changes and can only indicate deviation from a learned relation, not a diagnosed fault.
 - Synthetic overlays are illustrations of physical tendencies, not recorded events.
 - CDP is labelled "mbar" by the source; its magnitude suggests another unit. We display it as published and flag it.
-- The baseline is a statistical model, not thermodynamics; model metrics are reported in [docs/EVALUATION.md](docs/EVALUATION.md) only after being produced by `make train`.
+- The baseline is a statistical model, not thermodynamics; metrics are in [docs/EVALUATION.md](docs/EVALUATION.md) and come from `make train`. The optional PyTorch MLP is a benchmark challenger only; the HGBR stays the production baseline.
 - Muse Spark output quality is not benchmarked; the validator guarantees form and provenance, not correctness. Human review is mandatory.
+- Three live Muse Spark runs is a record, not a benchmark; S04 and the rest of the scenario set have no stored live case yet.
 - Single-user SQLite prototype: no auth, no multi-tenancy, not hardened for an OT network.
 
 ## License

@@ -49,3 +49,7 @@ Pilot pricing per plant (or per turbine) per year, starting with a fixed-scope p
 ## What we are not claiming
 
 No avoided downtime, no accuracy figure, no adoption, no sales, no letters of intent. The claim is narrower: a transparent investigation case built on real public data and real tool-using inference is possible today, and the pilot metrics above would tell us whether it is worth paying for.
+
+## Incumbent reference (for context, not comparison claims)
+
+- Siemens Energy combined-cycle plant portfolio (gas and steam turbines for EPC projects): https://www.siemensenergy.com/global/en/home/products-services/product/combined-cycle-power-plants.html — an example of the OEM scope ThermoMind would sit beside, not replace. OEM monitoring and performance services ship with the equipment; our wedge is a vendor-neutral, auditable investigation layer over exported data.

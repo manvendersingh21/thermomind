@@ -2,9 +2,9 @@
 
 ## Pitch (≤ 100 words)
 
-ThermoMind is a read-only AI diagnostic investigator for gas-turbine power generation. It turns real operating measurements into an investigation case: deterministic evidence with the computation behind every number, a reproducible baseline model with explicit uncertainty, and a Meta Muse Spark report that may only cite evidence its tool calls returned. A validator rejects fabricated evidence, invented dates and control language; every report is a draft for an engineer. Built from scratch during the hackathon on the public UCI gas-turbine data set, it never touches a control system and helps reliability engineers decide what to investigate first.
+ThermoMind is a read-only AI diagnostic investigator for gas-turbine plants. It turns real operating data into an investigation case: deterministic evidence with the computation shown, a reproducible baseline with explicit uncertainty, and a Meta Muse Spark report that may cite only evidence its tool calls returned. A validator rejects fabricated evidence, invented dates and control language; every report is a draft for an engineer. Built from scratch during the hackathon on public UCI data, it never touches a control system. It helps reliability engineers decide what to investigate first.
 
-(96 words)
+(81 words)
 
 ## Innovation
 
@@ -28,3 +28,10 @@ Incumbent monitoring detects and alerts inside long-term service agreements. The
 ## What we do not claim
 
 No accuracy figure, no avoided downtime, no customers, no sales. One plant's 2011–2015 data with no fault labels is the whole evidence base today; the pilot metrics in `docs/MARKET.md` are how we would find out whether this is worth paying for.
+
+## Startup track: path to pilot
+
+1. **Pick one site.** One IPP or O&M contractor with a gas turbine and a performance engineer willing to share a historian export (read-only, offline CSV). No OT integration.
+2. **Shadow mode, 8-12 weeks.** Run ThermoMind on the site's own history; engineers review draft cases against their own spreadsheets. Retrain the baseline on that site's data with a chronological split.
+3. **Measure.** Case acceptance rate, engineer minutes per triage, false-review rate against the engineers' known events, time to first case after data export (metrics in `docs/MARKET.md`).
+4. **Decide on price.** If shadow metrics hold, move to a per-turbine annual pilot, and complete the OT-security assessment in `docs/SAFETY.md` before any live feed.

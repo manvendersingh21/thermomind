@@ -10,9 +10,9 @@
 |---|---|
 | Project name | ThermoMind |
 | One-liner | ThermoMind is a read-only AI diagnostic investigator for gas-turbine power generation. It combines authentic operating measurements, reproducible anomaly analysis, Meta Muse Spark reasoning with real tool use, and inspectable evidence to help plant engineers prioritize investigations. |
-| Repository URL | `<FILL: public git URL>` |
-| Demo video URL | `<FILL: unlisted video link, ≤ 3 min, follows docs/DEMO_SCRIPT.md>` |
-| Live demo URL (optional) | `<FILL or "run locally per README">` |
+| Repository URL | `<FILL: pending push — no GitHub credentials on build box>` |
+| Demo video URL | `<FILL after upload: submission/video/thermomind_demo.mp4>` |
+| Live demo URL (optional) | not deployed (local reproducible demo; optional quick tunnel command in docs/DEPLOY.md) |
 | Team | `<FILL: names, roles, contact email>` |
 | Meta model used | `muse-spark-1.3` via `https://api.meta.ai/v1` (OpenAI-compatible chat completions with function tools) |
 | Meta usage summary | Model runs a bounded multi-turn tool loop over six server-side tools and drafts a validated investigation report; `meta_used=true` only for real API calls; offline preview is labelled "not a Meta inference" |
@@ -43,3 +43,25 @@
 3. A validator that makes hallucinated evidence and control language impossible to ship.
 4. Read-only by architecture; human review by contract.
 5. A startup thesis with named incumbents, a narrow wedge, and metrics a pilot would have to measure.
+
+## Submission form answers (copy-paste)
+
+**Project name:** ThermoMind
+
+**Track:** Startup
+
+**One-liner:** A read-only AI diagnostic investigator for gas-turbine power plants: real measurements, reproducible evidence, and a Meta Muse Spark report that can only cite evidence its tools returned.
+
+**Description (100 words):** ThermoMind turns real gas-turbine operating data into an investigation case for plant engineers. A deterministic engine computes evidence and a baseline expected-output comparison. Meta's Muse Spark then investigates through function tools, ranks hypotheses, and drafts a report. A validator rejects fabricated evidence IDs, invented dates and control instructions, so every report is a draft requiring human review. Data is the public UCI Turkish gas-turbine set (no timestamps, no fault labels); demo faults are labelled synthetic overlays. Every model request and tool call is stored and replayable. ThermoMind is strictly read-only and never touches a control system. It was built from scratch during the hackathon.
+
+**Meta model / API used and how:** `muse-spark-1.3` via `https://api.meta.ai/v1` (OpenAI-compatible chat completions) with function tools: `get_sensor_window`, `get_baseline_comparison`, `evaluate_hypothesis`, `get_data_quality`, `list_evidence`, `lookup_reference`. The model runs a bounded multi-turn tool loop (3-4 turns, 9-11 tool calls in the three recorded live runs), then returns a JSON report that is validated (evidence-ID whitelist, schema, dates, control language), rewritten at most once, or sent to needs_review. Record: docs/EVALUATION.md.
+
+**What was built during the hackathon:** Everything, on 4 November 2026, from an empty directory; no prior code reused (docs/HACKATHON_WORK.md): data layer, HGBR baseline with chronological split, synthetic scenarios, evidence engine, Muse Spark orchestrator and validator, FastAPI + SQLite, React UI with replay, optional PyTorch challenger, 140 passing tests.
+
+**Team:** `<FILL: names, roles, contact email>`
+
+**Links:** Repo `<FILL: pending push>`; video `<FILL after upload>`; live URL: none (local demo); docs: README.md, docs/EVALUATION.md, docs/FAQ_JUDGES.md.
+
+## Still to fill by hand
+
+Repository URL, video URL, team, test/typecheck output in docs/EVALUATION.md (Test suite section is a placeholder there), any S04 live case if wanted.
