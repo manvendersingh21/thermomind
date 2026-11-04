@@ -46,3 +46,15 @@ The work was split among parallel agents, each owning one tree (`apps/api/app/da
 ## What is not claimed
 
 No validation on a real plant, no pilot, no users, no revenue, no accuracy claim, no avoided-downtime claim. Metrics in `docs/EVALUATION.md` are filled only from runs of this code.
+
+## How it was built: a tree of agents
+
+ThermoMind was built the way it is organised (see `docs/AGENT_ORGANISATION.md`): a tree of agents with narrow ownership.
+
+- **Principal agent (this session).** Wrote the contracts first (`contracts/api.md`, `schemas.py`, `config.py`, `AGENTS.md`), delegated work, merged results and made every commit. Specialist agents never ran `git commit`.
+- **Specialist agents, one per module.** Data, ML, Meta agent, backend, frontend, docs, GPU, QA, performance, review and fix passes. Later feature agents: planner, instruments, emissions, ops, grid, thermal, connectors, compare, tour, 3D, twin, agent-tree and video.
+- **Sub-agents.** Where a task split cleanly the specialist spawned its own, for example the frontend agent's animation probe, the plant-ops agent's UI sub-agent and the security review's web sub-agent.
+- **Per-task model and effort.** Lighter model and lower effort for mechanical work (screenshots, doc fill-ins, lint, copying data); heavier model and higher effort for integration-critical or reasoning-heavy work (orchestration, debugging, cross-module changes). Sub-agents apply the same rule.
+- **Rules every agent followed.** Explicit file ownership, a concrete deliverable, real command output in the report, shared files edited only by the principal (`AGENTS.md`, "Delegation policy").
+
+This describes how the code was produced. It does not change what is claimed about the product: no validation on a real plant and no accuracy claim (see "What is not claimed").

@@ -16,6 +16,7 @@ import OpsPage from "./features/ops/OpsPage";
 import ThermalPage from "./features/thermal/ThermalPage";
 import ComparePage from "./features/compare/ComparePage";
 import CaseReportPage from "./features/report/CaseReportPage";
+import AgentTreePage from "./features/agents_tree/AgentTreePage";
 
 export function App() {
   return (
@@ -38,6 +39,7 @@ export function App() {
         <Route path="/connectors" element={<ConnectorsPage />} />
         <Route path="/ops" element={<OpsPage />} />
         <Route path="/compare" element={<ComparePage />} />
+        <Route path="/agents" element={<AgentTreePage />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Route>
     </Routes>

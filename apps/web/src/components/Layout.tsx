@@ -1,4 +1,4 @@
-import { Activity, BarChart3, Cable, ClipboardList, Database, Flame, GitCompare, Inbox, LayoutDashboard, MessageCircleQuestion, Radio, Search, ShieldCheck, Stethoscope, Wind, Wrench, Zap } from "lucide-react";
+import { Activity, BarChart3, Cable, Network, ClipboardList, Database, Flame, GitCompare, Inbox, LayoutDashboard, MessageCircleQuestion, Radio, Search, ShieldCheck, Stethoscope, Wind, Wrench, Zap } from "lucide-react";
 import GuidedTour from "../features/tour/GuidedTour";
 import { NavLink, Outlet } from "react-router-dom";
 import { useAsync } from "../hooks/useAsync";
@@ -30,6 +30,7 @@ const NAV_SECTIONS: { title: string; items: NavItem[] }[] = [
       { to: "/grid", label: "Grid support", icon: Zap },
       { to: "/ops", label: "Shift ops", icon: ClipboardList },
       { to: "/connectors", label: "Plant connectors", icon: Cable },
+      { to: "/agents", label: "Agent organisation", icon: Network },
     ],
   },
 ];
