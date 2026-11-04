@@ -23,7 +23,7 @@ META_BASE_URL = os.getenv("META_BASE_URL", "https://api.meta.ai/v1")
 META_MODEL = os.getenv("META_MODEL", "muse-spark-1.3")
 META_TIMEOUT_S = float(os.getenv("META_TIMEOUT_S", "120"))
 META_MAX_TOOL_ROUNDS = int(os.getenv("META_MAX_TOOL_ROUNDS", "8"))
-META_MAX_TOKENS = int(os.getenv("META_MAX_TOKENS", "6000"))
+META_MAX_TOKENS = int(os.getenv("META_MAX_TOKENS", "12000"))
 
 MAX_UPLOAD_BYTES = int(os.getenv("THERMOMIND_MAX_UPLOAD_BYTES", str(25 * 1024 * 1024)))
 MAX_SERIES_POINTS = 2000
