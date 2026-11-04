@@ -2,11 +2,14 @@
 from __future__ import annotations
 
 import logging
+import math
 import sys
 from contextlib import asynccontextmanager
 from pathlib import Path
 
 from fastapi import FastAPI, HTTPException, Request
+from fastapi.encoders import jsonable_encoder
+from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
@@ -74,7 +77,7 @@ def _resolve_router(obj):
 
 for _mod in (_planner, _instruments, _emissions, _ops, _grid, _connectors):
     app.include_router(_resolve_router(_mod), prefix="/api")
-for _name in ("app.features.thermal", "app.features.twin", "app.features.agents_tree"):  # optional packages
+for _name in ("app.features.thermal", "app.features.twin", "app.features.agents_tree", "app.simulator"):  # optional packages
     try:
         _m = __import__(_name, fromlist=["router"])
         app.include_router(_resolve_router(getattr(_m, "router")), prefix="/api")
@@ -93,6 +96,25 @@ def _safe_detail(exc: Exception, fallback: str) -> str:
     if key and key in text:
         text = text.replace(key, "[REDACTED]")
     return text[:500]
+
+
+def _finite_json(v):
+    """Non-finite floats (a JSON body may carry Infinity/NaN literals) cannot be serialised: echo them as text."""
+    if isinstance(v, float) and not math.isfinite(v):
+        return str(v)
+    if isinstance(v, dict):
+        return {k: _finite_json(x) for k, x in v.items()}
+    if isinstance(v, (list, tuple)):
+        return [_finite_json(x) for x in v]
+    return v
+
+
+async def request_validation_error_handler(_: Request, exc: RequestValidationError) -> JSONResponse:
+    """FastAPI's default 422, but safe when the rejected input itself is Infinity/NaN."""
+    return JSONResponse(status_code=422, content={"detail": _finite_json(jsonable_encoder(exc.errors()))})
+
+
+app.add_exception_handler(RequestValidationError, request_validation_error_handler)
 
 
 @app.exception_handler(KeyError)
