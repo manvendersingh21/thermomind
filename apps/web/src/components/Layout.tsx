@@ -1,7 +1,8 @@
-import { Activity, BarChart3, Database, LayoutDashboard, Radio, Search, ShieldCheck } from "lucide-react";
+import { Activity, BarChart3, Database, Inbox, LayoutDashboard, MessageCircleQuestion, Radio, Search, ShieldCheck } from "lucide-react";
 import { NavLink, Outlet } from "react-router-dom";
 import { useAsync } from "../hooks/useAsync";
 import { getHealth } from "../api/client";
+import { PersonaSwitcher } from "../plant";
 
 const NAV = [
   { to: "/", label: "Overview", icon: LayoutDashboard, end: true },
@@ -9,6 +10,8 @@ const NAV = [
   { to: "/investigations", label: "Investigation", icon: Search },
   { to: "/data", label: "Data Sources", icon: Database },
   { to: "/evaluation", label: "Evaluation & Trust", icon: ShieldCheck },
+  { to: "/inbox", label: "Inbox", icon: Inbox },
+  { to: "/ask", label: "Ask the plant", icon: MessageCircleQuestion },
 ];
 
 export function Layout() {
@@ -26,6 +29,9 @@ export function Layout() {
             <div className="text-lg font-bold tracking-tight text-ink-50">ThermoMind</div>
             <div className="text-xs font-medium uppercase tracking-wider text-ink-400">Diagnostic Intelligence</div>
           </div>
+        </div>
+        <div className="px-3 pb-1">
+          <PersonaSwitcher />
         </div>
         <nav className="mt-2 flex flex-1 flex-col gap-1 px-3">
           {NAV.map(({ to, label, icon: Icon, end }) => (

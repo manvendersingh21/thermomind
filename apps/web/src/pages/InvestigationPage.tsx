@@ -18,6 +18,7 @@ import { WhereToLook } from "../components/WhereToLook";
 import { SourceBadge } from "../components/SourceBadge";
 import { InvestigationStatusPill, SeverityPill } from "../components/StatusPill";
 import { useAsync } from "../hooks/useAsync";
+import { PrecedentsPanel, WhatIfConsole, WorkRequestBanner } from "../plant";
 import { fmtDateTime, fmtInt, fmtNum, fmtSigned, humanize, rangeLabel } from "../lib/format";
 
 const PREVIEW_MEASURES = ["AFDP", "TEY", "CDP"];
@@ -192,6 +193,10 @@ export function InvestigationPage() {
         <SourceBadge variant="review" />
         <InvestigationStatusPill status={inv.status} />
         {report ? <SeverityPill severity={report.severity} /> : null}
+      </div>
+
+      <div className="mb-5">
+        <WorkRequestBanner caseId={inv.case_id} />
       </div>
 
       {inv.status === "failed" ? (
@@ -534,6 +539,13 @@ export function InvestigationPage() {
       </div>
 
       <ReviewPanel investigation={inv} onReviewed={setInv} />
+
+      <div className="mt-5">
+        <PrecedentsPanel caseId={inv.case_id} />
+      </div>
+      <div className="mt-5">
+        <WhatIfConsole caseId={inv.case_id} />
+      </div>
 
       <EvidenceDrawer evidence={openEvidence ? (evidenceById.get(openEvidence) ?? null) : null} missingId={missingEvidence} onClose={onClose} />
     </div>

@@ -14,6 +14,10 @@ from app.schemas import AgentEvent
 DELIVERY_NOTE = "Simulated in-app notification — no email/SMS/paging integration."
 WHATIF_LABEL = ("Modelled sensitivity from this plant's historical data — not physics, not a control "
                 "recommendation; review with site procedures.")
+HOW_IT_WORKS_SOURCE = ("ThermoMind subsystem registry (apps/api/app/plant/subsystems.py): generic gas-turbine "
+                       "background written for this demo, not plant-specific documentation")
+NEXT_STEPS_NOTE = ("Maintenance / diagnostic next steps only. Every step requires supervisor approval and the site's "
+                   "approved procedures (permit-to-work, isolation per procedure). No control commands are issued.")
 WHATIF_DISCLAIMER = ("Read-only decision support. Modelled sensitivity (production baseline model, ceteris "
                      "paribus) and statistical association in this plant's historical data (2011–2013), not "
                      "causation and not physics. Not a control recommendation; review with site procedures.")
@@ -31,14 +35,17 @@ class Persona(BaseModel):
     role: str
     subsystems: list[str]
     description: str
+    measurements_watched: list[str] = Field(default_factory=list)
+    supervisor: Optional[str] = None  # persona_id of the supervisor
+    external: bool = False  # e.g. OEM field service (external party; notification simulated)
     demo_account: bool = True  # fake demo account, no authentication
 
 
 class PersonasResponse(BaseModel):
     personas: list[Persona]
     default_persona: str
-    routing_table: dict[str, str]  # hypothesis_key -> persona_id
-    urgent_also_notify: list[str]
+    routing_table: dict[str, dict[str, Any]]  # hypothesis_key -> {assignee, supervisor, cc}
+    escalation_rules: list[str]  # human-readable extra notification rules
     delivery_note: str = DELIVERY_NOTE
     auth_note: str = "Demo personas only; no authentication. Selected via X-Persona header or ?persona=."
 
@@ -61,6 +68,11 @@ class WorkRequest(BaseModel):
     updated_at_utc: str
     checks: list[str] = Field(default_factory=list)  # report.engineer_review_checks
     routed_by: str  # "rule:<hypothesis_key>"
+    supervisor_persona: Optional[str] = None  # always notified together with the assignee
+    cc_personas: list[str] = Field(default_factory=list)
+    notified_personas: list[str] = Field(default_factory=list)  # every persona that got an in-app notification
+    notification_reasons: dict[str, str] = Field(default_factory=dict)  # persona_id -> why it was notified
+    assignment_label: str = ""  # "Assigned to <technician> · Supervisor <name> · simulated notification"
     hypothesis_key: str
     severity: str
     scenario_id: str
@@ -105,6 +117,7 @@ class Subsystem(BaseModel):
     measurements: list[str]
     description: str
     owner_persona: str
+    how_it_works: str = ""
 
 
 # ----------------------------------------------------------------------------- what-if
@@ -125,6 +138,8 @@ class ChangeSpec(BaseModel):
 
 class SubsystemAssessment(BaseModel):
     subsystem: str
+    owner_persona: str = ""  # responsible persona (from the subsystem registry)
+    owner_label: str = ""    # e.g. "owner: I&C engineer"
     impact_summary: str
     direction: Direction = "unknown"
     magnitude_hint: str = ""
@@ -139,9 +154,41 @@ class CrossImpact(BaseModel):
     basis: str = ""  # e.g. "model sensitivity", "historical association", "generic background"
 
 
+class HowItWorks(BaseModel):
+    subsystem: str
+    name: str
+    explanation: str  # 1-2 sentences
+    source: str
+
+
+class EffectElsewhere(BaseModel):
+    subsystem: str
+    description: str
+    direction: Direction = "unknown"
+    magnitude_hint: str = ""
+    confidence: Confidence = "low"
+    tool_numbers_cited: list[str] = Field(default_factory=list)
+    basis: str = ""  # "model sensitivity" | "historical association" | "generic background"
+
+
+StepKind = Literal["inspect", "verify", "calibrate", "schedule", "isolate_per_procedure", "collect_data", "review"]
+
+
+class NextStep(BaseModel):
+    action: str  # maintenance / diagnostic action, never a control command
+    kind: StepKind = "verify"
+    subsystem: str = ""
+    rationale: str = ""
+    requires_supervisor_approval: bool = True  # always forced True by the validator
+
+
 class WhatIfAnswer(BaseModel):
     question: str
     change: ChangeSpec
+    # The three blocks shown to the technician, in this order:
+    how_it_works: list[HowItWorks] = Field(default_factory=list)            # 1. How this part works
+    effects_elsewhere: list[EffectElsewhere] = Field(default_factory=list)  # 2. What your test could affect elsewhere
+    recommended_next_steps: list[NextStep] = Field(default_factory=list)    # 3. Recommended fix / next steps
     subsystem_assessments: list[SubsystemAssessment]
     cross_impacts: list[CrossImpact] = Field(default_factory=list)
     what_to_check_before_acting: list[str] = Field(default_factory=list)

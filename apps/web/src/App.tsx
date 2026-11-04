@@ -6,6 +6,7 @@ import { InvestigationsPage } from "./pages/InvestigationsPage";
 import { InvestigationPage } from "./pages/InvestigationPage";
 import { DataSourcesPage } from "./pages/DataSourcesPage";
 import { EvaluationPage } from "./pages/EvaluationPage";
+import { AskPage, InboxPage } from "./plant";
 
 export function App() {
   return (
@@ -17,6 +18,8 @@ export function App() {
         <Route path="/investigations/:caseId" element={<InvestigationPage />} />
         <Route path="/data" element={<DataSourcesPage />} />
         <Route path="/evaluation" element={<EvaluationPage />} />
+        <Route path="/inbox" element={<InboxPage />} />
+        <Route path="/ask" element={<AskPage />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Route>
     </Routes>

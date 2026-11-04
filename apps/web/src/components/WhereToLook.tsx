@@ -3,6 +3,8 @@ import { AlertTriangle, Crosshair, Info, ListChecks, MapPin } from "lucide-react
 import type { DiagnosticReport } from "../api/types";
 import { ANIMATION_OBJECTS, guideFor, type SchematicPart } from "../lib/subsystems";
 import { PlantAnimation } from "./PlantAnimation";
+import { Plant3D } from "./Plant3D";
+import { plant3dFocusFor, plant3dLabel } from "../lib/plant3d";
 import { HypothesisStatusPill } from "./StatusPill";
 
 interface Props {
@@ -77,6 +79,7 @@ export function WhereToLook({ report, scenarioSynthetic, renderSchematic }: Prop
 
   const guide = guideFor(top.key);
   const unconfirmed = top.status === "inconclusive" || top.status === "not_supported";
+  const plant3dFocus = plant3dFocusFor(top.key);
 
   const seen = new Set<string>();
   const checks: { text: string; fromReport: boolean }[] = [];
@@ -132,6 +135,11 @@ export function WhereToLook({ report, scenarioSynthetic, renderSchematic }: Prop
         </div>
 
         <PlantAnimation clickHint={guide.animation_objects} />
+
+        <Plant3D
+          focus={plant3dFocus}
+          label={`${unconfirmed ? "Candidate area (unconfirmed)" : "Suspected area"}: ${plant3dLabel(plant3dFocus[0])}`}
+        />
 
         <ul className="list-disc space-y-1 pl-5 text-base text-ink-100">
           {guide.where_to_look.map((s, i) => (

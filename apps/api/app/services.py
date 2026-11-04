@@ -85,8 +85,10 @@ def _model_files_present() -> bool:
 
 
 def _model_files_mtime() -> float | None:
+    """max(mtime) of the joblib + json pair, so a rewrite of either file triggers a reload."""
     try:
-        return (Path(config.MODEL_DIR) / "baseline_v1.joblib").stat().st_mtime
+        return max((Path(config.MODEL_DIR) / name).stat().st_mtime
+                   for name in ("baseline_v1.joblib", "baseline_v1.json"))
     except OSError:
         return None
 
@@ -233,6 +235,10 @@ def seed_uci_if_available() -> bool:
 
 def startup() -> None:
     seed_uci_if_available()
+    try:  # uploads persisted under DATA_DIR/uploads survive a restart
+        get_repo().restore_uploads(Path(config.DATA_DIR) / "uploads")
+    except Exception as exc:  # noqa: BLE001
+        log.warning("restoring uploaded datasets failed: %s", type(exc).__name__)
     if get_model(recheck=True) is None:
         log.warning("baseline model not found in %s (run `make train`).", config.MODEL_DIR)
 
@@ -310,10 +316,8 @@ def _deterministic_summary(analysis: Any) -> dict[str, Any]:
     hyps.sort(key=lambda h: h["deterministic_support_score"], reverse=True)
 
     def notable(ev: Any) -> bool:
-        z = ev.z_score
-        informational = {"gpu_second_opinion", "baselines_agree"}
-        meaningful_flags = [f for f in ev.flags if f not in informational]
-        return (z is not None and abs(z) >= 2.0) or ev.data_quality != "pass" or bool(meaningful_flags)
+        return ev.data_quality != "pass" or bool(
+            {"notable_deviation", "isolated_single_sensor", "out_of_training_range"} & set(ev.flags))
 
     notable_ids = [ev.evidence_id for ev in analysis.evidence if notable(ev)][:12]
     return {
@@ -369,14 +373,13 @@ def run_investigation_pipeline(req: InvestigationRequest) -> Investigation:
         challenger=get_challenger(),
     )
 
-    client: Any = None
-    if req.use_meta:
-        try:
-            candidate = get_meta_client()
-            client = candidate if candidate.configured else None
-        except Exception as exc:  # noqa: BLE001
-            log.warning("meta client unavailable: %s", type(exc).__name__)
-            client = None
+    client: Any = None  # always resolved; run_investigation honours use_meta (and names the offline reason)
+    try:
+        candidate = get_meta_client()
+        client = candidate if candidate.configured else None
+    except Exception as exc:  # noqa: BLE001
+        log.warning("meta client unavailable: %s", type(exc).__name__)
+        client = None
 
     base = dict(
         case_id=case_id,
@@ -431,6 +434,8 @@ def run_investigation_pipeline(req: InvestigationRequest) -> Investigation:
         **base,
     )
     get_store().save(inv)
+    from app.plant.work_requests import on_investigation_completed  # plant-ops routing (simulated in-app; never raises)
+    on_investigation_completed(inv)
     log.info(
         "investigation %s %s (scenario=%s mode=%s meta_used=%s evidence=%d)",
         case_id, inv.status, req.scenario_id, inv.mode, inv.meta_used, len(inv.evidence),

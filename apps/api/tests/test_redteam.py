@@ -39,6 +39,10 @@ DOCUMENTED_MUTATING_ROUTES = {
     ("POST", "/api/scenarios/preview"),
     ("POST", "/api/investigations"),
     ("POST", "/api/investigations/{case_id}/review"),
+    # plant-ops (docs/PLANT_AGENTS.md): in-app simulated records + read-only what-if; no control actions
+    ("POST", "/api/plant/work-requests/{wr_id}/status"),
+    ("POST", "/api/plant/notifications/{notification_id}/read"),
+    ("POST", "/api/plant/whatif"),
 }
 
 

@@ -10,6 +10,7 @@ from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
+from pydantic import ValidationError as PydanticValidationError
 
 from app import config, services
 from app.api import datasets, demo, health, investigations, models, scenarios
@@ -50,6 +51,7 @@ app.add_middleware(
 
 for router in (health.router, demo.router, datasets.router, models.router, scenarios.router, investigations.router):
     app.include_router(router, prefix="/api")
+from app.api import plant as _plant_api; app.include_router(_plant_api.router, prefix="/api")  # noqa: E402,E702 plant-ops
 
 
 # ---------------------------------------------------------------------------
@@ -74,6 +76,15 @@ async def _key_error(_: Request, exc: KeyError) -> JSONResponse:
 @app.exception_handler(IndexError)
 async def _index_error(_: Request, exc: IndexError) -> JSONResponse:
     return JSONResponse(status_code=422, content={"detail": _safe_detail(exc, "index out of range")})
+
+
+@app.exception_handler(PydanticValidationError)
+async def _internal_validation_error(request: Request, exc: PydanticValidationError) -> JSONResponse:
+    # pydantic.ValidationError subclasses ValueError, but reaching here means *internal* data (e.g. a stored row)
+    # failed validation: request bodies are validated by FastAPI (RequestValidationError -> 422) before this.
+    log.error("internal data validation error on %s %s (%d error(s))", request.method, request.url.path,
+              exc.error_count())
+    return JSONResponse(status_code=500, content={"detail": "internal data validation error; see server logs"})
 
 
 @app.exception_handler(ValueError)

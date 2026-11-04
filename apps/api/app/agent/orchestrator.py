@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import json
+import time
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from typing import Any
@@ -11,6 +12,11 @@ from app.agent.meta_client import ChatResult, MetaClient, MetaClientError
 from app.agent.prompts import SYSTEM_PROMPT, case_manifest
 from app.agent.report_validator import report_hash, validate_report
 from app.agent.tools import TOOL_SPECS, ToolError, ToolRunner
+try:  # optional plant-ops tools (e.g. recall_similar_cases); absent -> standard tools only
+    from app.plant.agent_hooks import EXTRA_SYSTEM_NOTE, EXTRA_TOOLS
+except Exception:  # noqa: BLE001
+    EXTRA_SYSTEM_NOTE, EXTRA_TOOLS = "", []
+_EXTRA_HANDLERS = {t["spec"]["function"]["name"]: t["handler"] for t in EXTRA_TOOLS}
 from app.schemas import (HYPOTHESIS_KEYS, AgentEvent, DiagnosticReport, Hypothesis,
                          InvestigationStatus, Observation)
 
@@ -18,6 +24,16 @@ OFFLINE_TITLE_PREFIX = "OFFLINE PREVIEW — not a Meta inference"
 NUDGE = "You must call the tools before answering. Call get_baseline_comparison now."
 REWRITE_PREFIX = "Your previous answer was rejected. Fix these errors and return JSON only:\n"
 MAX_TOOL_RESULT_CHARS = 20000
+# A report is only accepted after these tools ran in this conversation (evaluate_hypothesis at least once).
+REQUIRED_TOOLS = ("get_baseline_comparison", "get_data_quality", "evaluate_hypothesis")
+TIME_BUDGET_S = 300.0  # wall-clock budget for the whole live investigation
+TRUNCATED_PLACEHOLDER = "(empty response — truncated)"
+TRUNCATED_NOTE = "your previous answer was cut off; answer with compact JSON only"
+SEVERITY_FLAGS = {"notable_deviation", "isolated_single_sensor", "out_of_training_range"}
+
+
+class _BudgetExhausted(Exception):
+    pass
 
 
 @dataclass
@@ -125,8 +141,7 @@ def build_offline_report(analysis: Any, scenario_label: str) -> DiagnosticReport
         hypotheses.append(Hypothesis(name="Unknown", key="unknown", rank=1, status="inconclusive",
                                      rationale="No deterministic hypothesis evaluations were available.",
                                      limitations=["No hypothesis evaluations available."]))
-    max_z = max([abs(e.z_score) for e in evidence if e.z_score is not None] or [0.0])
-    severity = "review" if max_z >= 3.0 else "informational"
+    severity = "review" if any(SEVERITY_FLAGS & set(e.flags or []) for e in evidence) else "informational"
     return DiagnosticReport(
         case_id=analysis.case_id,
         title=f"{OFFLINE_TITLE_PREFIX}: deterministic summary for {analysis.case_id}",
@@ -163,7 +178,7 @@ def _parse_tool_args(raw: Any) -> dict:
 def _tool_message(call_id: str, payload: dict) -> dict:
     content = json.dumps(payload, default=str)
     if len(content) > MAX_TOOL_RESULT_CHARS:
-        content = content[:MAX_TOOL_RESULT_CHARS] + '..."truncated":true}'
+        content = json.dumps({"truncated": True, "partial": content[:MAX_TOOL_RESULT_CHARS]})
     return {"role": "tool", "tool_call_id": call_id, "content": content}
 
 
@@ -177,9 +192,9 @@ def run_investigation(analysis: Any, scenario_label: str, client: MetaClient | N
 
     live = client is not None and getattr(client, "configured", False) and use_meta
     if not live:
-        reason = "use_meta=False" if client is not None and getattr(client, "configured", False) \
-            else "Meta client not configured"
-        events.add("fallback", f"offline preview ({reason}); no Meta inference performed")
+        reason = ("offline preview requested (use_meta=false)" if not use_meta
+                  else "offline preview (Meta client not configured)")
+        events.add("fallback", f"{reason}; no Meta inference performed")
         report = build_offline_report(analysis, scenario_label)
         report, errors = validate_report(report.model_dump(), analysis.case_id,
                                          runner.known_evidence_ids, scenario_label)
@@ -197,14 +212,25 @@ def run_investigation(analysis: Any, scenario_label: str, client: MetaClient | N
                                     deterministic_summary=summary)
 
     model_name = getattr(client, "model", None) or config.META_MODEL
-    messages: list[dict] = [{"role": "system", "content": SYSTEM_PROMPT},
+    messages: list[dict] = [{"role": "system", "content": SYSTEM_PROMPT + EXTRA_SYSTEM_NOTE},
                             {"role": "user", "content": case_manifest(analysis, scenario_label)}]
     max_rounds = max(1, int(config.META_MAX_TOOL_ROUNDS))
     tools_called = 0
     nudged = False
     last: ChatResult | None = None
+    returned_ids: set[str] = set()  # only ids actually returned by tools in this run may be cited
+    called_tools: set[str] = set()
+    deadline = time.monotonic() + TIME_BUDGET_S
+    call_timeout = float(getattr(client, "timeout_s", None) or config.META_TIMEOUT_S)
+    budget_hit = False
+
+    def missing_required() -> list[str]:
+        return [t for t in REQUIRED_TOOLS if t not in called_tools]
 
     def chat(tools: list[dict] | None, label: str, response_format: dict | None = None) -> ChatResult:
+        remaining = deadline - time.monotonic()
+        if remaining < call_timeout:
+            raise _BudgetExhausted(f"time budget exhausted ({remaining:.0f}s left < {call_timeout:.0f}s call timeout)")
         events.add("model_request", f"{label}: {len(messages)} messages -> {model_name}")
         res = client.chat(messages, tools, config.META_MAX_TOKENS, response_format=response_format)
         step = events.count_tokens(res.usage or {})
@@ -212,14 +238,23 @@ def run_investigation(analysis: Any, scenario_label: str, client: MetaClient | N
         events.add("model_response", f"finish={res.finish_reason}; tool_calls={n_calls}; "
                                      f"content_chars={len(res.message.get('content') or '')}",
                    latency_ms=res.latency_ms, tokens=step)
-        messages.append(res.message)
+        msg = res.message
+        if not msg.get("content") and not msg.get("tool_calls"):
+            # the API rejects an assistant turn with neither content nor tool_calls when it is echoed back
+            msg = {**msg, "content": TRUNCATED_PLACEHOLDER}
+        messages.append(msg)
         return res
 
     try:
         rounds = 0
         while rounds < max_rounds:
             rounds += 1
-            last = chat(TOOL_SPECS, f"round {rounds}/{max_rounds}")
+            try:
+                last = chat(TOOL_SPECS + [t["spec"] for t in EXTRA_TOOLS], f"round {rounds}/{max_rounds}")
+            except _BudgetExhausted as exc:
+                budget_hit = True
+                events.add("error", str(exc), ok=False)
+                break
             tool_calls = last.message.get("tool_calls") or []
             if tool_calls:
                 for tc in tool_calls:
@@ -228,22 +263,27 @@ def run_investigation(analysis: Any, scenario_label: str, client: MetaClient | N
                     call_id = tc.get("id") or f"call_{events.items[-1].seq}"
                     try:
                         args = _parse_tool_args(fn.get("arguments"))
-                        result, ids = runner.run(name, args)
+                        result, ids = (_EXTRA_HANDLERS[name](analysis, args) if name in _EXTRA_HANDLERS
+                                       else runner.run(name, args))
                     except ToolError as exc:
                         events.add("tool_call", f"{name}: rejected ({exc})", tool_name=name, ok=False)
                         messages.append(_tool_message(call_id, {"error": str(exc)}))
                         continue
                     tools_called += 1
+                    called_tools.add(name)
+                    returned_ids.update(ids)
                     events.add("tool_call", f"{name}({json.dumps(args, default=str)[:200]})",
                                tool_name=name, args=args)
                     events.add("tool_result", _summarize_result(name, result), tool_name=name,
                                evidence_ids=list(ids))
                     messages.append(_tool_message(call_id, result))
                 continue
-            if tools_called == 0 and not nudged:
+            if missing_required() and not nudged:
                 nudged = True
-                events.add("rewrite_requested", "model answered without calling tools; nudged once")
-                messages.append({"role": "user", "content": NUDGE})
+                missing = missing_required()
+                events.add("rewrite_requested", f"model answered before calling required tools {missing}; nudged once")
+                messages.append({"role": "user", "content": "You must call the tools before answering. Required "
+                                 f"tool calls still missing: {', '.join(missing)}. Call them now, then answer."})
                 continue
             break
 
@@ -255,25 +295,39 @@ def run_investigation(analysis: Any, scenario_label: str, client: MetaClient | N
             return res.message.get("content") or ""
 
         content = final_content(last)
+        can_rewrite = False
         if tools_called == 0:
             report, errors = None, ["model produced no tool calls; a report without tool evidence is not accepted"]
+        elif missing_required():
+            report, errors = None, [f"required tools not called: {missing_required()}; a report is only accepted "
+                                    "after get_baseline_comparison, get_data_quality and evaluate_hypothesis"]
         else:
-            report, errors = validate_report(content, analysis.case_id, runner.known_evidence_ids, scenario_label)
-            if last is not None and last.finish_reason == "length" and not last.message.get("content"):
-                errors = ["model response truncated (finish_reason=length); return the JSON report only"] + errors
+            can_rewrite = True
+            report, errors = validate_report(content, analysis.case_id, returned_ids, scenario_label)
+            if last is not None and last.finish_reason == "length" and report is None:
+                errors = [f"model response truncated (finish_reason=length): {TRUNCATED_NOTE}"] + errors
             if last is not None and last.message.get("tool_calls") and not content:
                 errors = ["tool round limit reached while still calling tools; return the JSON report now"] + errors
         events.add("validation", "report accepted" if report else f"{len(errors)} validation error(s)",
                    ok=report is not None)
 
-        if report is None and tools_called > 0:
+        if report is None and can_rewrite and not budget_hit:
             events.add("rewrite_requested", "one rewrite turn; errors: " + " | ".join(errors)[:400])
             messages.append({"role": "user", "content": REWRITE_PREFIX + "\n".join(f"- {e}" for e in errors)})
-            last = chat(None, "rewrite", response_format={"type": "json_object"})
-            content = final_content(last)
-            report, errors = validate_report(content, analysis.case_id, runner.known_evidence_ids, scenario_label)
-            events.add("validation", "rewrite accepted" if report else f"rewrite still has {len(errors)} error(s)",
-                       ok=report is not None)
+            try:
+                last = chat(None, "rewrite", response_format={"type": "json_object"})
+            except _BudgetExhausted as exc:
+                budget_hit = True
+                events.add("error", str(exc), ok=False)
+            else:
+                content = final_content(last)
+                report, errors = validate_report(content, analysis.case_id, returned_ids, scenario_label)
+                if report is None and last.finish_reason == "length":
+                    errors = [f"model response truncated (finish_reason=length): {TRUNCATED_NOTE}"] + errors
+                events.add("validation", "rewrite accepted" if report else f"rewrite still has {len(errors)} error(s)",
+                           ok=report is not None)
+        if report is None and budget_hit:
+            errors = ["time budget exhausted before a valid report was produced"] + errors
 
         if report is not None:
             events.add("report_accepted", f"Meta report accepted; {tools_called} tool calls; "
