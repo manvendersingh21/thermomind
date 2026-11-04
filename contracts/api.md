@@ -15,6 +15,7 @@ All types live in `apps/api/app/schemas.py` (Pydantic) and mirror into `apps/web
 | GET | `/api/datasets/{id}` | – | `DatasetDetail` |
 | GET | `/api/datasets/{id}/series?measure=AFDP&year=2014&start=0&limit=500&include_expected=false` | – | `SeriesResponse` (server downsamples to ≤2000 pts) |
 | GET | `/api/models/evaluation` | – | `ModelEvaluation` (404 if not trained) |
+| GET | `/api/models/comparison` | – | `ModelComparison` (production HGBR vs GPU-trained challenger on the same chronological split; 404 if not trained) |
 | POST | `/api/models/train` | `{seed?: int}` | `ModelEvaluation` (local/admin only) |
 | GET | `/api/scenarios` | – | `ScenarioInfo[]` |
 | POST | `/api/scenarios/preview` | `ScenarioPreviewRequest` | `ScenarioPreviewResponse` |
@@ -116,7 +117,7 @@ class MetaClient:
     #   ChatResult: .message (dict as returned, incl tool_calls), .usage (dict), .latency_ms, .model, .finish_reason
     def ping(self) -> dict   # {"ok": bool, "model": str, "latency_ms": int, "error": str|None}; redacted
 # app/agent/tools.py
-TOOL_SPECS: list[dict]  # OpenAI function-tool JSON for: get_sensor_window, get_baseline_comparison, evaluate_hypothesis, get_data_quality, lookup_reference
+TOOL_SPECS: list[dict]  # OpenAI function-tool JSON for: get_sensor_window, get_baseline_comparison, evaluate_hypothesis, get_data_quality, list_evidence, lookup_reference
 class ToolRunner:
     def __init__(self, analysis: CaseAnalysis)
     def run(self, name: str, args: dict) -> tuple[dict, list[str]]  # (json-serializable result, evidence_ids returned); raises ToolError for unknown tool / bad args
