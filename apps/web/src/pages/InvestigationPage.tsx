@@ -1,4 +1,5 @@
 import { ArrowLeft, ClipboardList, Download, FlaskConical, Info, ListChecks, ShieldAlert } from "lucide-react";
+import { TwinEmbed } from "../features/twin/TwinEmbed";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { exportUrl, getInvestigation, getSeries, previewScenario } from "../api/client";
@@ -367,6 +368,10 @@ export function InvestigationPage() {
                 <PlantSchematic bare lookHere={parts} highlight={synthetic ? inv.scenario.affected_measurements : []} />
               )}
             />
+          </div>
+
+          <div className="mb-5">
+            <TwinEmbed caseId={inv.case_id} height={420} />
           </div>
 
           <div className="mb-5 grid grid-cols-3 gap-4">

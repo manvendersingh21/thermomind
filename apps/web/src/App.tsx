@@ -1,3 +1,4 @@
+import { lazy, Suspense } from "react";
 import { Navigate, Route, Routes } from "react-router-dom";
 import { Layout } from "./components/Layout";
 import { OverviewPage } from "./pages/OverviewPage";
@@ -20,6 +21,14 @@ import AgentTreePage from "./features/agents_tree/AgentTreePage";
 import AutonomyPage from "./features/collab/AutonomyPage";
 import OnboardingPage from "./features/collab/OnboardingPage";
 import ProposePage from "./features/deliberation/ProposePage";
+import ExecutivePage from "./features/executive/ExecutivePage";
+
+const TwinPage = lazy(() => import("./features/twin/TwinPage"));
+const twin = (
+  <Suspense fallback={<div className="p-6 text-sm text-ink-400">Loading 3D twin…</div>}>
+    <TwinPage />
+  </Suspense>
+);
 
 export function App() {
   return (
@@ -46,6 +55,9 @@ export function App() {
         <Route path="/autonomy" element={<AutonomyPage />} />
         <Route path="/onboarding" element={<OnboardingPage />} />
         <Route path="/propose" element={<ProposePage />} />
+        <Route path="/executive" element={<ExecutivePage />} />
+        <Route path="/twin" element={twin} />
+        <Route path="/twin/:caseId" element={twin} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Route>
     </Routes>
