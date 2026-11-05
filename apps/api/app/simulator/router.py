@@ -66,14 +66,36 @@ def run(req: RunRequest) -> dict:
         raise HTTPException(status_code=422, detail=str(exc)) from None
 
 
+
+
+def _flat(rec: dict | None) -> dict | None:
+    """UI-shaped StepRecord: channels flattened to top level + internal block (keeps every original field)."""
+    if not rec:
+        return None
+    out = dict(rec)
+    out.update(rec.get("channels") or {})
+    out["t_s"] = rec.get("sim_time_s")
+    out["internal"] = {
+        "mass_flow_kg_s": rec.get("air_kg_s"),
+        "fuel_kg_s": rec.get("fuel_kg_s"),
+        "shaft_mw": rec.get("dispatch_setpoint_mw"),
+        "freq_hz": (rec.get("omega_pu") or 1.0) * 50.0,
+        "available_capacity_mw": rec.get("available_capacity_mw"),
+    }
+    out["active_faults"] = rec.get("active_fault_ids") or []
+    return out
+
+
 @router.get("/state")
 def state() -> dict:
-    return get_engine().state()
+    st = get_engine().state()
+    st["record"] = _flat(st.get("last"))
+    return st
 
 
 @router.get("/history")
 def history(n: int = Query(default=600, ge=1, le=BUFFER_MAX)) -> dict:
-    recs = get_engine().history(n)
+    recs = [_flat(r) for r in get_engine().history(n)]
     return {"n": len(recs), "records": recs, "simulated": True, "source": SIM_SOURCE}
 
 
@@ -89,7 +111,7 @@ async def stream(max_events: int = Query(default=0, ge=0, le=100_000), hz: float
             st = eng.state()
             if st["steps"] != last_step or sent == 0:
                 last_step = st["steps"]
-                payload = {"status": st["status"], "record": st["last"], "simulated": True}
+                payload = {"status": st["status"], "record": _flat(st.get("last")), "simulated": True}
                 yield f"data: {json.dumps(payload)}\n\n"
                 sent += 1
                 if max_events and sent >= max_events:
