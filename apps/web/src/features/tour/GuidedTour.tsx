@@ -132,7 +132,7 @@ export default function GuidedTour() {
         ref={launcherRef}
         type="button"
         onClick={() => update({ open: true })}
-        className="fixed bottom-5 right-5 z-50 inline-flex h-11 items-center gap-2 rounded-full border border-yellow-400 bg-yellow-100 px-4 text-sm font-semibold text-yellow-900 shadow-lg transition hover:bg-yellow-200 focus:outline-none focus:ring-2 focus:ring-blue-300 print:hidden"
+        className="fixed top-3 right-4 z-50 inline-flex h-9 opacity-90 hover:opacity-100 items-center gap-2 rounded-full border border-yellow-400 bg-yellow-100 px-4 text-sm font-semibold text-yellow-900 shadow-lg transition hover:bg-yellow-200 focus:outline-none focus:ring-2 focus:ring-blue-300 print:hidden"
       >
         <Compass size={16} aria-hidden="true" />
         Judge tour
@@ -148,7 +148,7 @@ export default function GuidedTour() {
       aria-labelledby="tm-tour-title"
       tabIndex={-1}
       onKeyDown={onKeyDown}
-      className="fixed bottom-5 right-5 z-50 w-[22rem] max-w-[calc(100vw-2.5rem)] rounded-xl border border-slate-300 bg-white p-4 text-slate-900 shadow-2xl focus:outline-none print:hidden"
+      className="fixed top-14 right-4 z-50 w-[22rem] max-w-[calc(100vw-2.5rem)] rounded-xl border border-slate-300 bg-white p-4 text-slate-900 shadow-2xl focus:outline-none print:hidden"
     >
       <div className="mb-2 flex items-start justify-between gap-3">
         <div>
