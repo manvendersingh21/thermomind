@@ -98,6 +98,7 @@ Diagram: `docs/architecture.svg`. Feature-by-feature detail: `docs/FEATURES.md`.
 | Grid | `apps/api/app/features/grid/` | Readiness, synthetic S05_GRID_EVENT drill with one Meta brief call, contingency options |
 | Ops | `apps/api/app/features/ops/` | Handover note (Meta, no tools), CMMS export, pilot metrics |
 | Connectors | `apps/api/app/connectors/` | Simulated historian, CMMS, notifier; `control_system.py` is a refusal stub |
-| Web feature pages | `apps/web/src/{plant,features}/` | Inbox, Ask, Planner, Instruments, Emissions, Thermal, Grid, Connectors, Ops, tour |
+| Web feature pages | `apps/web/src/{plant,features}/` | Inbox, Ask, Planner, Instruments, Emissions, Thermal, Grid, Connectors, Ops, Compare, Report, Twin, Propose, Watchdog, Executive, Autonomy, Onboarding, tour |
+| Late packages | `apps/api/app/features/{deliberation,watchdog,executive,collab,agents_tree}/`, `apps/web/src/features/` | Propose an action, watchdog (simulated auxiliaries), executive view, autonomy policy, onboarding, activity feed, domino map, 3D twin |
 
 All of these are read-only with respect to the plant: no package has a control write path.

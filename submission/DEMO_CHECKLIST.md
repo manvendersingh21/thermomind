@@ -36,3 +36,7 @@
 - [ ] Record the live smoke-test fields in docs/EVALUATION.md
 - [ ] Stop `make dev`; confirm `.env` was not committed
 - [ ] Demo video at `submission/video/thermomind_demo.mp4`, ≤ 3:00
+
+## Late features (optional extra beats)
+
+- [ ] `/propose`: say "agents confer, a human decides, nothing is executed"; `/watchdog`: say "simulated auxiliaries; auto-execution only inside the simulation"; `/twin` and `/executive` are model-derived views of demo data

@@ -11,7 +11,7 @@
 | Project name | ThermoMind |
 | One-liner | ThermoMind is a read-only AI diagnostic investigator for gas-turbine power generation. It combines authentic operating measurements, reproducible anomaly analysis, Meta Muse Spark reasoning with real tool use, and inspectable evidence to help plant engineers prioritize investigations. |
 | Repository URL | https://github.com/manvendersingh21/thermomind |
-| Demo video URL | `<FILL after upload: submission/video/thermomind_demo.mp4>` (to be filled by the owner at submission) |
+| Demo video URL | submission/video/thermomind_demo.mp4 (narrated, ≤3 min; YouTube link to be added by the owner at submission) |
 | Live demo URL (optional) | not deployed (local reproducible demo; optional quick tunnel command in docs/DEPLOY.md) |
 | Team | `<FILL: names, roles, contact email>` (to be filled by the owner at submission) |
 | Meta model used | `muse-spark-1.3` via `https://api.meta.ai/v1` (OpenAI-compatible chat completions with function tools) |
@@ -28,13 +28,13 @@
 - [ ] `make meta-smoke` run once; record ts, model id, latency, tool calls, validator result in docs/EVALUATION.md
 - [ ] At least one stored `meta_live` investigation per scenario S01–S04 (via `make seed` or the UI)
 - [ ] docs/EVALUATION.md metrics table filled from `data/models/baseline_v1.json` (no typed numbers)
-- [ ] Screenshots added at `docs/screenshots/{home,data,investigation,evaluation,replay}.png`
+- [ ] Screenshots present in `docs/screenshots/` (home, data, investigation, investigation_synthetic, evidence_drawer, evaluation, replay, investigations, twin, grid, thermal)
 - [ ] README status banner still accurate; no claim of accuracy, adoption, avoided downtime or sales anywhere
 - [ ] `.env` not committed; `git grep -i "sk-"` and a search for the key value return nothing
 - [ ] Docker image builds (`docker build -t thermomind .`) on a machine with Docker, or note that it was not tested
 - [ ] Demo video recorded following docs/DEMO_SCRIPT.md; synthetic overlays and offline preview labelled on screen
 - [ ] submission/PITCH.md ≤ 100-word pitch pasted into the form
-- [ ] Repository URL, video URL, team fields above filled (to be filled by the owner at submission); form submitted before 9 PM ET
+- [ ] Repository URL, YouTube link, team fields above filled (to be filled by the owner at submission); form submitted before 9 PM ET
 
 ## Judging notes we want the reader to see first
 
@@ -60,11 +60,13 @@
 
 **Team:** `<FILL: names, roles, contact email>`
 
-**Links:** Repo https://github.com/manvendersingh21/thermomind; video `<FILL after upload>`; live URL: none (local demo); docs: README.md, docs/EVALUATION.md, docs/FAQ_JUDGES.md.
+**Links:** Repo https://github.com/manvendersingh21/thermomind; video submission/video/thermomind_demo.mp4 (YouTube link to be added by the owner at submission); live URL: none (local demo); docs: README.md, docs/EVALUATION.md, docs/FAQ_JUDGES.md.
+
+**Final feature set (form answer, 120 words):** ThermoMind is a read-only AI diagnostic investigator for gas-turbine plants. Real UCI measurements feed a deterministic evidence engine and an HGBR baseline; Meta Muse Spark investigates through six tools and drafts reports that can cite only returned evidence, validated server-side. Around it: inbox, ask-the-plant what-if agents, planner, instrument, emissions and thermal views, grid drill, ops handover, case comparison, 3D twin, Propose an action (agents confer, a human decides, nothing is executed), Watchdog, executive view, autonomy policy. SIMULATED or SYNTHETIC: fault scenarios S01-S05 overlays, thermal screening, connectors (historian, CMMS, notifier), and watchdog auxiliaries. No control writes exist; no validation on a real plant.
 
 ## Still to fill by hand
 
-Repository URL, video URL, team, test/typecheck output in docs/EVALUATION.md (Test suite section is a placeholder there), any S04 live case if wanted.
+Repository URL, YouTube link, team, test/typecheck output in docs/EVALUATION.md (Test suite section is a placeholder there), any S04 live case if wanted.
 
 ## Not built / not tested
 

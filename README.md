@@ -21,7 +21,8 @@ ThermoMind turns one window of plant data into an **investigation case**: eviden
 3. **Builds deterministic evidence** for a 120-row window versus the 240 preceding real rows: window-vs-reference statistics, trend slopes, residuals against the baseline, out-of-training-range counts, isolated-sensor flags, data-quality report.
 4. **Runs a Meta Muse Spark investigation.** `muse-spark-1.3` receives the case and must call tools (`get_sensor_window`, `get_baseline_comparison`, `evaluate_hypothesis`, `get_data_quality`, `list_evidence`, `lookup_reference`) to obtain evidence IDs. It may only cite IDs that tools returned.
 5. **Validates the report.** Unknown evidence IDs, case-ID mismatch, schema errors, fabricated dates or control instructions reject the draft; one bounded rewrite is allowed; otherwise the case is marked `needs_review` with a deterministic summary. Without an API key the app runs an **offline preview**, labelled "not a Meta inference" everywhere it is shown.
-6. **Keeps a human in the loop.** Severity is a review-priority category, not an alarm. The engineer records a review decision; the full case exports as JSON.
+6. **Extends to plant-wide workflows (all read-only):** inbox and work requests, "ask the plant" what-if agents, planner, instrument scorecard, emissions, thermal screening (simulated), grid drill (synthetic), connectors (simulated), ops handover, case comparison and printable report, an interactive **3D twin** (`/twin`, model-derived overlay on generic geometry), **Propose an action** (`/propose`: subsystem agents confer, consensus and dissent are shown, the human decision is recorded, nothing is executed), **Watchdog** (`/watchdog`: simulated auxiliaries produce detections and proposals; auto-execution exists only inside the simulated auxiliaries model, everything else is `human_required`), **Executive view** (`/executive`, model-derived roll-up of demo cases), autonomy policy, onboarding brief, activity feed and domino map. Per-feature detail and labels: [docs/FEATURES.md](docs/FEATURES.md).
+7. **Keeps a human in the loop.** Severity is a review-priority category, not an alarm. The engineer records a review decision; the full case exports as JSON.
 
 ## Architecture
 
@@ -30,7 +31,7 @@ ThermoMind turns one window of plant data into an **investigation case**: eviden
 ```mermaid
 flowchart LR
   subgraph Browser["apps/web — React · TypeScript · Vite · Tailwind · Recharts (:5173, /api proxy)"]
-    UI["/  ·  /data  ·  /investigations  ·  /investigations/:id  ·  /evaluation  ·  /replay"]
+    UI["/ · /data · /investigations · /investigations/:id · /evaluation · /replay · /inbox · /ask · /planner · /instruments · /emissions · /thermal · /grid · /connectors · /ops · /compare · /twin · /propose · /watchdog · /executive · /autonomy · /onboarding · /agents"]
   end
   subgraph API["apps/api — FastAPI (:8000)"]
     R["routers: datasets · models · scenarios · investigations · health"]
@@ -70,11 +71,18 @@ Demo video: link added at submission time (recording lives in `submission/video/
 | Home / run an investigation | `docs/screenshots/home.png` |
 | Data provenance (`/data`) | `docs/screenshots/data.png` |
 | Investigation case with evidence and tool trace (`/investigations/:id`) | `docs/screenshots/investigation.png` |
+| Investigation on a synthetic overlay (labelled) | `docs/screenshots/investigation_synthetic.png` |
+| Evidence drawer | `docs/screenshots/evidence_drawer.png` |
 | Baseline model evaluation (`/evaluation`) | `docs/screenshots/evaluation.png` |
 | Agent replay (`/replay`) | `docs/screenshots/replay.png` |
+| Investigations list (`/investigations`) | `docs/screenshots/investigations.png` |
+| 3D twin (`/twin`) | `docs/screenshots/twin.png` |
+| Grid readiness and drill (`/grid`, synthetic drill) | `docs/screenshots/grid.png` |
+| Thermal screening (`/thermal`, simulated) | `docs/screenshots/thermal.png` |
 
 ![Home](docs/screenshots/home.png)
 ![Investigation](docs/screenshots/investigation.png)
+![3D twin](docs/screenshots/twin.png)
 
 ## Data source and attribution
 

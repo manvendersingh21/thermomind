@@ -28,11 +28,13 @@ Inventory as of the last commit in this section, from `find apps scripts docs -t
 | Web app | `apps/web/src/` (pages: Overview, Investigations, Investigation, DataSources, Evaluation, Replay; components, typed API client) | React + TypeScript + Vite + Tailwind + Recharts UI with provenance badges |
 | Scripts | `scripts/` (`fetch_uci`, `train`, `train_torch`, `evaluate`, `seed_demo`, `meta_live_smoke`, `smoke_test.sh`, `e2e_browser.py`, `dev.sh`) | Data fetch, training, scenario evaluation, seeding, live Meta smoke, HTTP smoke, browser e2e |
 | Build and CI | `Makefile`, `Dockerfile`, `docker-compose.yml`, `.github/workflows/ci.yml` | Make targets, Docker image, CI |
+| Plant-wide features | `apps/api/app/plant/`, `apps/api/app/features/{planner,instruments,emissions,thermal,grid,ops}/`, `apps/api/app/connectors/` | Inbox, what-if agents, planner, instruments, emissions, simulated thermal screening, synthetic grid drill, ops handover, simulated connectors (no control path) |
+| Late features | `apps/api/app/features/{deliberation,watchdog,executive,collab,agents_tree}/`, `apps/web/src/features/`, 3D twin | Propose an action (deliberation, nothing executed), watchdog (simulated auxiliaries, policy), executive view, autonomy policy, onboarding brief, activity feed, domino map, 3D twin, agent tree, comparison, printable report, judge tour |
 | Documentation | `README.md`, `AGENTS.md`, `docs/*.md`, `docs/EVALUATION_RESULTS.json`, `docs/screenshots/`, `submission/` | Architecture, provenance, safety, market, evaluation, demo, submission |
 
 ## Real numbers
 
-- **Commits (all 2026-11-04 UTC):** 15 commits from `e6364fd` at 18:15:57 (initial contracts, schemas, config, fixtures) to `0e61535` at 18:50:19 (`git log --oneline`).
+- **Commits:** 56 commits in `git log --oneline` at the time of writing (history begins 2026-11-04 18:15 UTC).
 - **Tests:** `cd apps/api && python -m pytest -q` -> `140 passed, 1 warning in 72.79s`.
 - **Live Muse Spark investigations** (`muse-spark-1.3`, `https://api.meta.ai/v1`, recorded in `docs/EVALUATION.md`):
   - `case_76d34565b3dc` S02_INTAKE_RESTRICTION, 2026-11-04T18:32:03Z

@@ -57,7 +57,7 @@ at the top of `scripts/record_demo.py` (all text and all dwell times live in two
 - Video encode: `ffmpeg -ss <trim> -i take.webm -vf scale=1920:1080,fps=30 -c:v libx264 -crf 20 -preset veryfast -pix_fmt yuv420p -movflags +faststart`.
 - The eval caption reads the real numbers from `GET /api/models/evaluation` at record time (holdout MAE 1.293 MWh
   vs 4.125 MWh naive previous-observation, 2015 holdout), matching `docs/EVALUATION.md`.
-- Optional routes (`/twin/<case>`, `/propose`, `/simulator`, `/autonomy`) are probed first; a route that is not
+- Optional routes (`/twin/<case>`, `/propose`, `/autonomy`) are probed first; a route that is not
   served (the SPA redirects to `/`) is skipped together with its narration.
 
 Honesty notes: the main take never starts a new Meta run — it opens the stored `meta_live` case
@@ -67,7 +67,7 @@ recording."), because its WebGL load stalls software-rendered capture. No review
 
 ## Last measured take
 
-Interim take on the UI as of 2026-11-04 20:35 UTC (routes `/twin`, `/propose`, `/simulator`, `/autonomy` were not
+Interim take on the UI as of 2026-11-04 20:35 UTC (routes `/twin`, `/propose`, `/autonomy` were not
 served yet, so those segments were skipped; the final take will include them):
 
 ```
@@ -75,7 +75,6 @@ $ python scripts/record_demo.py
 eval numbers from API: {'holdout_year': '2015', 'mae': '1.293', 'naive_mae': '4.125', 'mae_spoken': '1.29', 'naive_spoken': '4.13'}
   route /autonomy: NOT served -> segment skipped
   route /propose: NOT served -> segment skipped
-  route /simulator: NOT served -> segment skipped
   route /twin/case_76d34565b3dc: NOT served -> segment skipped
 narration: 14 clips, 89.5 s of speech (voice en-US-GuyNeural, rate +8%)
 wrote /root/thermomind/submission/video/thermomind_demo.mp4 (79.7 s, 14.6 MB) and thermomind_demo_silent.mp4

@@ -85,14 +85,19 @@ The earlier standalone smoke (`scripts/meta_live_smoke.py`, 18:27:24 UTC, fake 3
 
 ## Test suite
 
-<!-- FILLED BY PRINCIPAL AFTER RUN: paste the last lines of `cd apps/api && python -m pytest -q` and `cd apps/web && npm run typecheck`. -->
 
 ```
 (pytest output)
 ```
 
 ```
-(typecheck output)
+$ npm run typecheck
+> tsc --noEmit
+(no errors)
+
+$ npm run test
+ Test Files  9 passed (9)
+      Tests  52 passed (52)
 ```
 
 ## What is not evaluated
