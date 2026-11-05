@@ -11,9 +11,9 @@ html,body{width:1920px;height:1080px;overflow:hidden;background:var(--bg);color:
 .scene.on{display:block}
 .p{animation-play-state:paused}
 body.run .p{animation-play-state:running}
-.tag{position:absolute;top:48px;left:80px;font-weight:700;font-size:22px;letter-spacing:.14em;color:var(--blue);text-transform:uppercase}
-.h{position:absolute;top:92px;left:80px;font-weight:800;font-size:64px;letter-spacing:-.02em}
-.foot{position:absolute;bottom:34px;left:80px;right:80px;font-size:20px;color:var(--mute);display:flex;justify-content:space-between}
+.tag{position:absolute;top:56px;left:64px;font-weight:700;font-size:22px;letter-spacing:.14em;color:var(--blue);text-transform:uppercase}
+.h{position:absolute;top:98px;left:64px;font-weight:800;font-size:64px;letter-spacing:-.02em}
+.foot{position:absolute;bottom:40px;left:64px;right:64px;font-size:20px;color:var(--mute);display:flex;justify-content:space-between}
 .badge{display:inline-block;padding:6px 14px;border-radius:8px;font-weight:800;font-size:18px;letter-spacing:.08em}
 .b-real{background:var(--gl);color:#166534;border:2px solid #86efac}
 .b-syn{background:var(--yl);color:#854d0e;border:2px solid #fde047}
@@ -21,11 +21,20 @@ body.run .p{animation-play-state:running}
 .b-hum{background:var(--bl);color:#1e40af;border:2px solid #93c5fd}
 @keyframes fadeUp{from{opacity:0;transform:translateY(40px)}to{opacity:1;transform:none}}
 @keyframes fadeIn{from{opacity:0}to{opacity:1}}
-@keyframes pop{0%{opacity:0;transform:scale(.4)}70%{opacity:1;transform:scale(1.08)}100%{opacity:1;transform:scale(1)}}
+@keyframes pop{from{opacity:0;transform:scale(.55)}to{opacity:1;transform:scale(1)}}
+@keyframes drift{from{transform:translate(0,0) scale(1)}to{transform:translate(var(--dx),var(--dy)) scale(1.08)}}
+.orb{position:absolute;border-radius:50%;filter:blur(3px);pointer-events:none;animation:drift 16s ease-in-out infinite alternate}
+.col{z-index:0}
+.endbg{position:absolute;inset:0;background:rgba(248,250,252,.94);z-index:5!important}
+.endcard{position:absolute;left:50%;top:50%;width:1200px;margin:-230px 0 0 -600px;padding:64px;border-radius:32px;background:#fff;border:2px solid var(--line);box-shadow:0 40px 90px rgba(15,23,42,.16),0 6px 18px rgba(15,23,42,.06);text-align:center;z-index:6!important}
+.endcard h1{font-size:96px;font-weight:900;letter-spacing:-.04em}
+.endcard h1 span{background:linear-gradient(90deg,var(--blue),var(--green));-webkit-background-clip:text;color:transparent}
+.endcard .u{margin-top:22px;font-size:46px;font-weight:800;color:var(--blue)}
+.endcard .m{margin-top:26px;font-size:28px;font-weight:600;color:#475569}
 @keyframes slideL{from{opacity:0;transform:translateX(-500px)}to{opacity:1;transform:none}}
 @keyframes slideR{from{opacity:0;transform:translateX(500px)}to{opacity:1;transform:none}}
 @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(220,38,38,.6)}100%{box-shadow:0 0 0 60px rgba(220,38,38,0)}}
-@keyframes stamp{0%{opacity:0;transform:rotate(-12deg) scale(3)}60%{opacity:1;transform:rotate(-12deg) scale(.92)}100%{opacity:1;transform:rotate(-12deg) scale(1)}}
+@keyframes stamp{from{opacity:0;transform:rotate(-12deg) scale(2.4)}to{opacity:1;transform:rotate(-12deg) scale(1)}}
 @keyframes draw{to{stroke-dashoffset:0}}
 .a{opacity:0;animation-fill-mode:forwards;animation-timing-function:cubic-bezier(.2,.8,.2,1)}
 /* scene 1 */
@@ -36,7 +45,7 @@ body.run .p{animation-play-state:running}
 #s1 .title p{font-size:44px;font-weight:500;color:#334155;margin-top:6px}
 #s1 .title .sub{margin-top:26px;display:flex;gap:14px;justify-content:center}
 /* scene 2 */
-.alarm{position:absolute;left:80px;width:560px;padding:16px 20px;border-radius:12px;font-weight:700;font-size:22px;display:flex;justify-content:space-between;box-shadow:0 8px 24px rgba(15,23,42,.08)}
+.alarm{position:absolute;left:64px;width:560px;padding:16px 20px;border-radius:12px;font-weight:700;font-size:22px;display:flex;justify-content:space-between;box-shadow:0 10px 28px rgba(15,23,42,.10),0 2px 6px rgba(15,23,42,.05)}
 .alarm.r{background:var(--rl);color:#991b1b;border-left:8px solid var(--red)}
 .alarm.y{background:var(--yl);color:#854d0e;border-left:8px solid #eab308}
 @keyframes drop{0%{opacity:0;transform:translateY(-300px) rotate(-4deg)}100%{opacity:1;transform:translateY(0) rotate(var(--rot,0deg))}}
@@ -52,11 +61,11 @@ body.run .p{animation-play-state:running}
 .counters div{font-size:20px;color:var(--mute);font-weight:600}
 .counters b{display:block;font-size:64px;color:var(--ink);font-weight:900;font-variant-numeric:tabular-nums}
 /* scene 3 */
-.node{position:absolute;top:300px;width:300px;height:170px;border-radius:24px;background:#fff;border:3px solid var(--line);box-shadow:0 18px 40px rgba(15,23,42,.08);padding:22px;text-align:center}
+.node{position:absolute;top:300px;width:304px;height:170px;border-radius:24px;background:#fff;border:3px solid var(--line);box-shadow:0 18px 40px rgba(15,23,42,.08);padding:22px;text-align:center}
 .node .ic{font-size:22px;font-weight:800;letter-spacing:.1em;color:var(--blue)}
 .node h3{font-size:34px;font-weight:800;margin-top:10px;line-height:1.1}
 .node.act{border-color:var(--blue)}
-.card{position:absolute;top:520px;width:300px;border-radius:18px;padding:20px;font-size:20px;line-height:1.35}
+.card{position:absolute;top:520px;width:304px;box-shadow:0 14px 34px rgba(15,23,42,.08);border-radius:18px;padding:20px;font-size:20px;line-height:1.35}
 .card b{font-size:46px;font-weight:900;display:block;font-variant-numeric:tabular-nums;line-height:1.1}
 .bar{height:26px;border-radius:6px;margin-top:8px;transform-origin:left;transform:scaleX(0)}
 @keyframes grow{to{transform:scaleX(1)}}
@@ -66,19 +75,19 @@ body.run .p{animation-play-state:running}
 .look{position:absolute;width:120px;height:120px;border-radius:50%;border:6px solid var(--red);animation:pulse 1.2s infinite}
 .lookl{position:absolute;background:var(--red);color:#fff;font-weight:900;font-size:26px;padding:10px 18px;border-radius:10px;letter-spacing:.06em}
 /* scene 5 */
-.chip{display:inline-block;margin:6px;padding:9px 16px;border-radius:999px;background:var(--bl);color:#1e3a8a;font-weight:600;font-size:19px}
+.chip{display:inline-block;box-shadow:0 4px 12px rgba(37,99,235,.10);margin:6px;padding:9px 16px;border-radius:999px;background:var(--bl);color:#1e3a8a;font-weight:600;font-size:19px}
 .agent{position:absolute;width:220px;height:96px;margin:-48px 0 0 -110px;border-radius:20px;background:#fff;border:3px solid var(--blue);display:flex;align-items:center;justify-content:center;text-align:center;font-weight:800;font-size:21px;padding:8px;box-shadow:0 12px 30px rgba(37,99,235,.15)}
-.bub{position:absolute;padding:8px 16px;border-radius:14px;font-weight:800;font-size:20px;white-space:nowrap}
+.bub{position:absolute;box-shadow:0 8px 20px rgba(15,23,42,.10);overflow:hidden;padding:8px 16px;border-radius:14px;font-weight:800;font-size:20px;white-space:nowrap}
 .bub.s{background:var(--gl);color:#166534;border:2px solid #4ade80}
 .bub.o{background:var(--rl);color:#991b1b;border:2px solid #f87171}
 .bub.n{background:#f1f5f9;color:#334155;border:2px solid #cbd5e1}
 .stampx{position:absolute;border:8px solid var(--red);color:var(--red);font-weight:900;font-size:56px;padding:10px 30px;border-radius:14px;letter-spacing:.06em;background:rgba(255,255,255,.9)}
 /* scene 6 */
 #s6 canvas{position:absolute;left:0;top:0}
-.gauge{position:absolute;left:1420px;top:560px;width:400px;text-align:center}
+.gauge{position:absolute;left:1456px;top:560px;width:400px;text-align:center}
 .gv{font-size:72px;font-weight:900;font-variant-numeric:tabular-nums}
 /* scene 7 */
-.col{position:absolute;top:260px;width:540px;height:640px;border-radius:24px;padding:30px;overflow:hidden}
+.col{position:absolute;top:260px;box-shadow:0 18px 40px rgba(15,23,42,.08);width:540px;height:640px;border-radius:24px;padding:30px;overflow:hidden}
 .col h2{font-size:40px;font-weight:900}
 .col .lvl{font-family:ui-monospace,monospace;font-size:20px;opacity:.75;margin-top:4px}
 .col li{list-style:none;margin-top:18px;padding:14px 18px;background:rgba(255,255,255,.8);border-radius:12px;font-size:23px;font-weight:600;line-height:1.3}
@@ -92,8 +101,7 @@ body.run .p{animation-play-state:running}
 .panel li:before{content:"";position:absolute;left:0;top:10px;width:18px;height:18px;border-radius:5px;background:var(--green)}
 .step{display:flex;gap:14px;align-items:center;margin-top:14px;font-size:24px}
 .step i{font-style:normal;width:44px;height:44px;border-radius:50%;background:var(--blue);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;flex:none}
-.url{position:absolute;left:80px;right:80px;top:900px;text-align:center;font-size:40px;font-weight:800;color:var(--blue)}
-.honest{position:absolute;left:80px;right:80px;bottom:30px;text-align:center;font-size:21px;color:#475569;padding:14px;border-top:2px solid var(--line)}
+.honest{position:absolute;left:64px;right:64px;bottom:40px;z-index:7!important;text-align:center;font-size:21px;color:#475569;padding:14px;border-top:2px solid var(--line)}
 </style></head>
 <body>
 
@@ -101,8 +109,8 @@ body.run .p{animation-play-state:running}
 <section class="scene" id="s1">
   <canvas id="c1" width="1920" height="1080"></canvas>
   <div class="title">
-    <h1 class="a p" style="animation:fadeUp 1.2s 4.2s forwards">Thermo<span>Mind</span></h1>
-    <p class="a p" style="animation:fadeUp 1.2s 5.2s forwards">agents meet a real power plant</p>
+    <h1 class="a p" style="animation:fadeUp 1.2s 4.3s forwards">Thermo<span>Mind</span></h1>
+    <p class="a p" style="animation:fadeUp 1.2s 5.1s forwards">agents meet a real power plant</p>
     <div class="sub a p" style="animation:fadeIn 1s 6.6s forwards"><span class="badge b-real">REAL PUBLIC DATA</span><span class="badge b-hum">META MUSE SPARK + TOOLS</span><span class="badge b-syn">HUMAN REVIEW REQUIRED</span></div>
   </div>
 </section>
@@ -131,20 +139,20 @@ body.run .p{animation-play-state:running}
   <div class="tag">The loop</div>
   <div class="h">From real data to a case an engineer can check</div>
   <svg width="1920" height="1080" style="position:absolute;inset:0">
-    <path id="loopPath" d="M230 385 L1690 385" stroke="#93c5fd" stroke-width="10" fill="none" stroke-dasharray="1460" stroke-dashoffset="1460" class="p" style="animation:draw 5s .6s linear forwards"/>
+    <path id="loopPath" d="M216 385 L1704 385" stroke="#93c5fd" stroke-width="10" fill="none" stroke-dasharray="1488" stroke-dashoffset="1488" class="p" style="animation:draw 5s .6s linear forwards"/>
   </svg>
   <canvas id="c3" width="1920" height="1080" style="position:absolute;inset:0"></canvas>
   <div id="nodes"></div>
-  <div class="card a p" style="left:80px;background:var(--gl);animation:fadeUp .8s 1.4s forwards"><span class="badge b-real">REAL</span><b data-count="36733" data-at="1.6">0</b>hourly rows, UCI 2011–2015, no row-level timestamps</div>
-  <div class="card a p" style="left:445px;background:var(--bl);animation:fadeUp .8s 3s forwards"><span style="font-weight:700">2015 holdout MAE (MWh)</span>
+  <div class="card a p" style="left:64px;background:var(--gl);animation:fadeUp .8s 1.4s forwards"><span class="badge b-real">REAL</span><b data-count="36733" data-at="1.6">0</b>hourly rows, UCI 2011–2015, no row-level timestamps</div>
+  <div class="card a p" style="left:436px;background:var(--bl);animation:fadeUp .8s 3s forwards"><span style="font-weight:700">2015 holdout MAE (MWh)</span>
     <div style="margin-top:8px">baseline <b style="display:inline;font-size:38px" data-count="1.293" data-dec="3" data-at="3.2">0</b></div>
     <div class="bar p" style="width:22px;background:var(--green);animation:grow .8s 3.4s forwards"></div>
     <div style="margin-top:8px">naive mean <b style="display:inline;font-size:38px" data-count="12.957" data-dec="3" data-at="3.6">0</b></div>
     <div class="bar p" style="width:250px;background:#cbd5e1;animation:grow 1.2s 3.8s forwards"></div></div>
-  <div class="card a p" style="left:810px;background:var(--yl);animation:fadeUp .8s 4.6s forwards"><span style="font-weight:700">muse-spark-1.3, bounded tool loop</span>
+  <div class="card a p" style="left:808px;background:var(--yl);animation:fadeUp .8s 4.6s forwards"><span style="font-weight:700">muse-spark-1.3, bounded tool loop</span>
     <div style="font-family:ui-monospace,monospace;font-size:17px;margin-top:8px;line-height:1.5">get_sensor_window<br>get_baseline_comparison<br>evaluate_hypothesis<br>get_data_quality<br>list_evidence · lookup_reference</div></div>
-  <div class="card a p" style="left:1175px;background:var(--gl);animation:fadeUp .8s 6.2s forwards"><b style="font-size:36px"><span data-count="4" data-at="6.4">0</span> live cases</b><b style="color:var(--green);font-size:36px"><span data-count="0" data-at="6.6">0</span> validation errors</b>evidence-ID whitelist, no invented dates, no control language</div>
-  <div class="card a p" style="left:1540px;background:var(--bl);animation:fadeUp .8s 7.8s forwards"><span class="badge b-hum" style="font-size:12px;letter-spacing:.02em">DRAFT_REQUIRES_HUMAN_REVIEW</span><p style="margin-top:12px">An engineer accepts or rejects. Decisions can be reopened.</p></div>
+  <div class="card a p" style="left:1180px;background:var(--gl);animation:fadeUp .8s 6.2s forwards"><b style="font-size:36px"><span data-count="4" data-at="6.4">0</span> live cases</b><b style="color:var(--green);font-size:36px"><span data-count="0" data-at="6.6">0</span> validation errors</b>evidence-ID whitelist, no invented dates, no control language</div>
+  <div class="card a p" style="left:1552px;background:var(--bl);animation:fadeUp .8s 7.8s forwards"><span class="badge b-hum" style="font-size:12px;letter-spacing:.02em">DRAFT_REQUIRES_HUMAN_REVIEW</span><p style="margin-top:12px">An engineer accepts or rejects. Decisions can be reopened.</p></div>
   <div class="foot"><span>Numbers from docs/EVALUATION.md and docs/FINAL_VERIFICATION.md, produced by running the code</span></div>
 </section>
 
@@ -152,12 +160,12 @@ body.run .p{animation-play-state:running}
 <section class="scene" id="s4">
   <div class="tag">Where to look</div>
   <div class="h">Every claim links to evidence, pinned to equipment</div>
-  <div class="shot a p" style="left:80px;top:230px;width:640px;height:780px;animation:slideL 1.2s .5s forwards">
+  <div class="shot a p" style="left:64px;top:220px;width:640px;height:740px;animation:slideL 1.2s .5s forwards">
     <img src="img/evidence_drawer.png" class="p" style="animation:scroll4 9s 2.5s ease-in-out forwards">
   </div>
-  <div class="shot a p" style="left:780px;top:230px;width:1060px;animation:slideR 1.2s 1.6s forwards"><img src="img/twin.png">
-    <div class="look a p" style="left:176px;top:318px;animation:fadeIn .3s 3.6s forwards,pulse 1.2s 3.6s infinite"></div>
-    <div class="lookl a p" style="left:300px;top:250px;animation:pop .6s 3.8s forwards">LOOK HERE · intake filter house</div>
+  <div class="shot a p" style="left:752px;top:220px;width:1104px;animation:slideR 1.2s 1.6s forwards"><img src="img/twin.png">
+    <div class="look a p" style="left:183px;top:331px;animation:fadeIn .3s 3.6s forwards,pulse 1.2s 3.6s infinite"></div>
+    <div class="lookl a p" style="left:312px;top:260px;animation:pop .6s 3.8s forwards">LOOK HERE · intake filter house</div>
   </div>
   <style>@keyframes scroll4{to{transform:translateY(-1400px)}}</style>
   <div class="foot"><span><span class="badge b-syn" style="font-size:15px">SYNTHETIC OVERLAY</span> case S02 · 3D twin is generic geometry driven by UCI data, not the real facility</span></div>
@@ -167,13 +175,13 @@ body.run .p{animation-play-state:running}
 <section class="scene" id="s5">
   <div class="tag">Agents in collaboration</div>
   <div class="h">Agents confer. A human decides.</div>
-  <div style="position:absolute;left:80px;top:220px;width:460px" id="roles"><div class="a p" style="font-size:26px;font-weight:800;margin:0 0 8px 6px;animation:fadeIn .5s .3s forwards"><span data-count="11" data-at=".3">0</span> plant roles</div></div>
+  <div style="position:absolute;left:58px;top:220px;width:460px" id="roles"><div class="a p" style="font-size:26px;font-weight:800;margin:0 0 8px 6px;animation:fadeIn .5s .3s forwards"><span data-count="11" data-at=".3">0</span> plant roles</div></div>
   <svg width="1920" height="1080" style="position:absolute;inset:0" id="links5"></svg>
   <div id="agents5"></div>
-  <div class="a p" style="position:absolute;left:1420px;top:770px;width:420px;padding:22px;border-radius:20px;background:var(--bl);border:3px solid var(--blue);animation:slideR .9s 9s forwards">
+  <div class="a p" style="position:absolute;left:1436px;top:770px;width:420px;box-shadow:0 18px 40px rgba(37,99,235,.18);padding:22px;border-radius:20px;background:var(--bl);border:3px solid var(--blue);animation:slideR .9s 9s forwards">
     <div style="font-weight:900;font-size:30px">Human decides</div>
     <div style="font-size:22px;margin-top:6px">approve a plan · reject · defer</div></div>
-  <div class="stampx a p" style="left:90px;top:760px;animation:stamp .7s 10.6s forwards">NOTHING EXECUTED</div>
+  <div class="stampx a p" style="left:80px;top:760px;animation:stamp .7s 10.6s forwards">NOTHING EXECUTED</div>
   <div class="foot"><span>Verdicts shown are an example; agent verdicts are model opinions, consensus is a vote count computed by software</span></div>
 </section>
 
@@ -184,7 +192,7 @@ body.run .p{animation-play-state:running}
   <canvas id="c6" width="1920" height="1080"></canvas>
   <div class="gauge"><svg width="400" height="230" viewBox="0 0 400 230"><path d="M40 210 A160 160 0 0 1 360 210" stroke="#e2e8f0" stroke-width="28" fill="none"/><path id="garc" d="M40 210 A160 160 0 0 1 360 210" stroke="#dc2626" stroke-width="28" fill="none" stroke-dasharray="503" stroke-dashoffset="503"/><line id="gneedle" x1="200" y1="210" x2="200" y2="70" stroke="#0f172a" stroke-width="8" stroke-linecap="round"/><circle cx="200" cy="210" r="14" fill="#0f172a"/></svg>
     <div class="gv"><span id="afdp">3.9</span> <span style="font-size:32px">mbar</span></div><div style="font-size:24px;font-weight:700;color:var(--mute)">AFDP, intake filter ΔP</div></div>
-  <div id="fault6" class="a" style="position:absolute;left:150px;top:690px;padding:14px 22px;border-radius:12px;background:var(--rl);color:#991b1b;border:3px solid var(--red);font-weight:900;font-size:30px">FAULT INJECTED: intake fouling</div>
+  <div id="fault6" class="a p" style="animation:pop .6s 5.5s forwards;position:absolute;left:120px;top:690px;box-shadow:0 12px 30px rgba(220,38,38,.18);padding:14px 22px;border-radius:12px;background:var(--rl);color:#991b1b;border:3px solid var(--red);font-weight:900;font-size:30px">FAULT INJECTED: intake fouling</div>
   <div class="foot"><span>0-D model calibrated to the UCI data, experimental · verified run: AFDP 3.9 → 17.6 mbar within the first simulated hour</span></div>
 </section>
 
@@ -192,9 +200,9 @@ body.run .p{animation-play-state:running}
 <section class="scene" id="s7">
   <div class="tag">Autonomy policy P-01</div>
   <div class="h">Who decides what, written down</div>
-  <div class="col" style="left:80px;background:var(--gl)"><div class="fill p" style="background:#bbf7d0;animation:growY 2s .4s forwards"></div><h2>Agents alone</h2><div class="lvl">agent_auto · logged, reversible</div><ul id="c7a"></ul></div>
+  <div class="col" style="left:64px;background:var(--gl)"><div class="fill p" style="background:#bbf7d0;animation:growY 2s .4s forwards"></div><h2>Agents alone</h2><div class="lvl">agent_auto · logged, reversible</div><ul id="c7a"></ul></div>
   <div class="col" style="left:690px;background:var(--yl)"><div class="fill p" style="background:#fde68a;animation:growY 2s 3.6s forwards"></div><h2>Human review</h2><div class="lvl">human_review · agent proposes</div><ul id="c7b"></ul></div>
-  <div class="col" style="left:1300px;background:var(--bl)"><div class="fill p" style="background:#bfdbfe;animation:growY 2s 6.8s forwards"></div><h2>Humans only</h2><div class="lvl">human_only · no software path</div><ul id="c7c"></ul></div>
+  <div class="col" style="left:1316px;background:var(--bl)"><div class="fill p" style="background:#bfdbfe;animation:growY 2s 6.8s forwards"></div><h2>Humans only</h2><div class="lvl">human_only · no software path</div><ul id="c7c"></ul></div>
   <div class="foot"><span>Source: GET /api/collab/policy · auto-execution exists only inside the simulation</span></div>
 </section>
 
@@ -202,127 +210,180 @@ body.run .p{animation-play-state:running}
 <section class="scene" id="s8">
   <div class="tag">Push the Frontier · Startup track</div>
   <div class="h">A physical system, reasoned over with verifiable tools</div>
-  <div class="panel a p" style="left:80px;width:860px;animation:slideL 1s .4s forwards">
+  <div class="panel a p" style="left:64px;width:870px;animation:slideL 1s .4s forwards">
     <h2>Who buys</h2>
     <p>CEO or COO of a generation company, IPP or O&amp;M contractor. Champion: the reliability or performance engineer.</p>
     <h2 style="margin-top:26px">Why it is new</h2>
     <ul><li>Evidence-cited cases from the plant's own data</li><li>Subsystem agents confer before any physical action</li><li>Explicit autonomy policy; humans make every decision</li></ul>
   </div>
-  <div class="panel a p" style="left:990px;width:850px;animation:slideR 1s 1.2s forwards">
+  <div class="panel a p" style="left:986px;width:870px;animation:slideR 1s 1.2s forwards">
     <h2>Path to pilot</h2>
     <div class="step a p" style="animation:fadeUp .5s 2.2s forwards"><i>1</i>One turbine, one engineer, a read-only export</div>
     <div class="step a p" style="animation:fadeUp .5s 3s forwards"><i>2</i>8–12 weeks in shadow mode</div>
     <div class="step a p" style="animation:fadeUp .5s 3.8s forwards"><i>3</i>Measure engineer time, evidence correctness, acceptance</div>
     <div class="step a p" style="animation:fadeUp .5s 4.6s forwards"><i>4</i>Decide on price only if shadow metrics hold</div>
   </div>
-  <div class="url a p" style="animation:pop .8s 6s forwards">github.com/manvendersingh21/thermomind</div>
+  <div class="endbg a p" id="endbg" style="animation:fadeIn 1s 8.5s forwards"></div>
+  <div class="endcard a p" id="endcard" style="animation:pop .9s 8.9s forwards"><h1>Thermo<span>Mind</span></h1><div class="u">github.com/manvendersingh21/thermomind</div><div class="m">Built 4 Nov 2026 · public data · read-only by design</div></div>
   <div class="honest a p" style="animation:fadeIn 1s 7s forwards">Prototype on public data. No accuracy, savings, customers or deployment claimed. Read-only: no PLC/SCADA/DCS/historian writes, no setpoints.</div>
 </section>
 
 <script>
+/* Global clock. Real-time preview by default; ?capture=1 freezes everything and window.__seek(ms) drives
+   every CSS/Web animation, SVG SMIL animation and canvas/counter ticker deterministically (frame-exact capture). */
 const Q=new URLSearchParams(location.search);
-const SCENE=+(Q.get('scene')||1), DUR=+(Q.get('dur')||14);
-let T0=null; const now=()=>T0===null?0:(performance.now()-T0)/1000;
+const SCENE=+(Q.get('scene')||1), CAP=Q.has('capture');
+const DEF_DUR={1:14,2:14,3:16,4:14,5:14,6:14,7:14,8:14};
+const DUR=+(Q.get('dur')||DEF_DUR[SCENE]||14);
+window.sceneDuration=DUR*1000; window.__t=0;
+let T0=null; const now=()=>CAP?window.__t:(T0===null?0:(performance.now()-T0)/1000);
 const $=s=>document.querySelector(s);
 const tickers=[];
-const ease=x=>1-Math.pow(1-Math.min(1,Math.max(0,x)),3);
+let seed=1234567+SCENE*7919; const rnd=()=>{seed|=0;seed=seed+0x6D2B79F5|0;let t=Math.imul(seed^seed>>>15,1|seed);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};
+const clamp=x=>Math.min(1,Math.max(0,x));
+const ease=x=>1-Math.pow(1-clamp(x),3);
+const easeIO=x=>{x=clamp(x);return x<.5?4*x*x*x:1-Math.pow(-2*x+2,3)/2;};
 function countUps(root){root.querySelectorAll('[data-count]').forEach(el=>{const v=+el.dataset.count,at=+(el.dataset.at||0),d=+(el.dataset.dec||0);
   tickers.push(t=>{const k=ease((t-at)/1.4);el.textContent=(v*k).toLocaleString('en-US',{minimumFractionDigits:d,maximumFractionDigits:d});});});}
+/* easing per keyframe name (applied to every CSS animation in the scene) */
+const EASE={fadeUp:'cubic-bezier(.22,1,.36,1)',fadeIn:'cubic-bezier(.4,0,.2,1)',pop:'cubic-bezier(.34,1.56,.64,1)',slideL:'cubic-bezier(.16,1,.3,1)',slideR:'cubic-bezier(.16,1,.3,1)',
+  drop:'cubic-bezier(.34,1.35,.64,1)',stamp:'cubic-bezier(.34,1.45,.64,1)',draw:'cubic-bezier(.65,0,.35,1)',grow:'cubic-bezier(.22,1,.36,1)',growY:'cubic-bezier(.22,1,.36,1)',
+  scroll4:'cubic-bezier(.65,0,.35,1)',pulse:'cubic-bezier(0,0,.2,1)',drift:'cubic-bezier(.45,0,.55,1)'};
+function applyEasing(root){[root,...root.querySelectorAll('*')].forEach(el=>{const n=getComputedStyle(el).animationName;if(!n||n==='none')return;
+  el.style.animationTimingFunction=n.split(',').map(x=>EASE[x.trim()]||'cubic-bezier(.4,0,.2,1)').join(',');});}
+function orbs(root){[[ -160,-220,620,'rgba(147,197,253,.30)','60px','40px'],[1420,640,560,'rgba(134,239,172,.22)','-50px','-30px'],[900,-260,420,'rgba(253,224,71,.16)','-40px','50px']].forEach(([x,y,r,c,dx,dy],i)=>{
+  const o=document.createElement('div');o.className='orb';o.style.cssText=`left:${x}px;top:${y}px;width:${r}px;height:${r}px;background:radial-gradient(circle at 40% 40%,${c},rgba(255,255,255,0) 70%);--dx:${dx};--dy:${dy};animation-delay:${-i*5}s`;
+  root.insertBefore(o,root.firstChild);});}
 
-/* ---------- scene 1: particles form a turbine ---------- */
+/* ---------- scene 1: particles form a turbine, outline completes, then the title ---------- */
 function s1(){const c=$('#c1'),g=c.getContext('2d');
-  // turbine silhouette (side view), top contour; mirrored for bottom
   const top=[[360,330],[420,250],[520,240],[620,270],[900,320],[960,300],[1060,290],[1140,300],[1200,320],[1440,240],[1560,230]];
   const cy=400, pts=[];
   const seg=(a,b,n)=>{for(let i=0;i<n;i++){const k=i/n;pts.push([a[0]+(b[0]-a[0])*k,a[1]+(b[1]-a[1])*k]);}};
   for(let i=0;i<top.length-1;i++){seg(top[i],top[i+1],26);seg([top[i][0],2*cy-top[i][1]],[top[i+1][0],2*cy-top[i+1][1]],26);}
   seg([360,330],[360,470],10);seg([1560,230],[1560,570],24);
-  seg([300,cy],[1620,cy],60); // shaft
-  for(let x=640;x<900;x+=34){seg([x,cy-((x-620)*-0.18+128)+6],[x,cy+((x-620)*-0.18+128)-6],8);} // compressor blades
-  for(let x=1220;x<1430;x+=40){seg([x,cy-(80+(x-1200)*.33)],[x,cy+(80+(x-1200)*.33)],10);} // turbine blades
-  seg([980,300],[1120,300],8);seg([980,500],[1120,500],8); // combustor
-  const P=pts.map(p=>({x:Math.random()*1920,y:Math.random()*1080,tx:p[0],ty:p[1]-40,d:Math.random()*1.2,hue:p[0]<940?'37,99,235':p[0]<1200?'234,179,8':'22,163,74'}));
-  const dust=Array.from({length:120},()=>({x:Math.random()*1920,y:Math.random()*1080,v:.3+Math.random()}));
+  seg([300,cy],[1620,cy],60);
+  for(let x=640;x<900;x+=34){seg([x,cy-((x-620)*-0.18+128)+6],[x,cy+((x-620)*-0.18+128)-6],8);}
+  for(let x=1220;x<1430;x+=40){seg([x,cy-(80+(x-1200)*.33)],[x,cy+(80+(x-1200)*.33)],10);}
+  seg([980,300],[1120,300],8);seg([980,500],[1120,500],8);
+  const P=pts.map(p=>({x:rnd()*1920,y:rnd()*1080,tx:p[0],ty:p[1]-40,d:rnd()*1.0,hue:p[0]<940?'37,99,235':p[0]<1200?'234,179,8':'22,163,74'}));
+  const dust=Array.from({length:140},()=>({x:rnd()*1920,y:rnd()*1080,v:18+rnd()*60}));
+  // closed outline (top contour, right edge, bottom contour back, left edge), drawn progressively
+  const ol=[...top.map(p=>[p[0],p[1]-40]),...top.slice().reverse().map(p=>[p[0],2*cy-p[1]-40])];ol.push(ol[0]);
+  const L=[0];for(let i=1;i<ol.length;i++)L.push(L[i-1]+Math.hypot(ol[i][0]-ol[i-1][0],ol[i][1]-ol[i-1][1]));
   tickers.push(t=>{g.clearRect(0,0,1920,1080);
-    for(const d of dust){d.x+=d.v;if(d.x>1920)d.x=0;g.fillStyle='rgba(148,163,184,.25)';g.fillRect(d.x,d.y,3,3);}
-    for(const p of P){const k=ease((t-.3-p.d)/2.4);const wob=Math.sin(t*2+p.tx*.02)*2*(k>=1?1:0);
+    for(const d of dust){const x=(d.x+d.v*t)%1920;g.fillStyle='rgba(148,163,184,.25)';g.fillRect(x,d.y,3,3);}
+    const ok=easeIO((t-2.0)/1.7), len=L[L.length-1]*ok;
+    if(ok>0){g.save();g.lineWidth=3;g.strokeStyle='rgba(37,99,235,.45)';g.shadowColor='rgba(37,99,235,.35)';g.shadowBlur=12;g.lineJoin='round';g.beginPath();g.moveTo(ol[0][0],ol[0][1]);
+      for(let i=1;i<ol.length;i++){if(L[i]<=len){g.lineTo(ol[i][0],ol[i][1]);}else{const f=(len-L[i-1])/(L[i]-L[i-1]);g.lineTo(ol[i-1][0]+(ol[i][0]-ol[i-1][0])*f,ol[i-1][1]+(ol[i][1]-ol[i-1][1])*f);break;}}
+      g.stroke();g.restore();}
+    for(const p of P){const k=ease((t-.3-p.d)/2.0);const wob=Math.sin(t*2+p.tx*.02)*2*clamp((t-3.3)/.6);
       const x=p.x+(p.tx-p.x)*k, y=p.y+(p.ty-p.y)*k+wob;
       g.fillStyle=`rgba(${p.hue},${.35+.6*k})`;g.beginPath();g.arc(x,y,3.2,0,7);g.fill();}
-    // flowing glow along shaft after formed
-    if(t>3.4){const fx=300+((t-3.4)*500)%1320;const gr=g.createRadialGradient(fx,cy-40,0,fx,cy-40,60);gr.addColorStop(0,'rgba(250,204,21,.6)');gr.addColorStop(1,'rgba(250,204,21,0)');g.fillStyle=gr;g.fillRect(fx-60,cy-100,120,120);}
+    if(t>3.7){const fx=300+((t-3.7)*500)%1320;const a=clamp((t-3.7)/.5);const gr=g.createRadialGradient(fx,cy-40,0,fx,cy-40,60);gr.addColorStop(0,`rgba(250,204,21,${.6*a})`);gr.addColorStop(1,'rgba(250,204,21,0)');g.fillStyle=gr;g.fillRect(fx-60,cy-100,120,120);}
   });}
 
 /* ---------- scene 2 ---------- */
 function s2(){const A=[['AFDP deviation','r'],['TIT high','y'],['CDP drift','y'],['TEY residual','r'],['NOx excursion','r'],['GTEP rising','y'],['CO spike','y'],['TAT deviation','r'],['AH sensor flat','y'],['AFDP deviation','r'],['TIT high','y'],['TEY residual','r']];
   const box=$('#alarms');A.forEach((a,i)=>{const d=document.createElement('div');d.className='alarm a p '+a[1];
-    d.style.cssText=`top:${230+i*62}px;--rot:${(i%3-1)*1.2}deg;animation:drop .6s ${.5+i*.45}s forwards`;d.innerHTML=`<span>⚠ ${a[0]}</span><span style="opacity:.6">sensor alert</span>`;box.appendChild(d);});
+    d.style.cssText=`top:${230+i*62}px;--rot:${(i%3-1)*1.2}deg;animation:drop .7s ${.5+i*.45}s forwards`;d.innerHTML=`<span>⚠ ${a[0]}</span><span style="opacity:.6">sensor alert</span>`;box.appendChild(d);});
   const sh=$('#sheet');const H=['AT','AP','AH','AFDP','TIT','TEY','CO'];H.forEach(h=>{const d=document.createElement('div');d.className='hd';d.textContent=h;sh.appendChild(d);});
   const cells=[];for(let i=0;i<42;i++){const d=document.createElement('div');d.textContent='…';sh.appendChild(d);cells.push(d);}
-  let last=-1;tickers.push(t=>{const f=Math.floor(t*6);if(f===last||t<1.6)return;last=f;
+  tickers.push(t=>{const f=Math.floor(t*6);if(t<1.6){cells.forEach(c=>{c.textContent='…';c.className='';});return;}
     cells.forEach((c,i)=>{c.textContent=(((i*37+f*13)%997)/10).toFixed(1);c.className=((i*7+f)%11===0)?'hl':'';});});
 }
 
 /* ---------- scene 3 ---------- */
 function s3(){const N=[['REAL DATA','UCI turbine<br>measurements'],['BASELINE','HistGradient-<br>Boosting'],['MUSE SPARK','reasons via<br>tool calls'],['VALIDATOR','server-side<br>checks'],['HUMAN','engineer<br>review']];
-  const box=$('#nodes');N.forEach((n,i)=>{const d=document.createElement('div');d.className='node a p';d.style.cssText=`left:${80+i*365}px;animation:pop .7s ${.4+i*1.6}s forwards`;d.innerHTML=`<div class="ic">${n[0]}</div><h3>${n[1]}</h3>`;box.appendChild(d);});
-  const c=$('#c3'),g=c.getContext('2d');tickers.push(t=>{g.clearRect(0,0,1920,1080);if(t<6)return;
-    for(let k=0;k<7;k++){const x=230+(((t-6)*260+k*210)%1460);g.fillStyle=k%2?'#2563eb':'#16a34a';g.beginPath();g.arc(x,385,11,0,7);g.fill();}
-    box.querySelectorAll('.node').forEach((n,i)=>n.classList.toggle('act',Math.floor((t-6)*1.2)%5===i));});
+  const box=$('#nodes');N.forEach((n,i)=>{const d=document.createElement('div');d.className='node a p';d.style.cssText=`left:${64+i*372}px;animation:pop .7s ${.4+i*1.6}s forwards`;d.innerHTML=`<div class="ic">${n[0]}</div><h3>${n[1]}</h3>`;box.appendChild(d);});
+  const c=$('#c3'),g=c.getContext('2d');tickers.push(t=>{g.clearRect(0,0,1920,1080);const nodes=box.querySelectorAll('.node');
+    if(t<6){nodes.forEach(n=>n.classList.remove('act'));return;}
+    const a=clamp((t-6)/.4);
+    for(let k=0;k<7;k++){const x=216+(((t-6)*260+k*212.6)%1488);g.globalAlpha=a;g.fillStyle=k%2?'#2563eb':'#16a34a';g.shadowColor=g.fillStyle;g.shadowBlur=14;g.beginPath();g.arc(x,385,11,0,7);g.fill();}
+    g.globalAlpha=1;g.shadowBlur=0;
+    nodes.forEach((n,i)=>n.classList.toggle('act',Math.floor((t-6)*1.2)%5===i));});
 }
 
-/* ---------- scene 5 ---------- */
+/* ---------- scene 5: agents confer; verdict bubbles stagger in and type out ---------- */
 function s5(){const R=['Plant manager','Shift supervisor','Control-room operator','Performance engineer','Reliability engineer','Mechanical maintenance','I&C engineer','Electrical engineer','Emissions compliance','HSE officer','OEM field service'];
-  const rb=$('#roles');R.forEach((r,i)=>{const s=document.createElement('span');s.className='chip a p';s.style.animation=`pop .4s ${.5+i*.18}s forwards`;s.textContent=r;rb.appendChild(s);});
+  const rb=$('#roles');R.forEach((r,i)=>{const s=document.createElement('span');s.className='chip a p';s.style.animation=`pop .45s ${.5+i*.18}s forwards`;s.textContent=r;rb.appendChild(s);});
   const cx=1060,cy=560;const AG=[['Air intake &amp; filter house','s','support'],['Compressor','n','insufficient evidence'],['Combustion &amp; turbine','o','oppose'],['Exhaust &amp; emissions','o','oppose'],['Generator output','s','support'],['Constraints &amp; safety','o','oppose']];
   const box=$('#agents5'),svg=$('#links5');
-  const al=document.createElement('div');al.className='a p';al.style.cssText=`position:absolute;left:${cx-170}px;top:${cy-50}px;width:340px;padding:18px;border-radius:16px;background:var(--yl);border:3px solid #eab308;text-align:center;font-weight:800;font-size:22px;animation:pop .7s 2.4s forwards;z-index:2`;
+  const al=document.createElement('div');al.className='a p';al.style.cssText=`position:absolute;left:${cx-170}px;top:${cy-50}px;width:340px;padding:18px;border-radius:16px;background:var(--yl);border:3px solid #eab308;text-align:center;font-weight:800;font-size:22px;animation:pop .7s 2.4s forwards;z-index:2;box-shadow:0 14px 34px rgba(234,179,8,.22)`;
   al.innerHTML='Proposed action<br><span style="font-weight:600;font-size:19px">routed from a case alert</span>';box.appendChild(al);
+  const bubs=[];
   AG.forEach((a,i)=>{const ang=-Math.PI/2+i*Math.PI*2/6;const x=cx+Math.cos(ang)*390,y=cy+Math.sin(ang)*270;
     const l=document.createElementNS('http://www.w3.org/2000/svg','line');l.setAttribute('x1',cx);l.setAttribute('y1',cy);l.setAttribute('x2',x);l.setAttribute('y2',y);
     l.setAttribute('stroke','#93c5fd');l.setAttribute('stroke-width','5');l.setAttribute('stroke-dasharray','400');l.setAttribute('stroke-dashoffset','400');l.setAttribute('class','p');l.style.animation=`draw .8s ${3.2+i*.25}s forwards`;svg.appendChild(l);
     const d=document.createElement('div');d.className='agent a p';d.style.cssText=`left:${x}px;top:${y}px;animation:pop .6s ${3.4+i*.25}s forwards`;d.innerHTML=a[0];box.appendChild(d);
-    const b=document.createElement('div');b.className='bub a p '+a[1];b.style.cssText=`left:${x+(Math.cos(ang)>=0?40:-200)}px;top:${y-92}px;animation:pop .5s ${5.6+i*.45}s forwards`;b.textContent=a[2];box.appendChild(b);});
-  tickers.push(t=>{svg.style.opacity=1;svg.querySelectorAll('line').forEach((l,i)=>l.setAttribute('stroke',t>5.6+i*.45&&Math.floor(t*3)%2?'#2563eb':'#93c5fd'));});
+    const at=5.6+i*.45;
+    const b=document.createElement('div');b.className='bub a p '+a[1];b.style.cssText=`left:${x+(Math.cos(ang)>=0?40:-200)}px;top:${y-92}px;animation:pop .45s ${at}s forwards`;b.textContent=a[2];box.appendChild(b);
+    bubs.push({b,full:a[2],at});});
+  bubs.forEach(o=>{o.b.style.width=(o.b.offsetWidth+16)+'px';});   // lock final width so typing does not reflow
+  tickers.push(t=>{svg.querySelectorAll('line').forEach((l,i)=>l.setAttribute('stroke',t>5.6+i*.45&&Math.floor(t*3)%2?'#2563eb':'#93c5fd'));
+    for(const o of bubs){const n=Math.max(0,Math.min(o.full.length,Math.floor((t-o.at-.12)*30)));const typing=n<o.full.length||(t-o.at)<o.full.length/30+.6;
+      o.b.innerHTML=o.full.slice(0,n)+(typing&&Math.floor(t*4)%2===0?'<span style="opacity:.55">▍</span>':'');}});
 }
 
-/* ---------- scene 6 ---------- */
+/* ---------- scene 6: physics simulator (dense, speed-graded flow; eased AFDP sweep) ---------- */
 function s6(){const c=$('#c6'),g=c.getContext('2d');
   const B=[['Intake',120],['Compressor',370],['Combustor',620],['Turbine',870],['Generator',1120]];const W=210,Y=300,Hh=220;
-  const P=Array.from({length:260},()=>({x:Math.random()*1330+100,y:Y+20+Math.random()*(Hh-40),v:1+Math.random()}));
-  let fault=false;
+  const ZS=[1.6,2.5,3.4,4.3,5.2].map(s=>s*180), ZW=[250,250,250,250,220], X0=110;   // px/s per zone
+  const ZT=ZW.map((w,i)=>w/ZS[i]), TC=ZT.reduce((a,b)=>a+b,0);
+  const P=Array.from({length:720},()=>({u:rnd(),y:Y+18+rnd()*(Hh-36),v:.75+rnd()*.5,ph:rnd()*9}));
+  const F0=5.5, FD=6.5; const sevAt=t=>easeIO((t-F0)/FD);
+  const DT=1/240, Dtab=[0]; const D=t=>{while(Dtab.length*DT<=t+DT){const k=Dtab.length;Dtab.push(Dtab[k-1]+DT*(1-.35*sevAt((k-.5)*DT)));}const i=Math.floor(t/DT);return Dtab[i]+(t-i*DT)*(1-.35*sevAt(t));};
+  const ticks=document.createElementNS('http://www.w3.org/2000/svg','g');[0,5,10,15,20].forEach(v=>{const a=Math.PI*(1-v/20);const t=document.createElementNS('http://www.w3.org/2000/svg','line');
+    t.setAttribute('x1',200+Math.cos(a)*118);t.setAttribute('y1',210-Math.sin(a)*118);t.setAttribute('x2',200+Math.cos(a)*100);t.setAttribute('y2',210-Math.sin(a)*100);t.setAttribute('stroke','#94a3b8');t.setAttribute('stroke-width','4');ticks.appendChild(t);});
+  $('#gneedle').before(ticks);
   tickers.push(t=>{g.clearRect(0,0,1920,1080);
-    const ft=t-5.5;fault=ft>0;if(fault)$('#fault6').style.cssText+=';opacity:1;animation:pop .6s forwards';
-    const sev=fault?ease(ft/6):0;
-    B.forEach((b,i)=>{g.fillStyle=i===0&&fault?`rgba(254,226,226,1)`:['#eff6ff','#dbeafe','#fef9c3','#fef3c7','#dcfce7'][i];
-      g.strokeStyle=i===0&&fault?'#dc2626':'#94a3b8';g.lineWidth=i===0&&fault?6:3;g.beginPath();g.roundRect(b[1],Y,W,Hh,22);g.fill();g.stroke();
+    const ft=t-F0,fault=ft>0,sev=sevAt(t),d=D(t);
+    B.forEach((b,i)=>{const hot=i===0&&fault;g.save();g.shadowColor='rgba(15,23,42,.10)';g.shadowBlur=24;g.shadowOffsetY=10;
+      g.fillStyle=hot?`rgb(254,${Math.round(242-16*sev)},${Math.round(242-16*sev)})`:['#eff6ff','#dbeafe','#fef9c3','#fef3c7','#dcfce7'][i];
+      g.beginPath();g.roundRect(b[1],Y,W,Hh,22);g.fill();g.restore();
+      g.strokeStyle=hot?'#dc2626':'#94a3b8';g.lineWidth=hot?3+3*sev:3;g.beginPath();g.roundRect(b[1],Y,W,Hh,22);g.stroke();
       g.fillStyle='#0f172a';g.font='800 28px Inter';g.textAlign='center';g.fillText(b[0],b[1]+W/2,Y+Hh+48);
       if(i<4){g.fillStyle='#94a3b8';g.beginPath();g.moveTo(b[1]+W+8,Y+Hh/2-14);g.lineTo(b[1]+W+32,Y+Hh/2);g.lineTo(b[1]+W+8,Y+Hh/2+14);g.fill();}
-      if(i===4){const a=t*4*(1-sev*.15);g.strokeStyle='#16a34a';g.lineWidth=8;g.beginPath();g.arc(b[1]+W/2,Y+Hh/2,60,a,a+4.5);g.stroke();}});
-    if(fault){g.fillStyle='rgba(120,113,108,.55)';for(let k=0;k<40*sev;k++){g.fillRect(140+(k*53)%170,Y+15+(k*97)%(Hh-30),6,6);}}
-    for(const p of P){const zone=Math.min(4,Math.max(0,Math.floor((p.x-120)/250)));
-      const speed=(1.6+zone*.9)*p.v*(1-sev*.35);p.x+=speed*3;if(p.x>1330){p.x=110;}
-      const col=zone<2?'37,99,235':zone<4?(zone===2?'234,88,12':'234,179,8'):'22,163,74';
-      g.fillStyle=`rgba(${col},.75)`;g.beginPath();g.arc(p.x,p.y+Math.sin(p.x*.03+p.v*9)*6,zone>=2&&zone<4?4.5:3.5,0,7);g.fill();}
+      if(i===4){const a=d*4;g.strokeStyle='#16a34a';g.lineWidth=8;g.lineCap='round';g.beginPath();g.arc(b[1]+W/2,Y+Hh/2,60,a,a+4.5);g.stroke();g.lineCap='butt';}});
+    if(fault){g.fillStyle='rgba(120,113,108,.55)';const n=Math.floor(60*sev);for(let k=0;k<n;k++){g.fillRect(138+(k*53)%175,Y+15+(k*97)%(Hh-30),6,6);}}
+    for(const p of P){let tau=((p.u*TC+p.v*d)%TC+TC)%TC,z=0;while(z<4&&tau>ZT[z]){tau-=ZT[z];z++;}
+      const x=X0+ZW.slice(0,z).reduce((a,b)=>a+b,0)+tau*ZS[z], sp=ZS[z]*p.v*(1-.35*sev);
+      const y=p.y+Math.sin(x*.03+p.ph)*6, col=z<2?'37,99,235':z<4?(z===2?'234,88,12':'234,179,8'):'22,163,74', r=z>=2&&z<4?3.6:2.8;
+      const tail=Math.min(26,sp*.022);g.strokeStyle=`rgba(${col},.28)`;g.lineWidth=r*1.4;g.beginPath();g.moveTo(x-tail,y);g.lineTo(x,y);g.stroke();
+      g.fillStyle=`rgba(${col},.8)`;g.beginPath();g.arc(x,y,r,0,7);g.fill();}
     const v=3.9+(17.6-3.9)*sev;$('#afdp').textContent=v.toFixed(1);
-    const frac=(v-0)/20;$('#garc').setAttribute('stroke-dashoffset',503*(1-frac));
+    const frac=v/20;$('#garc').setAttribute('stroke-dashoffset',503*(1-frac));
     const ang=Math.PI*(1-frac);$('#gneedle').setAttribute('x2',200+Math.cos(ang)*140);$('#gneedle').setAttribute('y2',210-Math.sin(ang)*140);
-    g.fillStyle='#475569';g.font='600 22px Inter';g.textAlign='left';g.fillText(fault?'airflow restricted · simulated hour '+Math.min(1,ft/6).toFixed(2):'normal operation · simulated',120,Y-30);
+    g.fillStyle='#475569';g.font='600 22px Inter';g.textAlign='left';g.fillText(fault?'airflow restricted · simulated hour '+Math.min(1,ft/FD).toFixed(2):'normal operation · simulated',120,Y-30);
   });}
 
 /* ---------- scene 7 ---------- */
 function s7(){const L={c7a:['Screen a window, compute evidence','Draft the case report','Route to owner + supervisor','Recall reviewed precedents','Draft handover / onboarding'],
   c7b:['Accept or reject a case report','Approve what-if next steps','Close or dismiss a work request','Sign off a shift handover','Reopen an auto-triaged case'],
   c7c:['Maintenance in the field, under permit','Electrical switching or isolation','Any plant control: setpoints, load, fuel, valves, trips']};
-  const base={c7a:.9,c7b:4.1,c7c:7.3};for(const k in L){L[k].forEach((s,i)=>{const li=document.createElement('li');li.className='a p';li.style.animation=`fadeUp .5s ${base[k]+i*.45}s forwards`;li.textContent=s;$('#'+k).appendChild(li);});}}
+  const base={c7a:.9,c7b:4.1,c7c:7.3};for(const k in L){L[k].forEach((s,i)=>{const li=document.createElement('li');li.className='a p';li.style.animation=`fadeUp .6s ${base[k]+i*.45}s forwards`;li.textContent=s;$('#'+k).appendChild(li);});}}
+
+/* ---------- scene 8: end card timed to the scene length ---------- */
+function s8(){const at=Math.max(8.5,DUR-5.5);$('#endbg').style.animationDelay=at+'s';$('#endcard').style.animationDelay=(at+.4)+'s';}
 
 /* ---------- boot ---------- */
-const init={1:s1,2:s2,3:s3,5:s5,6:s6,7:s7}[SCENE];
-document.getElementById('s'+SCENE).classList.add('on');
+const SC=document.getElementById('s'+SCENE);
+SC.classList.add('on');orbs(SC);
+const init={1:s1,2:s2,3:s3,5:s5,6:s6,7:s7,8:s8}[SCENE];
 if(init)init();
-countUps(document.getElementById('s'+SCENE));
+countUps(SC);applyEasing(SC);
 window.sceneDone=false;window.sceneReady=false;
-function loop(){const t=now();for(const f of tickers)f(t);if(t>=DUR)window.sceneDone=true;requestAnimationFrame(loop);}
-Promise.all([document.fonts.ready,...[...document.querySelectorAll('#s'+SCENE+' img')].map(i=>i.decode().catch(()=>0))]).then(()=>{
+function render(t){for(const f of tickers)f(t);}
+window.__seek=function(ms){window.__t=ms/1000;
+  for(const a of document.getAnimations()){a.pause();a.currentTime=ms;}
+  document.querySelectorAll('#s'+SCENE+' svg').forEach(s=>{if(s.pauseAnimations){s.pauseAnimations();s.setCurrentTime(ms/1000);}});
+  render(window.__t);window.sceneDone=ms>=window.sceneDuration;return ms;};
+function loop(){const t=now();render(t);if(t>=DUR)window.sceneDone=true;requestAnimationFrame(loop);}
+const WEIGHTS=['400','500','600','700','800','900'];
+Promise.all([document.fonts.ready,...WEIGHTS.map(w=>document.fonts.load(`${w} 40px Inter`).catch(()=>0)),
+  ...[...SC.querySelectorAll('img')].map(i=>i.decode().catch(()=>0))]).then(()=>document.fonts.ready).then(()=>{
+  if(CAP){window.__seek(0);window.sceneReady=true;return;}
+  for(const a of document.getAnimations())a.currentTime=0;
   requestAnimationFrame(()=>{T0=performance.now();document.body.classList.add('run');window.sceneReady=true;loop();});});
 </script>
 </body></html>

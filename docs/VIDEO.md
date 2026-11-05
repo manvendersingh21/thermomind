@@ -159,3 +159,28 @@ A separate ≤ 180 s explainer built from an animated HTML deck, not static slid
   concatenates. It refuses to write output over 180 s.
 
 Rebuild: `. .venv/bin/activate && python scripts/make_explainer_video.py`
+
+### Explainer v2: deterministic frame capture (replaces the real-time recording)
+
+The first explainer was a real-time Playwright screen recording; under load Chromium dropped frames and the video
+stuttered. It is now rendered frame by frame:
+
+- `submission/explainer/index.html?scene=N&capture=1&dur=S` freezes the page clock. `window.__seek(ms)` pauses every
+  CSS/Web animation (`document.getAnimations()`, `currentTime = ms`), seeks SVG SMIL animations, and runs every
+  canvas/counter ticker from `window.__t` (particles, flow, gauges and counters are pure functions of time, seeded PRNG).
+  `window.sceneDuration` (ms) is set per scene; capture starts only after `document.fonts` has loaded all Inter weights
+  and screenshots are decoded. Without `capture=1` the page still plays in real time for preview.
+- `scripts/make_explainer_video.py` seeks to `i*1000/30` ms and takes a JPEG (q92) screenshot for every frame
+  (1920×1080, deviceScaleFactor 1, chromium `--use-gl=angle --use-angle=swiftshader --disable-gpu-compositing`; software
+  compositing made screenshots ~6× faster than GPU compositing under SwiftShader). Because the clock is deterministic,
+  scenes are split into frame-range chunks captured in parallel worker processes (`--jobs`, `--chunk`). Each scene is
+  encoded from its image sequence at 30 fps (libx264 crf 18, yuv420p), muxed with edge-tts narration (unchanged text,
+  en-US-GuyNeural -5 %, scene = max(narration + 0.8 s, 14 s)), concatenated, and checked: ≤ 180 s, and 20 sampled
+  pairs of consecutive frames decoded from the final file are compared (identical count printed); every captured frame
+  is also hashed against its predecessor. First v2 build: 0/3404 identical captured pairs; 0/20 sampled pairs and 1/3411
+  pairs over the whole final file identical (the first two frames of scene 1). The file is decoded linearly: input-side
+  `-ss` seeking emits duplicate frames and gave a false 9/20 in the first check.
+- Polish (no claim changed): cubic-bezier easing on every keyframe animation, blurred drifting background orbs and soft
+  shadows, 64 px safe margins, scene-1 turbine outline completes before the title, scene-5 verdict bubbles stagger in
+  and type out, scene-6 denser speed-graded flow (720 particles with motion trails) and an eased AFDP gauge sweep
+  (3.9 → 17.6 mbar), scene 8 ends on a card with the repo URL and "Built 4 Nov 2026 · public data · read-only by design".
