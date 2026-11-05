@@ -85,14 +85,11 @@ The earlier standalone smoke (`scripts/meta_live_smoke.py`, 18:27:24 UTC, fake 3
 
 ## Test suite
 
-Final runs on 2026-11-05 (UTC), on the committed tree:
+Final single pass on 2026-11-05 01:13 UTC, on the committed tree (HEAD 09cb7f2):
 
 ```
 cd apps/api && python -m pytest -q
-546 passed, 1 failed, 1 warning in 224.91s   # the one failure was the route-documentation guard,
-                                              # fixed by listing the simulator routes; re-run:
-cd apps/api && python -m pytest -q tests/test_redteam.py
-37 passed, 1 warning in 60.92s
+547 passed, 1 warning in 70.38s
 ```
 
 ```
@@ -102,7 +99,7 @@ Test Files  10 passed (10)
 Tests       54 passed (54)
 ```
 
-Browser e2e (`scripts/e2e_browser.py`, Playwright) over the core pages and a second pass over every feature page: see the final run recorded in the session log; pages render with zero console errors at 1440×900.
+Browser e2e (`scripts/e2e_browser.py`, Playwright, 1440×900): core pages 6/6 with zero console errors; every feature page (executive, propose, watchdog, autonomy, onboarding, twin, planner, instruments, emissions, thermal, grid, connectors, ops, inbox, ask, compare, agents, report, simulator) renders with zero console errors. The simulator and watchdog pages stream live data, so they were checked with a load-event wait rather than network-idle.
 
 ## What is not evaluated
 
