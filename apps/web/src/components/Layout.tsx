@@ -1,4 +1,4 @@
-import { Activity, BarChart3, Briefcase, Cable, ClipboardList, Database, Eye, Flame, GitCompare, GraduationCap, Inbox, LayoutDashboard, Menu, MessageCircleQuestion, Network, Radio, Scale, Search, ShieldAlert, ShieldCheck, Stethoscope, Vote, Wind, Wrench, X, Zap } from "lucide-react";
+import { Boxes, Activity, BarChart3, Briefcase, Cable, ClipboardList, Database, Eye, Flame, GitCompare, GraduationCap, Inbox, LayoutDashboard, Menu, MessageCircleQuestion, Network, Radio, Scale, Search, ShieldAlert, ShieldCheck, Stethoscope, Vote, Wind, Wrench, X, Zap } from "lucide-react";
 import GuidedTour from "../features/tour/GuidedTour";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { NavLink, Outlet, useLocation } from "react-router-dom";
@@ -38,6 +38,7 @@ const NAV_SECTIONS: { title: string; items: NavItem[] }[] = [
   {
     title: "Simulation & autonomy",
     items: [
+      { to: "/simulator", label: "Plant simulator", icon: Boxes },
       { to: "/twin", label: "3D twin", icon: Eye },
       { to: "/watchdog", label: "Watchdog", icon: ShieldAlert },
       { to: "/propose", label: "Propose an action", icon: Vote },

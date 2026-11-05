@@ -24,6 +24,7 @@ import ProposePage from "./features/deliberation/ProposePage";
 import ExecutivePage from "./features/executive/ExecutivePage";
 import WatchdogPage from "./features/watchdog/WatchdogPage";
 
+const SimulatorPage = lazy(() => import("./features/simulator/SimulatorPage"));
 const TwinPage = lazy(() => import("./features/twin/TwinPage"));
 const twin = (
   <Suspense fallback={<div className="p-6 text-sm text-ink-400">Loading 3D twin…</div>}>
@@ -58,6 +59,7 @@ export function App() {
         <Route path="/propose" element={<ProposePage />} />
         <Route path="/executive" element={<ExecutivePage />} />
         <Route path="/watchdog" element={<WatchdogPage />} />
+        <Route path="/simulator" element={<Suspense fallback={<div className="p-6 text-sm text-ink-400">Loading simulator…</div>}><SimulatorPage /></Suspense>} />
         <Route path="/twin" element={twin} />
         <Route path="/twin/:caseId" element={twin} />
         <Route path="*" element={<Navigate to="/" replace />} />
