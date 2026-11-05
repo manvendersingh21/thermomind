@@ -45,6 +45,7 @@ interface OpsLink {
 }
 
 const OPS_LINKS: OpsLink[] = [
+  { to: "/simulator", title: "Plant simulator", blurb: "0-D physics model with live diagram and fault injection — SIMULATED.", badge: "SIMULATED", tone: "sim", icon: <Boxes size={18} /> },
   { to: "/twin", title: "3D twin", blurb: "Hot spot and flows in 3D on a generic plant.", badge: "GENERIC PLANT", tone: "sim", icon: <Boxes size={18} /> },
   { to: "/propose", title: "Propose an action", blurb: "Subsystem agents confer before anyone acts; a human decides.", badge: "HUMAN DECIDES", tone: "info", icon: <Bot size={18} /> },
   { to: "/inbox", title: "Inbox", blurb: "Routed work requests with simulated notifications.", badge: "SIMULATED", tone: "sim", icon: <Inbox size={18} /> },
