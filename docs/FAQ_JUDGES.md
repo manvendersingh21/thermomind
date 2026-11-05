@@ -12,7 +12,7 @@ Only the baseline's prediction of TEY (2015 holdout MAE 1.293 MWh, R² 0.9896, v
 Partly, yes. The overlays are seeded, labelled `synthetic=true` at every layer, and written by us, so the deterministic engine finding them is a plumbing test, not evidence of real-world skill. They exist so the demo can exercise the pipeline when real labels do not exist.
 
 **4. Is the LLM decorative?**
-The model chooses which tools to call, interprets their results, ranks hypotheses and writes the report. In the three recorded live runs it made 10, 9 and 11 tool calls over 3-4 turns. It does not compute numbers; the server does. Whether its reasoning is better than the deterministic ranking is not benchmarked, and we say so.
+The model chooses which tools to call, interprets their results, ranks hypotheses and writes the report. In the four recorded live runs (S01-S04) it made 9-11 tool calls each over 3-4 turns. It does not compute numbers; the server does. Whether its reasoning is better than the deterministic ranking is not benchmarked, and we say so.
 
 **5. How do you prevent hallucinated evidence?**
 Every number in the evidence list is produced server-side with its computation string. After generation, the validator whitelists evidence IDs against what the tools returned this case, checks schema, case id, dates and control language, allows one rewrite, otherwise marks `needs_review`. It guarantees provenance and form, not that the reasoning is correct.

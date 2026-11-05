@@ -17,7 +17,7 @@ ThermoMind is a read-only decision-support tool for gas-turbine plants. It turns
 ## Long description (<= 300 words)
 Core loop: an engineer opens a case on a window of turbine data. A deterministic evidence engine computes window-vs-reference statistics, baseline residuals and data-quality checks, each with its computation string. Muse Spark (muse-spark-1.3) runs a bounded tool loop over that evidence and drafts a ranked-hypothesis report. A validator checks the report, allows one rewrite, otherwise sends it to needs_review. Every report is draft_requires_human_review.
 
-Real vs synthetic vs simulated: the data are real measurements from an undisclosed Turkish plant (UCI, 2011-2015, 36,733 hourly aggregates, no row-level timestamps, no fault labels). Scenarios S01-S04 are synthetic overlays applied to copies and labelled synthetic. Auxiliaries, thermal screening, the historian replay, CMMS drafts and notifications are simulated.
+Real vs synthetic vs simulated: the data are real measurements from an undisclosed Turkish plant (UCI, 2011-2015, 36,733 hourly aggregates, no row-level timestamps, no fault labels). Scenarios S02-S04 are synthetic overlays applied to copies and labelled synthetic; S01 is real rows only. Auxiliaries, thermal screening, the historian replay, CMMS drafts and notifications are simulated.
 
 Plant-ops layer: inbox and personas, "ask the plant" what-if with per-subsystem agents, planner, instrument scorecard, emissions view, shift handover drafts, synthetic grid drill, onboarding brief.
 
@@ -34,7 +34,7 @@ Model: muse-spark-1.3 via https://api.meta.ai/v1 (OpenAI-compatible chat complet
 - All outputs are validated server-side (evidence-ID whitelist, no fabricated dates, no control language); one rewrite, then a labelled fallback. meta_used is true only for real API calls; the offline preview is labelled "not a Meta inference".
 
 ## What was built during the hackathon
-Git history starts 2026-11-04 18:15 UTC (restarted from an empty directory); 56+ commits; all code written in the window (docs/HACKATHON_WORK.md). Areas: API contract and schemas; UCI data layer and upload validator; HistGradientBoosting baseline with chronological split and an optional GPU MLP challenger; synthetic scenario generator; evidence engine; Muse Spark agent, tools and report validator; FastAPI + SQLite case store with replayable event traces; React/TypeScript web app; plant-ops features (inbox, what-if, planner, instruments, emissions, thermal simulation, grid drill, handover, simulated connectors); deliberation, watchdog, executive view, autonomy policy, onboarding, 3D twin, agent tree; scripts, Docker, CI, tests, docs.
+Git history starts 2026-11-04 18:15 UTC (restarted from an empty directory); 60+ commits; all code written in the window (docs/HACKATHON_WORK.md). Areas: API contract and schemas; UCI data layer and upload validator; HistGradientBoosting baseline with chronological split and an optional GPU MLP challenger; synthetic scenario generator; evidence engine; Muse Spark agent, tools and report validator; FastAPI + SQLite case store with replayable event traces; React/TypeScript web app; plant-ops features (inbox, what-if, planner, instruments, emissions, thermal simulation, grid drill, handover, simulated connectors); deliberation, watchdog, executive view, autonomy policy, onboarding, 3D twin, agent tree; scripts, Docker, CI, tests, docs.
 
 ## Team
 `<FILL by owner>`
@@ -50,7 +50,7 @@ Not deployed; reproducible locally (README).
 
 ## Measured results (from docs/EVALUATION.md)
 - Baseline (HistGradientBoosting, TEY in MWh), 2015 holdout never used for fitting or thresholds: MAE 1.293 MWh, R-squared 0.9896. Naive train-mean MAE 12.957 MWh; naive previous-observation MAE 4.125 MWh.
-- Four live Muse Spark investigations (S01-S04) ran through the full pipeline against api.meta.ai; the S04 case was accepted first pass with zero validation errors, and the others were accepted first pass.
+- Four live Muse Spark investigations (S01-S04) ran through the full pipeline against api.meta.ai (9-11 tool calls each); all four were accepted by the validator on the first pass. Report correctness is not benchmarked.
 - Tests: 531 backend tests passed; 52 web tests passed; typecheck clean.
 - These show the features carry information about TEY. They do not show fault detection.
 
@@ -59,5 +59,5 @@ Not deployed; reproducible locally (README).
 - No verified fault labels; faults in scenarios are synthetic overlays, not real events.
 - Auxiliaries, thermal screening, historian replay, CMMS and notifications are simulated; 3D twin and animation use generic geometry, not the real facility.
 - Muse Spark report correctness has no ground truth; the validator checks provenance and form only.
-- A simplified 0-D gas-turbine physics simulator exists (`/simulator`, docs/SIMULATOR.md): real UCI ambient rows replayed, outputs simulated, faults synthetic, calibrated to one plant's public data. It is not a digital twin of any facility, and its controls act on the model only.
+- A 0-D gas-turbine physics simulator is experimental: model code exists (`apps/api/app/simulator/`) but its API router is not present in this build, so `/simulator` is unfinished. It would be a simulation, not a digital twin of any facility.
 - No pilot, users, revenue, accuracy, savings or avoided-downtime claims.

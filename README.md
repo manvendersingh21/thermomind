@@ -1,10 +1,15 @@
 # ThermoMind
 
-**A read-only AI diagnostic investigator for gas-turbine power generation.**
+**Read-only AI diagnostic investigator for gas-turbine power generation** (Meta Global AI Developer Hackathon, Startup Track; git history starts 2026-11-04 18:15 UTC).
 
-ThermoMind combines authentic operating measurements, reproducible anomaly analysis, Meta Muse Spark reasoning with real tool use, and inspectable evidence to help plant engineers prioritize investigations.
+- **What it does:** turns a window of turbine data into an investigation case: deterministic evidence with the computation shown, a baseline-model comparison, and a Meta Muse Spark (`muse-spark-1.3`) report that may cite only evidence IDs its tool calls returned. A server-side validator gates every draft; a human reviews. No write path to any control system.
+- **Real:** the UCI Gas Turbine CO/NOx data set (36,733 hourly rows, 2011-2015, one Turkish plant, no timestamps, no fault labels) and four live Muse Spark runs recorded in [docs/EVALUATION.md](docs/EVALUATION.md).
+- **Synthetic:** fault scenarios S02-S04 are seeded overlays on copies of real rows, labelled `synthetic=true` everywhere. **Simulated:** thermal screening, grid context, connectors (historian, CMMS, notifier), watchdog auxiliaries. **Experimental:** the 0-D plant simulator (`/simulator`); its backend router is not present in this build, so the page may not load data.
+- **Measured:** TEY baseline on the untouched 2015 holdout: MAE 1.293 MWh, R² 0.9896 (naive baselines 12.957 / 4.125). Four live investigations (S01-S04): 9-11 tool calls each, all accepted by the validator on the first pass. Tests: 531 backend + 52 web passed. No fault-detection accuracy is claimed.
+- **Run:** `cp .env.example .env && make setup data train dev` then open http://localhost:5173 (no key: labelled offline preview). See [Quickstart](#quickstart).
+- **Video:** link added at submission time; narration script and chapters in `submission/video/`.
 
-> **Status (honest banner):** hackathon prototype built during the Meta Global AI Developer Hackathon (Startup Track). The repository's git history begins 2026-11-04 18:15 UTC; the project was restarted from an empty directory that day after earlier work became inaccessible. All code in this repository was written during the hackathon window. It is decision-support software for exploring a public data set. It is **not** a validated plant safety, monitoring or control system; it has **no** write path to any PLC, SCADA, DCS or historian; every report is `draft_requires_human_review`. No accuracy, uptime, adoption or commercial claims are made. All numbers shown in the app come from running the code in this repository (see [docs/EVALUATION.md](docs/EVALUATION.md)).
+> **Status (honest banner):** hackathon prototype. The project was restarted from an empty directory on 2026-11-04 after earlier work became inaccessible; all code was written during the hackathon window. It is **not** a validated plant safety, monitoring or control system; it has **no** write path to any PLC, SCADA, DCS or historian; every report is `draft_requires_human_review`. No accuracy, uptime, adoption or commercial claims are made.
 
 ---
 
@@ -21,7 +26,7 @@ ThermoMind turns one window of plant data into an **investigation case**: eviden
 3. **Builds deterministic evidence** for a 120-row window versus the 240 preceding real rows: window-vs-reference statistics, trend slopes, residuals against the baseline, out-of-training-range counts, isolated-sensor flags, data-quality report.
 4. **Runs a Meta Muse Spark investigation.** `muse-spark-1.3` receives the case and must call tools (`get_sensor_window`, `get_baseline_comparison`, `evaluate_hypothesis`, `get_data_quality`, `list_evidence`, `lookup_reference`) to obtain evidence IDs. It may only cite IDs that tools returned.
 5. **Validates the report.** Unknown evidence IDs, case-ID mismatch, schema errors, fabricated dates or control instructions reject the draft; one bounded rewrite is allowed; otherwise the case is marked `needs_review` with a deterministic summary. Without an API key the app runs an **offline preview**, labelled "not a Meta inference" everywhere it is shown.
-6. **Extends to plant-wide workflows (all read-only):** inbox and work requests, "ask the plant" what-if agents, planner, instrument scorecard, emissions, thermal screening (simulated), grid drill (synthetic), connectors (simulated), ops handover, case comparison and printable report, an interactive **3D twin** (`/twin`, model-derived overlay on generic geometry), **Propose an action** (`/propose`: subsystem agents confer, consensus and dissent are shown, the human decision is recorded, nothing is executed), **Watchdog** (`/watchdog`: simulated auxiliaries produce detections and proposals; auto-execution exists only inside the simulated auxiliaries model, everything else is `human_required`), **Executive view** (`/executive`, model-derived roll-up of demo cases), a **plant simulator** (`/simulator`: 0-D physics model replaying real ambient rows, synthetic fault injection, acts on the model only; [docs/SIMULATOR.md](docs/SIMULATOR.md)), autonomy policy, onboarding brief, activity feed and domino map. Per-feature detail and labels: [docs/FEATURES.md](docs/FEATURES.md).
+6. **Extends to plant-wide workflows (all read-only):** inbox and work requests, "ask the plant" what-if agents, planner, instrument scorecard, emissions, thermal screening (simulated), grid drill (synthetic), connectors (simulated), ops handover, case comparison and printable report, an interactive **3D twin** (`/twin`, model-derived overlay on generic geometry), **Propose an action** (`/propose`: subsystem agents confer, consensus and dissent are shown, the human decision is recorded, nothing is executed), **Watchdog** (`/watchdog`: simulated auxiliaries produce detections and proposals; auto-execution exists only inside the simulated auxiliaries model, everything else is `human_required`), **Executive view** (`/executive`, model-derived roll-up of demo cases), an **experimental plant simulator** (`/simulator`: 0-D physics model code in `apps/api/app/simulator/`; its API router is not present in this build, so treat it as unfinished), autonomy policy, onboarding brief, activity feed and domino map. Per-feature detail and labels: [docs/FEATURES.md](docs/FEATURES.md).
 7. **Keeps a human in the loop.** Severity is a review-priority category, not an alarm. The engineer records a review decision; the full case exports as JSON.
 
 ## Architecture
@@ -58,13 +63,13 @@ All values below were produced by running this repository's code; source: [docs/
 
 - **TEY baseline, 2015 holdout (n = 7384, never used for fitting):** MAE 1.293 MWh, RMSE 1.646, R² 0.9896. Naive train-mean MAE 12.957; naive previous-observation MAE 4.125. Chronological split: train 2011-2013, validation 2014, holdout 2015. This shows the features carry information about TEY; it is not a fault-detection accuracy (no fault labels exist).
 - **Control windows:** 0 of 4 real-only windows (three 2015 windows plus S01) raised a notable residual flag. The three synthetic scenarios S02-S04 each ranked the expected deterministic hypothesis (S04 claims no fault). Not a false-alarm study.
-- **Live Meta record (2026-11-04, `muse-spark-1.3` via `https://api.meta.ai/v1`):** three real investigations through the full pipeline: `case_76d34565b3dc` (S02, 10 tool calls, 4 model turns), `case_760658afb3d5` (S03, 9 tool calls, 3 turns), `case_b1d8db08ff82` (S01, 11 tool calls, 4 turns). All three accepted by the validator on the first pass, i.e. zero validation errors and no rewrites. Diagnostic correctness of the reports is not benchmarked.
+- **Live Meta record (2026-11-04, `muse-spark-1.3` via `https://api.meta.ai/v1`):** four real investigations through the full pipeline: `case_76d34565b3dc` (S02, 10 tool calls, 4 model turns), `case_760658afb3d5` (S03, 9 tool calls, 3 turns), `case_b1d8db08ff82` (S01, 11 tool calls, 4 turns), `case_753818208605` (S04, 10 tool calls, 4 turns). All four accepted by the validator on the first pass, i.e. zero validation errors and no rewrites. Diagnostic correctness of the reports is not benchmarked.
 - **GPU challenger (benchmark only):** PyTorch MLP `mlp_v1` (V100): validation MAE 1.113 vs HGBR 1.364; 2015 holdout MAE 1.664 vs HGBR 1.293 (RMSE 2.183 vs 1.646, R² 0.9818 vs 0.9896). HGBR retained as production.
-- **Tests:** 140 passed (`cd apps/api && python -m pytest -q`).
+- **Tests:** 531 backend passed (`cd apps/api && python -m pytest -q`, 2026-11-05 00:35 UTC) and 52 web tests passed (docs/EVALUATION.md).
 
 ## Screenshots
 
-Demo video: link added at submission time (recording lives in `submission/video/`).
+Demo video: link added at submission time (narration script and chapters in `submission/video/`; no recording is committed).
 
 | View | File |
 |---|---|
