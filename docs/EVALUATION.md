@@ -87,7 +87,8 @@ The earlier standalone smoke (`scripts/meta_live_smoke.py`, 18:27:24 UTC, fake 3
 
 
 ```
-(pytest output)
+$ cd apps/api && python -m pytest -q
+531 passed, 1 warning in 236.45s (0:03:56)   # 2026-11-05 00:35 UTC, full suite incl. fixture-only and real-data tests
 ```
 
 ```
