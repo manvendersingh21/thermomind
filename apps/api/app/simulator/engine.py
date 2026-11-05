@@ -47,6 +47,9 @@ INPUT_CHANNELS = ("AT", "AP", "AH")
 PHYSICS_FAULTS = ("intake_fouling", "compressor_fouling", "hot_day")
 SENSOR_FAULTS = ("sensor_bias", "sensor_drift", "sensor_spike", "sensor_stuck")
 FAULT_KINDS = PHYSICS_FAULTS + SENSOR_FAULTS
+SENSOR_MAG_MAX = 1.0e4  # sensor-fault magnitude bound (channel units) so values stay finite / JSON-safe
+FOUL_MAX = 100.0        # intake fouling factor cap (filter ΔP ≈ 100x clean; beyond this p1 -> 0)
+DAT_MAX = 25.0          # total synthetic +ΔAT across stacked hot_day faults
 CONTROL_LABEL = "simulated plant's own control (software model only; no real plant is controlled)"
 
 
@@ -121,6 +124,8 @@ class SimEngine:
             raise SimError("compressor_fouling magnitude is a fractional efficiency loss in [0, 0.2]")
         if kind == "hot_day" and not 0 <= magnitude <= 25:
             raise SimError("hot_day magnitude is +ΔAT in °C, [0, 25]")
+        if kind in SENSOR_FAULTS and abs(magnitude) > SENSOR_MAG_MAX:
+            raise SimError(f"sensor fault magnitude must be within ±{SENSOR_MAG_MAX:g} (channel units)")
         with self.lock:
             fid = "flt_" + uuid.uuid4().hex[:10]
             f = {"id": fid, "kind": kind, "magnitude": float(magnitude), "channel": channel,
@@ -146,7 +151,8 @@ class SimEngine:
                 comp += f["magnitude"]
             elif f["kind"] == "hot_day":
                 dAT += f["magnitude"]
-        return foul, min(comp, 0.3), dAT
+        # caps keep stacked/long-running synthetic faults inside the model's valid (finite) domain
+        return min(foul, FOUL_MAX), min(comp, 0.3), min(dAT, DAT_MAX)
 
     # ------------------------------------------------------------------ physics step
     def _inputs(self) -> dict:

@@ -16,6 +16,7 @@ from typing import TYPE_CHECKING, Any
 
 from app import config
 from app.schemas import (
+    UCI_SOURCE_ID,
     HYPOTHESIS_KEYS,
     Investigation,
     InvestigationRequest,
@@ -433,6 +434,16 @@ def run_investigation_pipeline(req: InvestigationRequest) -> Investigation:
         error=outcome.error,
         **base,
     )
+    if getattr(bundle, "source", UCI_SOURCE_ID) != UCI_SOURCE_ID:
+        # Non-UCI dataset (e.g. SIMULATED_PLANT): carry the true source through every label.
+        src = bundle.source
+        if inv.report is not None:
+            inv.report.data_source = src
+        if inv.data_quality is not None:
+            inv.data_quality.source = src
+        if src == "SIMULATED_PLANT":
+            inv.scenario_label = "synthetic_overlay"
+            inv.validation_errors = list(inv.validation_errors) + ["data source is a SIMULATED physics model, not real plant data"]
     get_store().save(inv)
     from app.plant.work_requests import on_investigation_completed  # plant-ops routing (simulated in-app; never raises)
     on_investigation_completed(inv)
