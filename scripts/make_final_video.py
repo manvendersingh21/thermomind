@@ -53,7 +53,7 @@ def tts(text: str, out: Path) -> float:
     mp3 = out.with_suffix(".mp3")
     for attempt in range(4):
         try:
-            asyncio.run(edge_tts.Communicate(text, VOICE).save(str(mp3)))
+            asyncio.run(edge_tts.Communicate(text, VOICE, rate="-12%").save(str(mp3)))
             if mp3.stat().st_size > 1000:
                 break
         except Exception:
