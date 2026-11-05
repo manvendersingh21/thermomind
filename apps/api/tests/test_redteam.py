@@ -63,6 +63,11 @@ DOCUMENTED_MUTATING_ROUTES = {
     ("POST", "/api/deliberation/{deliberation_id}/decision"),
     ("POST", "/api/executive/brief"),
     ("POST", "/api/watchdog/run"),
+    # physics simulator (acts on the software model only)
+    ("DELETE", "/api/simulator/faults/{fault_id}"),
+    ("POST", "/api/simulator/faults"),
+    ("POST", "/api/simulator/register-window"),
+    ("POST", "/api/simulator/run"),
 }
 
 

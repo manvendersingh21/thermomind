@@ -1,7 +1,9 @@
 0:00 Overview
 0:06 Live case S02
-0:33 Where to look
-0:42 Inbox
-0:51 Shift ops
-0:59 Evaluation & Trust
-1:13 ThermoMind
+2:43 Where to look
+3:38 Inbox
+4:40 Propose an action
+4:55 Shift ops
+5:03 Autonomy policy
+5:10 Evaluation & Trust
+5:25 ThermoMind

@@ -85,21 +85,24 @@ The earlier standalone smoke (`scripts/meta_live_smoke.py`, 18:27:24 UTC, fake 3
 
 ## Test suite
 
+Final runs on 2026-11-05 (UTC), on the committed tree:
 
 ```
-$ cd apps/api && python -m pytest -q
-531 passed, 1 warning in 236.45s (0:03:56)   # 2026-11-05 00:35 UTC, full suite incl. fixture-only and real-data tests
+cd apps/api && python -m pytest -q
+546 passed, 1 failed, 1 warning in 224.91s   # the one failure was the route-documentation guard,
+                                              # fixed by listing the simulator routes; re-run:
+cd apps/api && python -m pytest -q tests/test_redteam.py
+37 passed, 1 warning in 60.92s
 ```
 
 ```
-$ npm run typecheck
-> tsc --noEmit
-(no errors)
-
-$ npm run test
- Test Files  9 passed (9)
-      Tests  52 passed (52)
+cd apps/web && npm run typecheck && npm run test
+> tsc --noEmit            (no errors)
+Test Files  10 passed (10)
+Tests       54 passed (54)
 ```
+
+Browser e2e (`scripts/e2e_browser.py`, Playwright) over the core pages and a second pass over every feature page: see the final run recorded in the session log; pages render with zero console errors at 1440×900.
 
 ## What is not evaluated
 
