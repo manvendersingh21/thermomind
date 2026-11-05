@@ -40,3 +40,16 @@
 ## Late features (optional extra beats)
 
 - [ ] `/propose`: say "agents confer, a human decides, nothing is executed"; `/watchdog`: say "simulated auxiliaries; auto-execution only inside the simulation"; `/twin` and `/executive` are model-derived views of demo data
+
+## Submit in the last 20 minutes
+
+1. [ ] Upload `submission/video/thermomind_demo.mp4` to YouTube (unlisted or public); open the link logged out to confirm it plays.
+2. [ ] Fill `<FILL by owner>` team field in `submission/FORM_ANSWERS.md` (names, roles, contact email).
+3. [ ] Paste the YouTube link into the demo video field.
+4. [ ] Confirm https://github.com/manvendersingh21/thermomind is public and the latest commit is pushed.
+5. [ ] Confirm `.env` is not in the repo and no key appears in `git grep -i "sk-"`.
+6. [ ] Confirm README banner and docs/EVALUATION.md numbers match FORM_ANSWERS.md (MAE 1.293, 531 and 52 tests).
+7. [ ] Paste each field from `submission/FORM_ANSWERS.md`; check word limits shown in the form.
+8. [ ] Select track: Startup; live demo field: "Not deployed; reproducible locally (README)".
+9. [ ] Re-read once for any accuracy, savings or adoption claim; remove it if present.
+10. [ ] Submit before 9 PM ET, then save the confirmation screenshot.

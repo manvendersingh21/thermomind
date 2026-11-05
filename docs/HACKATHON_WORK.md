@@ -35,7 +35,7 @@ Inventory as of the last commit in this section, from `find apps scripts docs -t
 ## Real numbers
 
 - **Commits:** 56 commits in `git log --oneline` at the time of writing (history begins 2026-11-04 18:15 UTC).
-- **Tests:** `cd apps/api && python -m pytest -q` -> `140 passed, 1 warning in 72.79s`.
+- **Tests:** `cd apps/api && python -m pytest -q` -> `531 passed (backend), 52 passed (web) — 2026-11-05 00:35 UTC`.
 - **Live Muse Spark investigations** (`muse-spark-1.3`, `https://api.meta.ai/v1`, recorded in `docs/EVALUATION.md`):
   - `case_76d34565b3dc` S02_INTAKE_RESTRICTION, 2026-11-04T18:32:03Z
   - `case_760658afb3d5` S03_SENSOR_INCONSISTENCY, 2026-11-04T18:33:19Z
