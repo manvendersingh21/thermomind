@@ -1,6 +1,6 @@
 # ThermoMind pitch deck
 
-`index.html` is a single self-contained 10-slide deck (Inter loads from Google Fonts; falls back to system sans offline). One screenshot is referenced from `../../docs/screenshots/`, so keep the repo layout.
+`index.html` is a single self-contained 13-slide deck (Inter loads from Google Fonts; falls back to system sans offline). One screenshot is referenced from `../../docs/screenshots/`, so keep the repo layout.
 
 ## Open
 Open `submission/deck/index.html` in any browser (or `python -m http.server` from the repo root and visit `/submission/deck/`).

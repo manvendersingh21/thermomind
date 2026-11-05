@@ -40,7 +40,7 @@ a{color:var(--b)}
 <p style="margin-top:18px;font-size:0.95em;color:#475569;max-width:900px">Ambition: to become for agentic plant operations what Schneider Electric is for electrical infrastructure — agents in the picture across every subsystem, humans in control of your power. Independent project; no affiliation with any OEM.</p>
 <p style="font-size:clamp(20px,2.6vw,36px);max-width:22em;margin:0">A read-only AI investigator that turns gas-turbine data into an evidence-backed case file an engineer can accept or reject.</p>
 <p class="mut">Powered by Meta Muse Spark with tools · public UCI data · never touches a control system</p></div>
-<div class="foot"><span>ThermoMind</span><span>1 / 10</span></div></section>
+<div class="foot"><span>ThermoMind</span><span>1 / 13</span></div></section>
 
 <section class="slide" id="s2">
 <div class="kick">The problem</div><h2>Every week someone must decide which deviations deserve an investigation</h2>
@@ -50,7 +50,21 @@ a{color:var(--b)}
 <div class="card g"><b>Sensor or machine?</b><p>A drifting instrument is mistaken for a machine fault, or the reverse.</p></div>
 <div class="card b"><b>Timing and handover</b><p>Wash and filter timing, shift handover and vague work orders lose knowledge.</p></div></div>
 <p class="mut">View of a plant head. Qualitative, from <code>docs/PRODUCT_RATIONALE.md</code>; we state no cost or downtime figures.</p>
-<div class="foot"><span>ThermoMind</span><span>2 / 10</span></div></section>
+<div class="foot"><span>ThermoMind</span><span>2 / 13</span></div></section>
+
+<section class="slide" id="s2b">
+<div class="kick">Real-life use cases · what an engineer would open ThermoMind for</div><h2>Seven everyday decisions, one auditable case each</h2>
+<div class="cols grow" style="align-content:start;grid-template-columns:1fr 1fr">
+<div class="card y"><b>Alarm triage</b><p>Rank which deviations deserve an investigation this week, with the evidence attached.</p></div>
+<div class="card g"><b>Instrument drift vs false trip</b><p>Check whether a sensor disagrees with its neighbours before calling out a technician.</p></div>
+<div class="card b"><b>Compressor wash / filter change-out timing</b><p>Break-even from your own cost assumptions, against the observed pressure-drop trend.</p></div>
+<div class="card"><b>Emissions excursions</b><p>Review CO / NOx behaviour in the window before it becomes a reporting question.</p></div>
+<div class="card b"><b>Cross-team what-if before acting</b><p>Subsystem agents state impact and dissent; a human records the decision. Nothing is executed.</p></div>
+<div class="card y"><b>Shift handover and onboarding</b><p>A draft handover and onboarding brief built from the open cases.</p></div>
+<div class="card g"><b>Grid-event readiness</b><p>Rehearse a grid event in a simulated drill before it happens.</p></div>
+<div class="card"><b>Every one is read-only</b><p>Advisory drafts for human review; no control write path.</p></div></div>
+<p class="small">Use cases are hypotheses to validate in a pilot; no results are claimed. Grid drill and connectors are simulated.</p>
+<div class="foot"><span>ThermoMind</span><span>3 / 13</span></div></section>
 
 <section class="slide" id="s3">
 <div class="kick">The demo loop</div><h2>From real data to a reviewed case</h2>
@@ -61,7 +75,7 @@ a{color:var(--b)}
 <div class="card g"><b>4. Verified evidence</b><p>Server computes every number; validator whitelists cited evidence IDs</p></div><div class="arrow">›</div>
 <div class="card"><b>5. Human review</b><p>Draft requires an engineer: accept, reject or ask for more data</p></div></div>
 <div style="margin-top:2vh" class="grow"><img class="shot" style="max-height:44vh;width:auto;max-width:100%;display:block;margin:auto" src="../../docs/screenshots/investigation_synthetic.png" alt="Investigation page, synthetic scenario"></div>
-<div class="foot"><span>ThermoMind</span><span>3 / 10</span></div></section>
+<div class="foot"><span>ThermoMind</span><span>4 / 13</span></div></section>
 
 <section class="slide" id="s4">
 <div class="kick">Honesty</div><h2>What is real and what is simulated</h2>
@@ -73,7 +87,7 @@ a{color:var(--b)}
 <tr><td>Notifications and routing to engineers</td><td><span class="tag t-sim">SIMULATED</span></td></tr>
 <tr><td>Wash / filter break-even and similar planners</td><td><span class="tag t-sim">USER-SUPPLIED ASSUMPTIONS</span></td></tr>
 <tr><td>Diagnostic accuracy, fault detection, savings, customers</td><td><span class="tag t-sim">NOT MEASURED, NOT CLAIMED</span></td></tr></table>
-<div class="foot"><span>ThermoMind</span><span>4 / 10</span></div></section>
+<div class="foot"><span>ThermoMind</span><span>5 / 13</span></div></section>
 
 <section class="slide" id="s5">
 <div class="kick">Measured results · docs/EVALUATION.md</div><h2>What we measured</h2>
@@ -91,7 +105,7 @@ a{color:var(--b)}
 <p>Wins 2014 validation (1.113) but loses 2015 holdout; HGBR retained.</p>
 <p class="small">Tesla V100, 27.6 s training. Benchmark only.</p></div></div>
 <p class="mut" style="margin-top:2vh">Beating naive baselines shows the features carry information, not that faults are detected. No fault labels exist; 0 of 4 real-only control windows raised a residual flag (not a false-alarm study).</p>
-<div class="foot"><span>ThermoMind</span><span>5 / 10</span></div></section>
+<div class="foot"><span>ThermoMind</span><span>6 / 13</span></div></section>
 
 <section class="slide" id="s6">
 <div class="kick">Beyond the loop</div><h2>Plant-operations helpers around the investigation</h2>
@@ -104,7 +118,7 @@ a{color:var(--b)}
 <tr><td><b>Grid context</b></td><td><span class="tag t-sim">SIMULATED</span></td></tr>
 <tr><td><b>Connectors</b>: shift handover and CMMS drafts, request routing</td><td><span class="tag t-sim">SIMULATED</span> <span class="tag t-adv">DRAFT ONLY</span></td></tr></table>
 <p class="small">Per docs/PRODUCT_RATIONALE.md. Hypotheses to validate in a pilot; no result is claimed.</p>
-<div class="foot"><span>ThermoMind</span><span>6 / 10</span></div></section>
+<div class="foot"><span>ThermoMind</span><span>7 / 13</span></div></section>
 
 <section class="slide" id="s7">
 <div class="kick">Safety architecture</div><h2>Read-only by construction</h2>
@@ -114,7 +128,7 @@ a{color:var(--b)}
 <div class="card b"><b>Human review</b><p>Every report is <code>draft_requires_human_review</code>. Severity ranks review priority, not alarms.</p></div></div>
 <div class="cols" style="margin-top:2vh"><div class="card"><b>Replayable</b><p>Every model request, tool call, result and validation is stored.</p></div>
 <div class="card"><b>Limits stated</b><p>Single-user prototype, no auth; not hardened for an OT network. The validator guarantees provenance and form, not correct reasoning.</p></div></div>
-<div class="foot"><span>ThermoMind</span><span>7 / 10</span></div></section>
+<div class="foot"><span>ThermoMind</span><span>8 / 13</span></div></section>
 
 <section class="slide" id="s8">
 <div class="kick">Market and buyer · hypotheses, not claims</div><h2>The case file, not the alarm, is the unit of value</h2>
@@ -124,7 +138,23 @@ a{color:var(--b)}
 <div class="card"><b>Gatekeepers</b><p>Plant IT / OT security and OEM relationship owners. Exported data only, no OT integration.</p></div></div>
 <div class="card b" style="margin-top:2vh"><b>Beside incumbents, not against them</b><p>Siemens Energy, GE Vernova and AspenTech offer mature monitoring embedded in service agreements. Our hypothesis: a vendor-neutral, auditable case built on exported data complements it. We have no customers and no evidence yet that engineers prefer this.</p></div>
 <p class="small">Risks named in docs/MARKET.md: one plant's data, confounding from dispatch, OT security, OEM data restrictions, long sales cycles.</p>
-<div class="foot"><span>ThermoMind</span><span>8 / 10</span></div></section>
+<div class="foot"><span>ThermoMind</span><span>9 / 13</span></div></section>
+
+<section class="slide" id="s8b">
+<div class="kick">What the market doesn't have · our hypothesis</div><h2>Monitoring exists. An auditable investigation case does not.</h2>
+<div class="grow" style="display:flex;flex-direction:column;justify-content:center;gap:2vh">
+<div class="cols" style="grid-template-columns:1fr 1fr 1fr">
+<div class="card"><b>OEM monitoring</b><p>Ships with the equipment and the service agreement. Mature, but tied to one vendor's fleet.</p></div>
+<div class="card"><b>APM suites</b><p>Vendor-specific and alarm-centric: they flag a deviation, the explanation stays with the engineer.</p></div>
+<div class="card"><b>Spreadsheets</b><p>Where the investigation actually happens today; the reasoning lives in one head.</p></div></div>
+<div class="card g"><b>The gap we believe exists</b><ul>
+<li>An <strong>evidence-linked investigation case</strong>: every number traced to a computation, every claim to an evidence ID</li>
+<li><strong>Multi-agent cross-impact deliberation</strong>: subsystem agents show consensus and dissent before anyone acts</li>
+<li>An <strong>explicit autonomy policy</strong>: what may be automated (only inside simulation) and what stays <code>human_required</code></li>
+<li>All on <strong>exported data</strong>, vendor-neutral, no OT integration</li></ul></div>
+<p class="small">Hypothesis, not a market study. We have not verified that no vendor offers this, and we have no customers yet.</p>
+</div>
+<div class="foot"><span>ThermoMind</span><span>10 / 13</span></div></section>
 
 <section class="slide" id="s9">
 <div class="kick">Path to pilot</div><h2>Four steps, then measure</h2>
@@ -138,7 +168,20 @@ a{color:var(--b)}
 <tr><td>Evidence-link correctness</td><td>Share of cited IDs judged relevant and correct</td></tr>
 <tr><td>False-alarm behaviour, acceptance rate</td><td>Normal windows flagged; accepted / rejected / more data</td></tr>
 <tr><td>Deployment time</td><td>Hours from export to first reviewed case</td></tr></table>
-<div class="foot"><span>ThermoMind</span><span>9 / 10</span></div></section>
+<div class="foot"><span>ThermoMind</span><span>11 / 13</span></div></section>
+
+<section class="slide" id="s9b">
+<div class="kick">Push the Frontier · Meta Muse Spark</div><h2>A frontier model reasoning over a physical system, with checks at every step</h2>
+<div class="grow" style="display:flex;flex-direction:column;justify-content:center;gap:2vh">
+<div class="flow">
+<div class="card b"><b>Muse Spark reasons</b><p><code>muse-spark-1.3</code> plans the investigation and calls tools in a bounded loop: 9 to 11 tool calls per recorded case.</p></div><div class="arrow">›</div>
+<div class="card g"><b>Verifiable tools</b><p>Sensor windows, baseline residuals, data quality and evidence are computed by server code, not by the model.</p></div><div class="arrow">›</div>
+<div class="card y"><b>Physics simulator</b><p>An experimental 0-D gas-turbine model, labelled SIMULATED_PLANT, to ask what-if questions about a real machine's physics.</p></div><div class="arrow">›</div>
+<div class="card"><b>Human in the loop</b><p>A validator rejects unverified evidence; an engineer accepts, rejects or asks for more data.</p></div></div>
+<div class="card b"><b>Why it matters</b><p>Language models are usually judged on text. Here the model is judged against measurements and computation it cannot fake: 4 live cases, 0 validation errors, every tool call replayable.</p></div>
+<p class="small">Numbers from docs/EVALUATION.md. The simulator is experimental; diagnostic accuracy is not measured.</p>
+</div>
+<div class="foot"><span>ThermoMind</span><span>12 / 13</span></div></section>
 
 <section class="slide" id="s10">
 <div class="kick">Team and links</div><h2>Built 4 November 2026, during the hackathon window</h2>
@@ -147,7 +190,7 @@ a{color:var(--b)}
 <div class="card"><b>Demo video</b><p>See submission form.</p></div>
 <div class="card"><b>Team</b><p>ThermoMind team (see submission form), built with AI coding agents. Meta Muse Spark (<code>muse-spark-1.3</code>) via the Meta Model API.</p></div></div>
 <p class="mut">We claim: a transparent, auditable investigation case with real tool-using inference is possible today. We do not claim accuracy, avoided downtime, customers or sales.</p>
-<div class="foot"><span>ThermoMind</span><span>10 / 10</span></div></section>
+<div class="foot"><span>ThermoMind</span><span>13 / 13</span></div></section>
 
 <div style="position:fixed;bottom:2.2vh;left:50%;transform:translateX(-50%);font-size:12px;color:var(--mut)" class="hint no-print">Arrow keys / space to navigate · F fullscreen</div>
 <script>
