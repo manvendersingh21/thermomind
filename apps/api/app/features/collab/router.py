@@ -115,7 +115,7 @@ def dependency_graph(case_id: Optional[str] = Query(None, max_length=64),
         return dependencies.build_graph(case_id or None, measurement or None, delta, get_investigation)
     except KeyError as exc:
         raise _not_found(exc) from None
-    except ValueError as exc:
+    except (ValueError, IndexError) as exc:  # IndexError: base window outside the loaded rows
         raise HTTPException(status_code=422, detail=str(exc)[:500]) from None
 
 

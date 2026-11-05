@@ -379,6 +379,11 @@ def _data_kpis(dataset_id: str, year: int, src: Sources) -> list[Kpi]:
     model = src.model()
     try:
         bundle = src.bundle(dataset_id)
+    except KeyError:
+        if dataset_id != DEFAULT_DATASET_ID:  # an unknown id is a 404, not a degraded overview echoing it back
+            raise KeyError(f"dataset '{dataset_id[:64]}' not found") from None
+        src.unavailable.append(f"dataset {dataset_id}: not loaded")
+        return []
     except Exception as exc:  # noqa: BLE001
         src.unavailable.append(f"dataset {dataset_id}: {type(exc).__name__}")
         return []

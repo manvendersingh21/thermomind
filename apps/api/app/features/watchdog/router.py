@@ -12,7 +12,7 @@ from typing import Literal, Optional
 
 from fastapi import APIRouter, HTTPException, Query
 from fastapi.responses import StreamingResponse
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, StrictBool
 
 from app.features.watchdog import monitor
 from app.features.watchdog.auxiliaries import FAULT_KINDS, SPEC_BY_ID
@@ -37,9 +37,9 @@ class RunRequest(BaseModel):
     rate_per_min: float = Field(0.05, ge=0, le=1)
     initial_severity: float = Field(0.0, ge=0, le=1)
     mwh: Optional[float] = Field(None, ge=-200, le=200, description="dispatch step, MWh per hourly sample")
-    auto_execute: Optional[bool] = None
+    auto_execute: Optional[StrictBool] = None
     deliberation_backend: Optional[Literal["auto", "builtin", "shared"]] = None
-    tagged: Optional[bool] = None
+    tagged: Optional[StrictBool] = None
     task_id: Optional[str] = Field(None, max_length=40)
     decision: Optional[Literal["approve", "reject"]] = None
     persona: Optional[str] = Field(None, max_length=60)

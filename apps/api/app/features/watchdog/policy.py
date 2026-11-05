@@ -31,7 +31,7 @@ class ActionClass:
 
 ACTION_CLASSES: dict[str, ActionClass] = {a.key: a for a in [
     ActionClass("simulated_auxiliary_switchover",
-                "Start the standby auxiliary and take the duty auxiliary out of service — inside the SIMULATED "
+                "Duty moves to the standby auxiliary and the duty auxiliary is released — inside the SIMULATED "
                 "auxiliaries model only (2 × 100 % pump pairs).",
                 True, "low", True, "WD-POL-001", ("mechanical_maintenance_engineer",), EXECUTION_WHERE),
     ActionClass("auxiliary_maintenance",
@@ -40,11 +40,11 @@ ACTION_CLASSES: dict[str, ActionClass] = {a.key: a for a in [
                 False, "medium", False, "WD-POL-010", ("mechanical_maintenance_engineer", "hse_officer"),
                 "real plant (human only)"),
     ActionClass("unit_commitment",
-                "Bring a second unit online for +X MWh per hourly sample. Grid/dispatch decision.",
+                "Second-unit commitment for +X MWh per hourly sample. Grid/dispatch decision (human only).",
                 False, "high", False, "WD-POL-020", ("electrical_engineer", "plant_manager"),
                 "real plant / dispatch (human only)"),
     ActionClass("redispatch_request",
-                "Request re-dispatch from the TSO / dispatcher (lower the setpoint to available output).",
+                "Re-dispatch question for the TSO / dispatcher (dispatch target vs available output; human only).",
                 False, "high", False, "WD-POL-021", ("electrical_engineer", "plant_manager"),
                 "dispatch / TSO (human only)"),
     ActionClass("investigation_request",

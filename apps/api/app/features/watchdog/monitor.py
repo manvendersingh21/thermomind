@@ -646,8 +646,8 @@ class Watchdog:
         if spec.group in ("cooling_water", "feedwater") and peers and not peers[0].running:
             other = peers[0]
             label = "cooling-water" if spec.group == "cooling_water" else "boiler feedwater"
-            intent = (f"start standby {label} pump {other.spec.asset_id[-1]} and take pump {aid[-1]} out of "
-                      f"service for {what}")
+            intent = (f"SIMULATED switchover: duty moves to standby {label} pump {other.spec.asset_id[-1]}; "
+                      f"pump {aid[-1]} released for {what}")
             cls = "simulated_auxiliary_switchover"
             params = {"group": spec.group, "start": other.spec.asset_id, "stop": aid}
             responsible = [spec.responsible_persona if ev["signature"] != "insulation" else "electrical_engineer"]
@@ -674,8 +674,8 @@ class Watchdog:
         if u.get("aux_binding") not in (None, "nameplate"):
             aux_note = (f"; auxiliary-limited ({u['aux_binding']}: CW {u['cw_capacity_frac']:.0%}, feedwater "
                         f"{u['feedwater_capacity_frac']:.0%}, fan airflow {u['fan_airflow_frac']:.0%})")
-        intent = (f"bring second unit online for +{sf:.1f} MWh per hourly sample, or request re-dispatch to "
-                  f"{u['available_mwh']:.1f}")
+        intent = (f"human decision needed: second-unit commitment for +{sf:.1f} MWh per hourly sample, or a "
+                  f"re-dispatch question to the dispatcher (target {u['available_mwh']:.1f})")
         notify_grid = []
         try:
             from app.features.grid.readiness import NOTIFY
@@ -762,6 +762,8 @@ class Watchdog:
 
     def _execute_simulated(self, det: dict, prop: dict, policy_id: str, approved_by: str,
                            escalate_on_block: bool = True) -> Optional[dict]:
+        if prop.get("action_class") != "simulated_auxiliary_switchover":  # defence in depth: nothing else executes
+            raise ValueError(f"action class '{prop.get('action_class')}' is never executed by ThermoMind")
         p = prop["params"]
         ex = {"id": new_id("exe"), "ts_utc": now_utc(), "t_sim_s": self.aux.t_s, "proposal_id": prop["id"],
               "detection_id": det["id"], "what": prop["intent"], "where": pol.EXECUTION_WHERE,

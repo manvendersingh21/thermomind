@@ -22,7 +22,7 @@ FUEL_NOTE = "Fuel flow is not measured in this dataset: a higher fuel demand is 
 
 # implied: measurements whose delta follows from the primary one via the training-year slope
 INTENTS: list[dict[str, Any]] = [
-    {"intent_id": "raise_output", "label": "Raise output by X MW",
+    {"intent_id": "raise_output", "label": "Higher output (+X MW)",
      "description": "More electricity: the unit would carry more load (TEY up). Firing temperature, compressor "
                     "pressure and exhaust back-pressure historically rise with load.",
      "magnitude": {"unit": "MW", "default": 5.0, "min": 0.5, "max": 20.0, "step": 0.5,
@@ -30,7 +30,7 @@ INTENTS: list[dict[str, Any]] = [
      "primary": "TEY", "sign": +1, "implied": ["TIT", "CDP", "GTEP", "TAT", "AFDP", "CO", "NOX"],
      "subsystems": ["generator_output", "combustion_turbine", "compressor", "exhaust_emissions", "intake"],
      "notes": [TEY_NOTE, FUEL_NOTE]},
-    {"intent_id": "lower_output", "label": "Lower output by X MW",
+    {"intent_id": "lower_output", "label": "Reduced output (−X MW)",
      "description": "Less electricity: the unit would carry less load (TEY down); part-load operation shifts "
                     "temperatures and emissions.",
      "magnitude": {"unit": "MW", "default": 5.0, "min": 0.5, "max": 20.0, "step": 0.5,
@@ -38,7 +38,7 @@ INTENTS: list[dict[str, Any]] = [
      "primary": "TEY", "sign": -1, "implied": ["TIT", "CDP", "GTEP", "TAT", "AFDP", "CO", "NOX"],
      "subsystems": ["generator_output", "combustion_turbine", "compressor", "exhaust_emissions"],
      "notes": [TEY_NOTE, "Part-load CO behaviour is captured only as historical association."]},
-    {"intent_id": "open_igv_airflow", "label": "Open inlet guide vanes / increase airflow",
+    {"intent_id": "open_igv_airflow", "label": "Wider inlet guide vanes / more airflow",
      "description": "More air through the compressor. IGV angle and air mass flow are not measured; the change is "
                     "expressed as a compressor discharge pressure rise (CDP) with a slight filter ΔP rise (AFDP).",
      "magnitude": {"unit": MEASUREMENTS["CDP"]["unit"], "default": 0.3, "min": 0.1, "max": 2.0, "step": 0.1,
@@ -47,7 +47,7 @@ INTENTS: list[dict[str, Any]] = [
      "subsystems": ["compressor", "intake", "combustion_turbine", "generator_output"],
      "notes": ["IGV position and air mass flow are not in the dataset; CDP is used as the observable proxy.",
                "CDP unit is 'mbar' as published and is under validation."]},
-    {"intent_id": "raise_firing_temperature", "label": "Raise firing temperature by X °C",
+    {"intent_id": "raise_firing_temperature", "label": "Higher firing temperature (+X °C)",
      "description": "Hotter combustion (TIT up). Output historically rises with TIT; hot-gas-path parts and NOx "
                     "are the usual concerns.",
      "magnitude": {"unit": "°C", "default": 5.0, "min": 1.0, "max": 30.0, "step": 1.0,

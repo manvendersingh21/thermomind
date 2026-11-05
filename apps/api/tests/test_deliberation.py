@@ -313,8 +313,7 @@ def test_decision_recorded_and_routed_never_executed(case):
     d = out.decisions[-1]
     assert d.routed_to == "shift_supervisor" and d.executed is False
     assert d.message.startswith("Recorded; routed to") and "nothing was executed" in d.message
-    assert decisions.work_request_creator() is None and d.work_request_id is None
-    assert "no create function usable without an investigation" in d.routing_note
+    assert d.work_request_id is None and "Record + notification only" in d.routing_note
     inbox = plant_store.list_notifications("shift_supervisor")
     n = next(x for x in inbox if x.id == d.notification_id)
     assert s.deliberation_id in n.message and "executed nothing" in n.message and n.case_id == case.case_id
@@ -322,21 +321,15 @@ def test_decision_recorded_and_routed_never_executed(case):
     assert pm.decisions[-1].routed_to == "plant_manager" and len(pm.decisions) == 2
 
 
-def test_decision_uses_work_request_creator_when_offered(case, monkeypatch):
-    seen = {}
-
-    def fake_create(**kw):
-        seen.update(kw)
-        return types.SimpleNamespace(id="wr_fake")
-
-    monkeypatch.setattr(decisions, "work_request_creator", lambda: fake_create)
+def test_decision_never_creates_work_request_even_when_creator_offered(case, monkeypatch):
+    called = []
+    monkeypatch.setattr(decisions, "work_request_creator", lambda: (lambda **kw: called.append(kw)))
     s = deliberate.propose(ProposeRequest(case_id=case.case_id, intent_id="raise_output"), None, background=False)
-    out = decisions.record_decision(s.deliberation_id, DecisionRequest(decision="approve_plan",
-                                                                       persona="electrical_engineer"))
-    assert out.decisions[-1].work_request_id == "wr_fake"
-    assert seen["title"].startswith("Approved plan (human decision): Raise output by 5 MW")
-    rej = decisions.record_decision(s.deliberation_id, DecisionRequest(decision="reject", persona="electrical_engineer"))
-    assert rej.decisions[-1].work_request_id is None  # only approve_plan creates a work request
+    for dec in ("approve_plan", "reject", "defer"):
+        out = decisions.record_decision(s.deliberation_id, DecisionRequest(decision=dec, persona="electrical_engineer"))
+        d = out.decisions[-1]
+        assert d.work_request_id is None and d.executed is False and d.notification_id
+    assert called == []  # the decision endpoint triggers a record + notification and nothing else
 
 
 # ----------------------------------------------------------------------------- endpoints

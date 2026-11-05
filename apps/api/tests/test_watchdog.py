@@ -169,7 +169,8 @@ def test_overheat_detector_fires_with_time_to_limit():
     assert n["winding_c"] < n["alarm_c"]  # early warning: fires on the trend, before the alarm
     assert n["current_excess_pct"] >= 5
     assert det["evidence"]["provenance"] and det["proposed_action"]["action_class"] == "simulated_auxiliary_switchover"
-    assert "start standby cooling-water pump B" in det["proposed_action"]["intent"]
+    assert "standby cooling-water pump B" in det["proposed_action"]["intent"]
+    assert det["proposed_action"]["intent"].startswith("SIMULATED")
 
 
 def test_healthy_plant_raises_no_detection():
@@ -184,7 +185,7 @@ def test_capability_shortfall_is_human_required_and_never_executed():
     assert run_until(w, has_kind("capability_shortfall"), max_steps=300)
     det = next(d for d in w.detections if d["kind"] == "capability_shortfall")
     assert det["evidence"]["numbers"]["shortfall_mwh"] > 1
-    assert "bring second unit online" in det["proposed_action"]["intent"]
+    assert "second-unit commitment" in det["proposed_action"]["intent"]
     task = next(t for t in w.human_tasks if t["detection_id"] == det["id"])
     assert task["status"] == "awaiting_human" and task["policy_id"] == "WD-POL-020"
     assert {"shift_supervisor", "control_room_operator"} <= set(task["notified"])
@@ -259,7 +260,7 @@ def test_tagged_out_standby_blocks_auto_execution_and_escalates():
 def _det_prop():
     det = {"kind": "auxiliary_overheating", "asset": "CWP_A", "severity": "high", "rationale": "r",
            "evidence": {"numbers": {"winding_c": 100}}}
-    prop = {"intent": "start standby cooling-water pump B and take pump A out of service",
+    prop = {"intent": "SIMULATED switchover: duty moves to standby cooling-water pump B; pump A released",
             "action_class": "simulated_auxiliary_switchover", "magnitude": 1.0,
             "params": {"group": "cooling_water", "start": "CWP_B", "stop": "CWP_A"}, "responsible": ["x"]}
     return det, prop

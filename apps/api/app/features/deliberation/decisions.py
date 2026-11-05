@@ -1,10 +1,7 @@
 """Human decision on a deliberation: recorded and routed (simulated in-app notification). Never any plant effect.
 
-approve_plan -> notification to the decider's supervisor (shift supervisor when none) and, only if
-``app.plant.work_requests`` offers a create function usable without an investigation, a work request titled
-"Approved plan (human decision): <intent>". Today it offers none (``create_for_investigation`` needs an
-investigation), so only the notification is created and the routing note says so.
-reject / defer -> recorded + notification. Nothing is executed in any case.
+Every decision (approve_plan / reject / defer) -> a stored record + ONE simulated in-app notification to the
+decider's supervisor (the decider when none). Nothing else is created or triggered; nothing is executed.
 """
 from __future__ import annotations
 
@@ -65,19 +62,9 @@ def record_decision(deliberation_id: str, req: DecisionRequest, persona: Optiona
         id=f"ntf_{secrets.token_hex(5)}", persona=sup, kind="info", created_at_utc=now, case_id=s.case_id,
         message=msg[:1000]))
     wr_id, note = None, f"Notification to {persona_label(sup)} (simulated in-app)."
-    if req.decision == "approve_plan":
-        creator = work_request_creator()
-        if creator is None:
-            note += (" No work request: app.plant.work_requests offers no create function usable without an "
-                     "investigation, so only the notification was created.")
-        else:
-            try:
-                wr = creator(title=f"Approved plan (human decision): {intent}"[:300], case_id=s.case_id,
-                             persona=sup, comment=comment, source=f"deliberation:{s.deliberation_id}")
-                wr_id = getattr(wr, "id", None) or (wr.get("id") if isinstance(wr, dict) else None)
-                note += f" Work request {wr_id} created (planning record only)."
-            except Exception as exc:  # noqa: BLE001 - routing must never fail the decision record
-                note += f" Work request creation failed ({type(exc).__name__}); notification only."
+    # By design a decision is a record + one simulated notification, nothing else: no work request, no task, no
+    # call into any other module (even if app.plant.work_requests later offers a standalone create function).
+    note += " Record + notification only; no work request or any other action is created by this endpoint."
     d = HumanDecision(decision=req.decision, persona=p.persona_id, persona_label=persona_label(p.persona_id),
                       comment=comment, recorded_at_utc=now, routed_to=sup, routed_to_label=persona_label(sup),
                       notification_id=ntf.id, work_request_id=wr_id, routing_note=note,
