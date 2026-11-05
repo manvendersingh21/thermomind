@@ -508,11 +508,10 @@ def storyboard_main(r: Recorder, s02: str, available: set[str]) -> None:
         p.wait_for_timeout(800)
         hyp = p.get_by_text("Hypotheses (ranked)").first
         r.scroll_to(hyp, top=90)
-        card = hyp.locator("xpath=following-sibling::div[1]").locator("div.panel").first
-        chip = card.locator("button.chip", has_text="ev_afdp_01").first
+        chip = p.locator("button.chip", has_text="ev_afdp_01").first  # layout-independent
         if not chip.count():
-            chip = card.locator("button.chip").first
-        r.click(chip)
+            chip = p.locator("button.chip").first
+        soft(r, "evidence chip", lambda: r.click(chip))
         drawer = p.get_by_role("dialog").first  # evidence drawer (aria-labelledby = evidence id)
         soft(r, "drawer computation", lambda: r.hover(drawer.get_by_text("Computation", exact=True).first))
     segment("s02_case", s02_case)
