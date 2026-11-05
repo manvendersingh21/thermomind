@@ -1,5 +1,7 @@
 # ThermoMind
 
+**Live demo (temporary tunnel to the build box, may go offline):** https://preference-survive-inquire-mere.trycloudflare.com  
+
 **Read-only AI diagnostic investigator for gas-turbine power generation** (Meta Global AI Developer Hackathon, Startup Track; git history starts 2026-11-04 18:15 UTC).
 
 - **What it does:** turns a window of turbine data into an investigation case: deterministic evidence with the computation shown, a baseline-model comparison, and a Meta Muse Spark (`muse-spark-1.3`) report that may cite only evidence IDs its tool calls returned. A server-side validator gates every draft; a human reviews. No write path to any control system.

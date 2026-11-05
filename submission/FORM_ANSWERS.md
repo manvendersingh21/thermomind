@@ -46,7 +46,7 @@ https://github.com/manvendersingh21/thermomind
 `https://github.com/manvendersingh21/thermomind/blob/main/submission/video/thermomind_demo.mp4 (public, plays in the browser; replace with the YouTube link if uploaded)`
 
 ## Live demo
-Not deployed; reproducible locally (README).
+https://preference-survive-inquire-mere.trycloudflare.com (temporary Cloudflare quick tunnel to the build machine; may go offline; local run documented in README).
 
 ## Measured results (from docs/EVALUATION.md)
 - Baseline (HistGradientBoosting, TEY in MWh), 2015 holdout never used for fitting or thresholds: MAE 1.293 MWh, R-squared 0.9896. Naive train-mean MAE 12.957 MWh; naive previous-observation MAE 4.125 MWh.

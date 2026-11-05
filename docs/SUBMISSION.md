@@ -12,7 +12,7 @@
 | One-liner | ThermoMind is a read-only AI diagnostic investigator for gas-turbine power generation. It combines authentic operating measurements, reproducible anomaly analysis, Meta Muse Spark reasoning with real tool use, and inspectable evidence to help plant engineers prioritize investigations. |
 | Repository URL | https://github.com/manvendersingh21/thermomind |
 | Demo video URL | submission/video/thermomind_demo.mp4 (narrated, ≤3 min; YouTube link to be added by the owner at submission) |
-| Live demo URL (optional) | not deployed (local reproducible demo; optional quick tunnel command in docs/DEPLOY.md) |
+| Live demo URL (optional) | https://preference-survive-inquire-mere.trycloudflare.com (temporary quick tunnel; may go offline) |
 | Team | `<FILL: names, roles, contact email>` (to be filled by the owner at submission) |
 | Meta model used | `muse-spark-1.3` via `https://api.meta.ai/v1` (OpenAI-compatible chat completions with function tools) |
 | Meta usage summary | Model runs a bounded multi-turn tool loop over six server-side tools and drafts a validated investigation report; `meta_used=true` only for real API calls; offline preview is labelled "not a Meta inference" |
