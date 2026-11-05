@@ -59,5 +59,5 @@ Not deployed; reproducible locally (README).
 - No verified fault labels; faults in scenarios are synthetic overlays, not real events.
 - Auxiliaries, thermal screening, historian replay, CMMS and notifications are simulated; 3D twin and animation use generic geometry, not the real facility.
 - Muse Spark report correctness has no ground truth; the validator checks provenance and form only.
-- No physics simulator exists in this repository (a design was started but not built).
+- A simplified 0-D gas-turbine physics simulator exists (`/simulator`, docs/SIMULATOR.md): real UCI ambient rows replayed, outputs simulated, faults synthetic, calibrated to one plant's public data. It is not a digital twin of any facility, and its controls act on the model only.
 - No pilot, users, revenue, accuracy, savings or avoided-downtime claims.

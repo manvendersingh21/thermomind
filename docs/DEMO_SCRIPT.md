@@ -21,6 +21,8 @@ built UI on http://localhost:8000; the live Muse Spark case for `S02_INTAKE_REST
 | 2:30–2:50 | `/evaluation` | Holdout (2015, untouched) vs naive baselines, production baseline vs GPU challenger table, safety disclaimer | "On the untouched 2015 holdout, the baseline's mean error is 1.29 megawatt-hours, versus 4.13 for a naive previous-value baseline. The GPU challenger is a benchmark only, and this is not a validated safety system." (numbers are read from `GET /api/models/evaluation` at record time; see `docs/EVALUATION.md`) |
 | 2:50–3:00 | `/` | Overview, repo URL github.com/manvendersingh21/thermomind | "Built today, from real public data, with humans in the loop." |
 
+Optional beat (not in the recorded video): open `/simulator`, start the replay, inject a synthetic `intake_fouling` fault and watch AFDP rise. Say: "This is a simplified physics model fed by real ambient rows; the faults are synthetic and the controls act on the model only."
+
 ## Fallbacks
 
 - Meta API slow or down: everything above uses stored cases; nothing in the video waits on Meta. To show a live run,
