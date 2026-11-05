@@ -43,7 +43,7 @@ Git history starts 2026-11-04 18:15 UTC (restarted from an empty directory); 60+
 https://github.com/manvendersingh21/thermomind
 
 ## Demo video
-`<YouTube link — upload submission/video/thermomind_demo.mp4>`
+`https://github.com/manvendersingh21/thermomind/blob/main/submission/video/thermomind_demo.mp4 (public, plays in the browser; replace with the YouTube link if uploaded)`
 
 ## Live demo
 Not deployed; reproducible locally (README).
