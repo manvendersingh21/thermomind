@@ -22,6 +22,7 @@ import AutonomyPage from "./features/collab/AutonomyPage";
 import OnboardingPage from "./features/collab/OnboardingPage";
 import ProposePage from "./features/deliberation/ProposePage";
 import ExecutivePage from "./features/executive/ExecutivePage";
+import WatchdogPage from "./features/watchdog/WatchdogPage";
 
 const TwinPage = lazy(() => import("./features/twin/TwinPage"));
 const twin = (
@@ -56,6 +57,7 @@ export function App() {
         <Route path="/onboarding" element={<OnboardingPage />} />
         <Route path="/propose" element={<ProposePage />} />
         <Route path="/executive" element={<ExecutivePage />} />
+        <Route path="/watchdog" element={<WatchdogPage />} />
         <Route path="/twin" element={twin} />
         <Route path="/twin/:caseId" element={twin} />
         <Route path="*" element={<Navigate to="/" replace />} />

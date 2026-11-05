@@ -1,5 +1,5 @@
 import {
-  Activity, Bot, Boxes, Cable, ChevronDown, ChevronRight, ClipboardList, Cpu, Crown, Database, Eye, Flame, FlaskConical, Gauge,
+  Activity, Bot, Boxes, Cable, ChevronDown, ChevronRight, ClipboardList, Crown, Database, Eye, Flame, FlaskConical, Gauge,
   Inbox, Layers, MessageCircleQuestion, Network, Play, Rocket, Scale, Search, Sigma, Stethoscope, Wind, Wrench, Zap,
 } from "lucide-react";
 import type { ReactNode } from "react";
@@ -45,7 +45,6 @@ interface OpsLink {
 }
 
 const OPS_LINKS: OpsLink[] = [
-  { to: "/simulator", title: "Simulator", blurb: "Physics-based plant model, live diagram, fault injection.", badge: "SIMULATED", tone: "sim", icon: <Cpu size={18} /> },
   { to: "/twin", title: "3D twin", blurb: "Hot spot and flows in 3D on a generic plant.", badge: "GENERIC PLANT", tone: "sim", icon: <Boxes size={18} /> },
   { to: "/propose", title: "Propose an action", blurb: "Subsystem agents confer before anyone acts; a human decides.", badge: "HUMAN DECIDES", tone: "info", icon: <Bot size={18} /> },
   { to: "/inbox", title: "Inbox", blurb: "Routed work requests with simulated notifications.", badge: "SIMULATED", tone: "sim", icon: <Inbox size={18} /> },
