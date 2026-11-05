@@ -58,3 +58,8 @@ ThermoMind was built the way it is organised (see `docs/AGENT_ORGANISATION.md`):
 - **Rules every agent followed.** Explicit file ownership, a concrete deliverable, real command output in the report, shared files edited only by the principal (`AGENTS.md`, "Delegation policy").
 
 This describes how the code was produced. It does not change what is claimed about the product: no validation on a real plant and no accuracy claim (see "What is not claimed").
+
+## Not completed (honest record)
+
+- A first-principles plant **physics simulator** with a live animated 2D diagram was designed (three judged designs and a synthesised spec, run as a structured multi-agent workflow at ~20:00 UTC) but the orchestrating session was interrupted before the build stage; no simulator code exists in this repository. Nothing in the product claims a simulator.
+- The 3D digital twin, deliberation ("Propose an action"), watchdog and executive view were built late on 4 November and verified by their own tests and typecheck; the final integrated build and e2e run happened in the last hour before the deadline.
