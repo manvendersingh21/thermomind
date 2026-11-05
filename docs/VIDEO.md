@@ -122,3 +122,21 @@ Chapters of that take (`chapters.txt`): 0:00 Overview · 0:06 Live case S02 · 0
    Wait until HD processing finishes (1080p option visible).
 4. Open the link in an **incognito window** (logged out): it plays, 1080p is selectable, sound is on.
 5. Paste the link into the submission form and into `docs/SUBMISSION.md`.
+
+## Final submission cut (product walkthrough + narrated slides)
+
+Built by `scripts/make_final_video.py` (2026-11-05):
+
+- **Part A** (0:00-1:20): the narrated product walkthrough above, unchanged. A copy is kept as
+  `submission/video/thermomind_demo_product_only.mp4`.
+- **Part B**: seven pitch-deck slides captured with Playwright at 1920×1080 from
+  `submission/deck/index.html#N`, each narrated with edge-tts (`en-US-GuyNeural`, ≤ 30 words) and shown for
+  max(clip + 0.6 s, 8 s): problem (#2), real-life use cases (#3), real vs simulated (#5), measured results
+  (#6), what the market doesn't have (#10, stated as our hypothesis), path to pilot (#11), Push the Frontier
+  (#12). Spoken numbers come only from `docs/EVALUATION.md` (1.293 MWh holdout MAE; 4 live Muse Spark cases,
+  0 validation errors).
+- A and B are joined with the ffmpeg concat filter and re-encoded to identical parameters (h264 yuv420p
+  30 fps 1920×1080, aac 48 kHz stereo). The script refuses to write the output if it exceeds 180 s.
+
+Rebuild: `. .venv/bin/activate && python scripts/make_final_video.py`
+(Part A input defaults to `submission/video/thermomind_demo_product_only.mp4`).

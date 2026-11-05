@@ -51,7 +51,7 @@ Not deployed; reproducible locally (README).
 ## Measured results (from docs/EVALUATION.md)
 - Baseline (HistGradientBoosting, TEY in MWh), 2015 holdout never used for fitting or thresholds: MAE 1.293 MWh, R-squared 0.9896. Naive train-mean MAE 12.957 MWh; naive previous-observation MAE 4.125 MWh.
 - Four live Muse Spark investigations (S01-S04) ran through the full pipeline against api.meta.ai (9-11 tool calls each); all four were accepted by the validator on the first pass. Report correctness is not benchmarked.
-- Tests: 531 backend tests passed; 52 web tests passed; typecheck clean.
+- Tests: 547 backend tests passed; 52 web tests passed; typecheck clean.
 - These show the features carry information about TEY. They do not show fault detection.
 
 ## Known limits
@@ -78,7 +78,7 @@ This is a prototype on public data. Accuracy, savings and plant deployment are n
 ### 1. Project idea (clarity · feasibility · theme fit: Push the Frontier)
 **Idea in one sentence.** ThermoMind turns a gas-turbine plant's raw measurements into evidence-linked investigations and cross-team decisions, with Meta Muse Spark reasoning over a physical system through verifiable tools, and humans deciding anything that touches the plant.
 **Why it fits "Push the Frontier".** It gives a physical system a new capability: the plant's own data becomes an auditable case file in minutes; subsystem agents confer about the domino effect before a physical action; a watchdog notices needs on its own; a physics simulator calibrated to the real data lets teams rehearse faults; an explicit autonomy policy states what agents may do alone. Energy is the domain; understanding and (human-gated) control of a physical system is the frontier.
-**Feasibility, demonstrated.** Built and running on public data (UCI dataset 551, 36,733 hourly rows): four live Muse Spark investigations stored with zero validator errors; baseline model holdout MAE 1.293 MWh (naive 12.957 / 4.125); 540 backend tests and 52 web tests green; reproducible from a clean clone with four make targets. Pilot path: read-only historian export from one consenting plant, then prospective cases and work-order verification.
+**Feasibility, demonstrated.** Built and running on public data (UCI dataset 551, 36,733 hourly rows): four live Muse Spark investigations stored with zero validator errors; baseline model holdout MAE 1.293 MWh (naive 12.957 / 4.125); 547 backend tests and 52 web tests green; reproducible from a clean clone with four make targets. Pilot path: read-only historian export from one consenting plant, then prospective cases and work-order verification.
 
 ### 2. Technical skill (what we built · techniques used)
 - **Agentic reasoning with verifiable tools.** Muse Spark runs a bounded tool loop (get_sensor_window, get_baseline_comparison, evaluate_hypothesis, get_data_quality, list_evidence, lookup_reference, recall_similar_cases); a server-side validator rejects any report that cites evidence ids the tools did not return, fabricated dates, or control language (including grid/electrical vocabulary), with one bounded rewrite and a labelled fallback.
