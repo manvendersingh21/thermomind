@@ -43,7 +43,7 @@ Git history starts 2026-11-04 18:15 UTC (restarted from an empty directory); 60+
 https://github.com/manvendersingh21/thermomind
 
 ## Demo video
-`https://github.com/manvendersingh21/thermomind/blob/main/submission/video/thermomind_demo.mp4 (public, plays in the browser; replace with the YouTube link if uploaded)`
+`https://github.com/manvendersingh21/thermomind/blob/main/submission/video/thermomind_explainer.mp4 (animated explainer, 114 s) · product walkthrough: https://github.com/manvendersingh21/thermomind/blob/main/submission/video/thermomind_demo.mp4 (173 s)`
 
 ## Live demo
 https://preference-survive-inquire-mere.trycloudflare.com (temporary Cloudflare quick tunnel to the build machine; may go offline; local run documented in README).

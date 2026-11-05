@@ -140,3 +140,22 @@ Built by `scripts/make_final_video.py` (2026-11-05):
 
 Rebuild: `. .venv/bin/activate && python scripts/make_final_video.py`
 (Part A input defaults to `submission/video/thermomind_demo_product_only.mp4`).
+
+## Motion-graphics explainer (`submission/video/thermomind_explainer.mp4`)
+
+A separate ≤ 180 s explainer built from an animated HTML deck, not static slides.
+
+- Source: `submission/explainer/index.html` (1920×1080, Inter, CSS keyframes + `requestAnimationFrame`; `?scene=N&dur=S`
+  selects a scene and its length; the page sets `window.sceneReady` when the clock starts and `window.sceneDone` at the end).
+- Scenes: 1 title (particles form a turbine outline) · 2 the problem (alarm cards are illustrative; counters are the real
+  36,733 rows / 11 measurements / 0 fault labels) · 3 the loop (36,733 rows; holdout MAE 1.293 vs naive 12.957 MWh; 4 live
+  cases, 0 validation errors) · 4 where to look (evidence drawer + 3D twin screenshots, LOOK HERE marker, synthetic S02) ·
+  5 agents in collaboration (11 demo personas, example verdicts, human decides, nothing executed) · 6 physics simulator
+  (SIMULATED; AFDP 3.9 → 17.6 mbar as in docs/FINAL_VERIFICATION.md) · 7 autonomy policy P-01 · 8 Push the Frontier,
+  buyer, path to pilot, repo URL, honesty footer.
+- Build: `scripts/make_explainer_video.py` records each scene with Playwright (chromium `--use-gl=angle
+  --use-angle=swiftshader`, `record_video_dir`), trims the load pre-roll, narrates with edge-tts en-US-GuyNeural at -5 %
+  (≤ 35 words per scene), shows each scene for max(narration + 0.8 s, 14 s), encodes h264 yuv420p 30 fps + aac 48 kHz and
+  concatenates. It refuses to write output over 180 s.
+
+Rebuild: `. .venv/bin/activate && python scripts/make_explainer_video.py`
