@@ -45,3 +45,14 @@ No accuracy figure, no avoided downtime, no customers, no sales. One plant's 201
 2. **Shadow mode, 8-12 weeks.** Run ThermoMind on the site's own history; engineers review draft cases against their own spreadsheets. Retrain the baseline on that site's data with a chronological split.
 3. **Measure.** Case acceptance rate, engineer minutes per triage, false-review rate against the engineers' known events, time to first case after data export (metrics in `docs/MARKET.md`).
 4. **Decide on price.** If shadow metrics hold, move to a per-turbine annual pilot, and complete the OT-security assessment in `docs/SAFETY.md` before any live feed.
+
+## Push the Frontier — how Meta's models meet a physical system here
+
+ThermoMind uses Meta Muse Spark to understand and reason about a physical system, a gas-turbine power plant, with the model held to verifiable tools rather than free text:
+
+- **Understand**: real turbine measurements (36,733 hourly rows) plus a measured-data baseline model; Muse Spark investigates deviations by calling deterministic evidence tools and must cite only evidence ids those tools returned. Four live runs, zero validation errors.
+- **Control-adjacent, with humans in the loop**: subsystem agents confer before any physical action ("Propose an action"), a watchdog notices needs and routes them to the responsible engineer, and an explicit autonomy policy says what agents may do alone (triage, drafts, routing) and what only humans may do (anything that touches the plant). The software has no write path to a control system by design; the route to action is a human-approved plan.
+- **Simulate**: a first-principles 0-D gas-turbine physics simulator (Brayton cycle, governor, injectable faults) calibrated to the real data lets the agents and the engineers rehearse faults and responses on a model, with a live animated diagram and a 3D twin.
+- **New capability for the machine**: turning raw plant telemetry into an auditable, evidence-linked investigation and a cross-team decision record in minutes, instead of days of manual work.
+
+This is a prototype on public data. Accuracy, savings and plant deployment are not claimed; the pilot path and metrics are in docs/MARKET.md.

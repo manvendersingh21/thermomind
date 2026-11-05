@@ -61,3 +61,14 @@ Not deployed; reproducible locally (README).
 - Muse Spark report correctness has no ground truth; the validator checks provenance and form only.
 - A 0-D gas-turbine physics simulator is experimental: model code exists (`apps/api/app/simulator/`) but its API router is not present in this build, so `/simulator` is unfinished. It would be a simulation, not a digital twin of any facility.
 - No pilot, users, revenue, accuracy, savings or avoided-downtime claims.
+
+## Push the Frontier — how Meta's models meet a physical system here
+
+ThermoMind uses Meta Muse Spark to understand and reason about a physical system, a gas-turbine power plant, with the model held to verifiable tools rather than free text:
+
+- **Understand**: real turbine measurements (36,733 hourly rows) plus a measured-data baseline model; Muse Spark investigates deviations by calling deterministic evidence tools and must cite only evidence ids those tools returned. Four live runs, zero validation errors.
+- **Control-adjacent, with humans in the loop**: subsystem agents confer before any physical action ("Propose an action"), a watchdog notices needs and routes them to the responsible engineer, and an explicit autonomy policy says what agents may do alone (triage, drafts, routing) and what only humans may do (anything that touches the plant). The software has no write path to a control system by design; the route to action is a human-approved plan.
+- **Simulate**: a first-principles 0-D gas-turbine physics simulator (Brayton cycle, governor, injectable faults) calibrated to the real data lets the agents and the engineers rehearse faults and responses on a model, with a live animated diagram and a 3D twin.
+- **New capability for the machine**: turning raw plant telemetry into an auditable, evidence-linked investigation and a cross-team decision record in minutes, instead of days of manual work.
+
+This is a prototype on public data. Accuracy, savings and plant deployment are not claimed; the pilot path and metrics are in docs/MARKET.md.
