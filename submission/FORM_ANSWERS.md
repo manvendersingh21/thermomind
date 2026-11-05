@@ -59,7 +59,7 @@ Not deployed; reproducible locally (README).
 - No verified fault labels; faults in scenarios are synthetic overlays, not real events.
 - Auxiliaries, thermal screening, historian replay, CMMS and notifications are simulated; 3D twin and animation use generic geometry, not the real facility.
 - Muse Spark report correctness has no ground truth; the validator checks provenance and form only.
-- A 0-D gas-turbine physics simulator is experimental: model code exists (`apps/api/app/simulator/`) but its API router is not present in this build, so `/simulator` is unfinished. It would be a simulation, not a digital twin of any facility.
+- The 0-D gas-turbine physics simulator (`/simulator`) is experimental and was finished in the last hour: 9 tests, calibrated to UCI steady states (per-channel MAE in docs/SIMULATOR.md); it is a simulation, not a digital twin of any facility.
 - No pilot, users, revenue, accuracy, savings or avoided-downtime claims.
 
 ## Push the Frontier — how Meta's models meet a physical system here
