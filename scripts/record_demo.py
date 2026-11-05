@@ -28,6 +28,7 @@ times measured during the recording, then muxed onto the video with ffmpeg.
 """
 from __future__ import annotations
 
+import os
 import argparse
 import asyncio
 import hashlib
@@ -483,6 +484,9 @@ def storyboard_main(r: Recorder, s02: str, available: set[str]) -> None:
     r.mark_start()
 
     def segment(key: str, body) -> None:
+        if key in {k.strip() for k in os.environ.get("DEMO_SKIP", "").split(",") if k.strip()}:
+            print(f"  segment {key} skipped (DEMO_SKIP)", flush=True)
+            return
         if key in OPTIONAL_ROUTES and key not in available:
             return
         r.caption(key)
