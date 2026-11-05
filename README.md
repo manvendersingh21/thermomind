@@ -65,7 +65,7 @@ All values below were produced by running this repository's code; source: [docs/
 - **Control windows:** 0 of 4 real-only windows (three 2015 windows plus S01) raised a notable residual flag. The three synthetic scenarios S02-S04 each ranked the expected deterministic hypothesis (S04 claims no fault). Not a false-alarm study.
 - **Live Meta record (2026-11-04, `muse-spark-1.3` via `https://api.meta.ai/v1`):** four real investigations through the full pipeline: `case_76d34565b3dc` (S02, 10 tool calls, 4 model turns), `case_760658afb3d5` (S03, 9 tool calls, 3 turns), `case_b1d8db08ff82` (S01, 11 tool calls, 4 turns), `case_753818208605` (S04, 10 tool calls, 4 turns). All four accepted by the validator on the first pass, i.e. zero validation errors and no rewrites. Diagnostic correctness of the reports is not benchmarked.
 - **GPU challenger (benchmark only):** PyTorch MLP `mlp_v1` (V100): validation MAE 1.113 vs HGBR 1.364; 2015 holdout MAE 1.664 vs HGBR 1.293 (RMSE 2.183 vs 1.646, R² 0.9818 vs 0.9896). HGBR retained as production.
-- **Tests:** 531 backend passed (`cd apps/api && python -m pytest -q`, 2026-11-05 00:35 UTC) and 52 web tests passed (docs/EVALUATION.md).
+- **Tests:** 547 backend passed (`cd apps/api && python -m pytest -q`, 2026-11-05 01:22 UTC) and 52 web tests passed (docs/EVALUATION.md).
 
 ## Screenshots
 
